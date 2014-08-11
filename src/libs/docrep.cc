@@ -1,6 +1,5 @@
 /* -*- Mode: C++; -*- */
 
-#include <schwa/dr.h>
 #include "docrep.h"
 
 namespace dr = schwa::dr;

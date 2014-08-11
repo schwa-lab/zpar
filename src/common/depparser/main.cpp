@@ -13,6 +13,7 @@
 #include "depparser.h"
 #include "reader.h"
 #include "writer.h"
+#include "docrep.h"
 #include "stdlib.h"
 
 using namespace TARGET_LANGUAGE;

@@ -1,5 +1,7 @@
 /* -*- Mode: C++; -*- */
 
+#include <schwa/dr.h>
+ 
 namespace model {
 
     class Token : public schwa::dr::Ann {
@@ -51,7 +53,7 @@ namespace model {
         schwa::dr::Store<Token> tokens;
         schwa::dr::Store<Sentence> sentences;
         schwa::dr::BlockStore<ParseNode> parse_nodes;
-        schwa::dr::BlockStore<Dependency> grs;
+        schwa::dr::BlockStore<Dependency> dependencies;
 
         class Schema;
     };
@@ -80,11 +82,11 @@ namespace model {
     };
 
 
-    class Dependency::Schema : public schwa::dr::Ann::Schema<GR> {
+    class Dependency::Schema : public schwa::dr::Ann::Schema<Dependency> {
     public:
-        DR_FIELD(&GR::label) label;
-        DR_POINTER(&GR::head, &Doc::tokens) head;
-        DR_POINTER(&GR::dep, &Doc::tokens) dep;
+        DR_FIELD(&Dependency::label) label;
+        DR_POINTER(&Dependency::head, &Doc::tokens) head;
+        DR_POINTER(&Dependency::dep, &Doc::tokens) dep;
 
         Schema(void);
         virtual ~Schema(void) { }
