@@ -107,7 +107,7 @@ $(OBJECT_DIR)/%.o: $(SRC_LIBS)/%.cpp $(SRC_INCLUDES)/%.h
 	mkdir -p $(OBJECT_DIR)/linguistics
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-all: zpar
+all: english.depparser
 
 # the directories
 $(OBJECT_DIR):
