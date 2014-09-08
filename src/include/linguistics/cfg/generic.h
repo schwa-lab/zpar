@@ -95,7 +95,7 @@ public:
    inline static bool canBeTemporary(const unsigned long &code) { return true; }
 }; 
 
-};
+}
 
 inline const unsigned long &hash(const TARGET_LANGUAGE::CConstituentLabel &tag) {return tag.code(); }
 

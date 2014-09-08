@@ -26,8 +26,8 @@ namespace depparser {
 
 #include "state.h"
 
-}; // namespace depparser
-};
+} // namespace depparser
+}
 
 #include "depparser_weight.h"
 
@@ -58,7 +58,7 @@ private:
 
    int m_nTrainingRound;
    int m_nTotalErrors;
-   bool m_bScoreModified;
+   //bool m_bScoreModified;
    int m_nScoreIndex;
 
 public:
@@ -122,7 +122,7 @@ private:
 
 };
 
-}; // namespace TARGET_LANGUAGE
+} // namespace TARGET_LANGUAGE
 
 #endif
 

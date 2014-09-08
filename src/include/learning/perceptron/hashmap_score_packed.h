@@ -111,7 +111,7 @@ public:
    unsigned count ;
 
 public:
-   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : name(input_name) , initialized(bInitMap) , count(0) , m_zero() , CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) 
+   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) , name(input_name) , initialized(bInitMap) , count(0)
 #ifdef NO_NEG_FEATURE
 , m_positive(this)
 #endif

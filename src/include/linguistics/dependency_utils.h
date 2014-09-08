@@ -36,7 +36,7 @@ bool IsValidDependencyTree(const CLabeledOrUnlabeledDependencyTree &tree) {
    for ( int i=0; i<static_cast<int>(tree.size()); ++i ) {
       if ( tree.at(i).head == DEPENDENCY_LINK_NO_HEAD ) nHead++ ;
       j = i;
-      while ( nLoop & (1<<j) == 0 ) {
+      while ( (nLoop & (1<<j)) == 0 ) {
          nLoop &= (1<<j); // mark to avoid duplicate checking for head
          j = tree.at(i).head;  // move to head
          if (j==DEPENDENCY_LINK_NO_HEAD) break; // head found

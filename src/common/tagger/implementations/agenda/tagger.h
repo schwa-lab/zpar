@@ -25,8 +25,8 @@ namespace TARGET_LANGUAGE {
 namespace tagger {
 #include "tagger_impl.h"
 #include "tagger_stateitem.h"
-}; // namespace tagger
-};
+} // namespace tagger
+}
 
 #include "tagger_weight.h"
 
@@ -106,7 +106,7 @@ protected:
    // add local features to a global feature vector (first param)
    void updateLocalFeatureVector(SCORE_UPDATE method, const CTwoStringVector* tagged, int index, int round=0);
 };
-}; // namespace TARGET_LANGUAGE
+} // namespace TARGET_LANGUAGE
 
 #endif
 

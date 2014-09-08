@@ -41,7 +41,7 @@ public:
    bool empty() const {return m_bEmpty;}
 };
 
-};
-};
+}
+}
 
 #endif

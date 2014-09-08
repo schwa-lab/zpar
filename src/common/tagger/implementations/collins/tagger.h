@@ -25,8 +25,8 @@ namespace TARGET_LANGUAGE {
 namespace tagger {
 #include "tagger_impl.h"
 #include "tagger_stateitem.h"
-}; // namespace tagger
-};
+} // namespace tagger
+}
 
 #include "tagger_weight.h"
 
@@ -145,7 +145,7 @@ protected:
    // toptags
    void getOrUpdateToptags( CPackedScoreType<tagger::SCORE_TYPE, CTag::MAX_COUNT> &retval, const unsigned &tag, const unsigned &index, const tagger::SCORE_TYPE &amount, const int &round );
 };
-}; // namespace TARGET_LANGUAGE
+} // namespace TARGET_LANGUAGE
 
 #endif
 

@@ -41,7 +41,7 @@ inline unsigned long int encodeConstituents(const CConstituentLabel &con1, const
           (con3.code()<<CConstituentLabel::SIZE) | con4.code() ;
 }
 
-}; // namespace generic
+} // namespace generic
 
 //===============================================================
 

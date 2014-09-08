@@ -151,7 +151,7 @@ public:
    bool operator >= (const CTag &t1) const { return m_code >= t1.m_code; }
 };
 
-}; // namespace chinese
+} // namespace chinese
 
 #endif
 

@@ -196,6 +196,6 @@ inline std::ostream & operator << (std::ostream &os, const CDependencyLabel &lab
    os << label.str() ;
    return os;
 }
-};
+}
 
 #endif
