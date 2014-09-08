@@ -14,9 +14,19 @@
 
 namespace english {
 
+   /*
+    * missing:
+    * npadvmod
+    * discourse
+    * agent
+    * goeswith
+    * root
+    * vmod
+    *
+    */
 const std::string STANFORD_DEP_STRINGS[] = {
    "-none-",
-   "null",
+   "root", /* used to be null */
    "cc", 
    "number", 
    "ccomp", 
@@ -43,6 +53,7 @@ const std::string STANFORD_DEP_STRINGS[] = {
    "nsubj", 
    "rcmod", 
    "advmod", 
+   "npadvmod",
    "punct", 
    "quantmod", 
    "tmod", 
@@ -96,6 +107,7 @@ enum STANFORD_DEP_LABELS {
    STANFORD_DEP_NSUBJ, 
    STANFORD_DEP_RCMOD, 
    STANFORD_DEP_ADVMOD, 
+   STANFORD_DEP_NPADVMOD, 
    STANFORD_DEP_PUNCT, 
    STANFORD_DEP_QUANTMOD, 
    STANFORD_DEP_TMOD, 

@@ -746,6 +746,7 @@ inline bool canAssignLabel(const std::vector< CTaggedWord<CTag,TAG_SEPARATOR> > 
          )
          return true;
       return false;
+   case STANFORD_DEP_NPADVMOD: 
    case STANFORD_DEP_ADVMOD: 
       if (
           (head_tag == PENN_TAG_NOUN_PLURAL ||
