@@ -189,7 +189,9 @@ public:
 
 public:
 //   const unsigned long long &code() const { return m_code; }
-   unsigned long long hash() const { return static_cast<unsigned long long>(*m_code); }
+   unsigned long long hash() const {
+     return *reinterpret_cast<const unsigned long long *>(m_code);
+   }
 
 public:
    bool operator == (const CSetOfTags &s) const { return memcmp(m_code, s.m_code, sizeof(m_code))==0; }
