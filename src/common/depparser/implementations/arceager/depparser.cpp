@@ -774,6 +774,10 @@ void CDepParser::train( const CDependencyParse &correct , int round ) {
    ++m_nTrainingRound;
    ASSERT(m_nTrainingRound == round, "Training round error") ;
 #endif
+   //std::cout << "round=" << round << std::endl;
+   //if (round > 1)
+      //cast_weights->debugUsage();
+
    work( true , sentence , &outout , correct , 1 , 0 ) ; 
 
 }
