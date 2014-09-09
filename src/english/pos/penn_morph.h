@@ -186,6 +186,6 @@ inline unsigned long long getPossibleTagsBySuffix( const std::string &word ) {
    return retval;
 }
 
-};
+}
 
 #endif

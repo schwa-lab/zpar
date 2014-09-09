@@ -131,5 +131,5 @@ public:
    bool operator >= (const CConstituentLabel &t1) const { return m_code >= t1.m_code; }
 };
 
-};
+}
 

@@ -148,7 +148,7 @@ inline unsigned matchPunctuation(const CTag &tag) {
    else return 0;
 }
 
-}; // namespace english
+} // namespace english
 
 #endif
 

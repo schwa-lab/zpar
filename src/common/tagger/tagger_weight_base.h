@@ -35,7 +35,7 @@ public:
 
 };
 
-}; // namespace tagger
-}; // namespace TARGET_LANGUAGE
+} // namespace tagger
+} // namespace TARGET_LANGUAGE
 
 #endif

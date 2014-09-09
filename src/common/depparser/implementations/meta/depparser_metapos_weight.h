@@ -265,7 +265,7 @@ struct CMetaPOSWeight {
 
 };
 
-};
-};
+}
+}
 
 #endif

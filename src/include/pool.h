@@ -25,7 +25,7 @@ public:
 
    const unsigned long blocksize;
 public:
-   CMemoryPoolEntry(const unsigned long &bs): blocksize(bs), prev(0) {
+   CMemoryPoolEntry(const unsigned long &bs): prev(0), blocksize(bs) {
       blocks = new T[bs];
    }
    virtual ~CMemoryPoolEntry() {

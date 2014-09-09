@@ -18,7 +18,7 @@ namespace english {
 
 const char TAG_SEPARATOR = '/';
 
-}; // namespace english
+} // namespace english
 
 //===============================================================
 

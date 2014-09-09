@@ -27,6 +27,6 @@ const int MAX_WORD_SIZE = 128; // restrict size of words
 const int LENGTH_MAX_BITS = 3;
 const int LENGTH_MAX = 1<<LENGTH_MAX_BITS;
 
-};
-};
+}
+}
 

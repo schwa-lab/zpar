@@ -256,6 +256,40 @@ public:
       return iterator(this, m_nTableSize-1, 0); 
    }
 
+  void debugUsage(void) const {
+    unsigned int nitems = 0, nbuckets_used = 0, ncollisions = 0;
+    for (unsigned long int b = 0; b != m_nTableSize; ++b) {
+      if (m_buckets[b] == nullptr)
+        continue;
+      ++nbuckets_used;
+      for (const CEntry *node = m_buckets[b]; node != nullptr; node = node->m_next) {
+        ++nitems;
+        if (node != m_buckets[b])
+          ++ncollisions;
+      }
+    }
+    std::cout << "[debugUsage] nbuckets=" << m_nTableSize << " nbuckets_used=" << nbuckets_used << " nitems=" << nitems << " ncollisions=" << ncollisions;
+    std::cout << " bucket usage %age=" << (100 * nbuckets_used/static_cast<float>(m_nTableSize));
+    const float collision_percentage = (nitems == 0) ? 0.0f : 100 * ncollisions/static_cast<float>(nitems);
+    if (nitems != 0) {
+      std::cout << " collision %age=" << collision_percentage;
+      if (collision_percentage > 30) {
+        std::cout << std::endl << "{" << std::endl;
+        for (unsigned long int b = 0; b != m_nTableSize; ++b) {
+          if (m_buckets[b] == nullptr)
+            continue;
+          std::cout << "  " << b << ")";
+          for (const CEntry *node = m_buckets[b]; node != nullptr; node = node->m_next) {
+            std::cout << " [" << node->m_key << "(" << hash(node->m_key) << ", " << (hash(node->m_key) % m_nTableSize) << "): " << &node->m_value << "]";
+          }
+          std::cout << std::endl;
+        }
+        std::cout << "}";
+      }
+    }
+    std::cout << std::endl;
+  }
+
 public:
 #ifdef DEBUG 
    void trace() { 

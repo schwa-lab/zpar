@@ -181,6 +181,7 @@ inline bool isOneUTF8Character(const std::string &s) {
    else if ((s[0]&0xF0)==0xE0) {
       return s.size() == 3;
    }
+   return false;
 }
 
 

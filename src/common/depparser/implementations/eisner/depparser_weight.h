@@ -102,7 +102,7 @@ inline long int hash(const std::pair<CTwoWords, int> &ptw) {return ptw.first.has
 inline long int hash(const std::pair<CTaggedWord<CTag, TAG_SEPARATOR>, int> &pwi) {return pwi.first.hash()+pwi.second*37;}
 inline long int hash(const std::pair<CTwoTaggedWords, int> &ptwi) {return ptwi.first.hash()+ptwi.second*37;}
 
-};
-};
+}
+}
 
 #endif

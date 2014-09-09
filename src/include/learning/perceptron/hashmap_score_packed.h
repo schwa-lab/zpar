@@ -20,9 +20,9 @@
  *
  *==============================================================*/
 
-#include "score_packed_list.h"
+//#include "score_packed_list.h"
 //#include "score_packed_hash.h"
-//#include "score_packed_array.h"
+#include "score_packed_array.h"
 
 /*===============================================================
  *
@@ -111,7 +111,7 @@ public:
    unsigned count ;
 
 public:
-   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : name(input_name) , initialized(bInitMap) , count(0) , m_zero() , CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) 
+   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) , name(input_name) , initialized(bInitMap) , count(0)
 #ifdef NO_NEG_FEATURE
 , m_positive(this)
 #endif
@@ -126,27 +126,27 @@ public:
    }
 
 #ifdef NO_NEG_FEATURE
-   virtual inline void setPositiveFeature(const CPackedScoreMap &positive) {
+   inline void setPositiveFeature(const CPackedScoreMap &positive) {
       m_positive = &positive;
    }
 
-   virtual inline void addPositiveFeature(const K &key, const unsigned &index) {
+   inline void addPositiveFeature(const K &key, const unsigned &index) {
       (*this)[key][index];
    }
 #endif // define features
 
-   virtual inline void getScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE>&o, const K &key , const int &which ) {
+   inline void getScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE>&o, const K &key , const int &which ) {
       this->find( key , m_zero ).add( o , which );
    }
 
-   virtual inline void updateScore( const K &key , const unsigned &index , const SCORE_TYPE &amount , const int &round ) {
+   inline void updateScore( const K &key , const unsigned &index , const SCORE_TYPE &amount , const int &round ) {
 #ifdef NO_NEG_FEATURE
       if (m_positive->element(key) && (*m_positive)[key].element(index))
 #endif // update can only happen with defined features
       (*this)[ key ].updateCurrent( index , amount , round );
    }
 
-   virtual inline void getOrUpdateScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &out , const K &key , const unsigned &index , const int &which , const SCORE_TYPE &amount=0 , const int &round=0 ) {
+   inline void getOrUpdateScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &out , const K &key , const unsigned &index , const int &which , const SCORE_TYPE &amount=0 , const int &round=0 ) {
 #ifdef NO_NEG_FEATURE
       if ( round == -1 ) {
          addPositiveFeature( key, index );

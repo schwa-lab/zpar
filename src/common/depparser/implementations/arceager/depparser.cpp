@@ -49,14 +49,14 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    assert(n0_index<static_cast<int>(m_lCache.size())); // the next index shouldn't exceed sentence
    const int &n0ld_index = n0_index==-1 ? -1 : item->leftdep(n0_index); // leftmost dep of next
    const int &n0l2d_index = n0ld_index==-1 ? -1 : item->sibling(n0ld_index); // leftmost dep of next
-   const int &ht_index = item->headstackempty() ? -1 : item->headstacktop(); // headstack
-   const int &ht2_index = item->headstacksize()<2 ? -1 : item->headstackitem(item->headstacksize()-2); // headstack 2nd
+   //const int &ht_index = item->headstackempty() ? -1 : item->headstacktop(); // headstack
+   //const int &ht2_index = item->headstacksize()<2 ? -1 : item->headstackitem(item->headstacksize()-2); // headstack 2nd
    static int n1_index;
    static int n2_index;
-   static int n3_index;
+   //static int n3_index;
    n1_index = (n0_index != -1 && n0_index+1<m_lCache.size()) ? n0_index+1 : -1 ;
    n2_index = (n0_index != -1 && n0_index+2<m_lCache.size()) ? n0_index+2 : -1 ;
-   n3_index = (n0_index != -1 && n0_index+3<m_lCache.size()) ? n0_index+3 : -1 ;
+   //n3_index = (n0_index != -1 && n0_index+3<m_lCache.size()) ? n0_index+3 : -1 ;
 
    const CTaggedWord<CTag, TAG_SEPARATOR> &st_word_tag = st_index==-1 ? g_emptyTaggedWord : m_lCache[st_index];
    const CTaggedWord<CTag, TAG_SEPARATOR> &sth_word_tag = sth_index==-1 ? g_emptyTaggedWord : m_lCache[sth_index];
@@ -70,8 +70,8 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    const CTaggedWord<CTag, TAG_SEPARATOR> &n0l2d_word_tag = n0l2d_index==-1 ? g_emptyTaggedWord : m_lCache[n0l2d_index];
    const CTaggedWord<CTag, TAG_SEPARATOR> &n1_word_tag = n1_index==-1 ? g_emptyTaggedWord : m_lCache[n1_index];
    const CTaggedWord<CTag, TAG_SEPARATOR> &n2_word_tag = n2_index==-1 ? g_emptyTaggedWord : m_lCache[n2_index];
-   const CTaggedWord<CTag, TAG_SEPARATOR> &ht_word_tag = ht_index==-1 ? g_emptyTaggedWord : m_lCache[ht_index];
-   const CTaggedWord<CTag, TAG_SEPARATOR> &ht2_word_tag = ht2_index==-1 ? g_emptyTaggedWord : m_lCache[ht2_index];
+   //const CTaggedWord<CTag, TAG_SEPARATOR> &ht_word_tag = ht_index==-1 ? g_emptyTaggedWord : m_lCache[ht_index];
+   //const CTaggedWord<CTag, TAG_SEPARATOR> &ht2_word_tag = ht2_index==-1 ? g_emptyTaggedWord : m_lCache[ht2_index];
 
    const CWord &st_word = st_word_tag.word;
    const CWord &sth_word = sth_word_tag.word;
@@ -85,8 +85,8 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    const CWord &n0l2d_word = n0l2d_word_tag.word;
    const CWord &n1_word = n1_word_tag.word;
    const CWord &n2_word = n2_word_tag.word;
-   const CWord &ht_word = ht_word_tag.word;
-   const CWord &ht2_word = ht2_word_tag.word;
+   //const CWord &ht_word = ht_word_tag.word;
+   //const CWord &ht2_word = ht2_word_tag.word;
 
    const CTag &st_tag = st_word_tag.tag;
    const CTag &sth_tag = sth_word_tag.tag;
@@ -100,8 +100,8 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    const CTag &n0l2d_tag = n0l2d_word_tag.tag;
    const CTag &n1_tag = n1_word_tag.tag;
    const CTag &n2_tag = n2_word_tag.tag;
-   const CTag &ht_tag = ht_word_tag.tag;
-   const CTag &ht2_tag = ht2_word_tag.tag;
+   //const CTag &ht_tag = ht_word_tag.tag;
+   //const CTag &ht2_tag = ht2_word_tag.tag;
 
    const int &st_label = st_index==-1 ? CDependencyLabel::NONE : item->label(st_index);
    const int &sth_label = sth_index==-1 ? CDependencyLabel::NONE : item->label(sth_index);
@@ -568,7 +568,7 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
    }
 
 #ifdef LABELED
-   unsigned long label;
+   //unsigned long label;
    m_lCacheLabel.clear();
    if (bTrain) {
       for (index=0; index<length; ++index) {
@@ -774,9 +774,13 @@ void CDepParser::train( const CDependencyParse &correct , int round ) {
    ++m_nTrainingRound;
    ASSERT(m_nTrainingRound == round, "Training round error") ;
 #endif
+   //std::cout << "round=" << round << std::endl;
+   //if (round > 1)
+      //cast_weights->debugUsage();
+
    work( true , sentence , &outout , correct , 1 , 0 ) ; 
 
-};
+}
 
 /*---------------------------------------------------------------
  *
