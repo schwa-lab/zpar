@@ -140,14 +140,27 @@ inline std::ostream & operator << (std::ostream &os, const CTagSet<CTag, size> &
 // a set of tags -- satisfy the size of CTag but static. use csetofint dynamic
 //
 //=============================================================================
+template <bool A_GREATER, typename T, T A, T B>
+struct _MAX {
+  static constexpr const T value = A;
+};
+
+template <typename T, T A, T B>
+struct _MAX<false, T, A, B> {
+  static constexpr const T value = B;
+};
+
+template <typename T, T A, T B>
+struct MAX : public _MAX<(A > B), T, A, B> { };
+
 
 template<typename CTag>
 class CSetOfTags {
 
 protected:
    typedef unsigned char CBasicType;
-   const static unsigned long basic_size = sizeof(CBasicType)*8;
-   CBasicType m_code[CTag::MAX_COUNT/basic_size+1];
+   static constexpr const unsigned long BASIC_SIZE = sizeof(CBasicType)*8;
+   CBasicType m_code[MAX<size_t, CTag::MAX_COUNT/BASIC_SIZE + 1, 8>::value];
 
 public:
    CSetOfTags() {
@@ -160,18 +173,18 @@ public:
 public:
    void add(const CTag &tag) { 
       const unsigned long &bit = tag.code();
-      m_code[bit/basic_size] |= (static_cast<CBasicType>(1)<<(bit%basic_size)); 
+      m_code[bit/BASIC_SIZE] |= (static_cast<CBasicType>(1)<<(bit%BASIC_SIZE)); 
    }
    void remove(const CTag &tag) { 
       const unsigned long &bit = tag.code();
-      m_code[bit/basic_size] &= ~(static_cast<CBasicType>(1)<<(bit%basic_size)); 
+      m_code[bit/BASIC_SIZE] &= ~(static_cast<CBasicType>(1)<<(bit%BASIC_SIZE)); 
    }
    void clear() { memset(m_code, 0, sizeof(m_code)); }
 
 public:
    bool contains(const CTag &tag) const { 
       const unsigned long &bit = tag.code();
-      return m_code[bit/basic_size] & (static_cast<CBasicType>(1)<<(bit%basic_size)); 
+      return m_code[bit/BASIC_SIZE] & (static_cast<CBasicType>(1)<<(bit%BASIC_SIZE)); 
    }
 
 public:
