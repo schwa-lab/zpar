@@ -111,7 +111,7 @@ namespace TARGET_LANGUAGE {
 
 namespace depparser {
 
-const static unsigned DEP_TABLE_SIZE = (1<<17);//1000121;
+const static unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
 
 //
 // TYPE DEFINITIONS
