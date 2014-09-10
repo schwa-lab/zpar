@@ -158,10 +158,8 @@ public:
    void computeAverage(unsigned long int round) {
       typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
       const iterator end = this->end();
-      count = 0;
       for (iterator it = this->begin(); it != end; ++it) {
          it.second().updateAverage(round) ;
-         ++ count;
       }
    }
 

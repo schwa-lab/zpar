@@ -67,7 +67,7 @@ private:
    CTuple2<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
 
    int m_nTrainingRound;
-   int m_nTotalErrors;
+   unsigned int m_nTotalErrors;
    //bool m_bScoreModified;
    int m_nScoreIndex;
 
@@ -125,6 +125,8 @@ private:
    void arcleft( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;
    void arcright( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;
    void poproot( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;  
+
+   inline unsigned int getTotalTrainingErrors(void) const { return m_nTotalErrors; }
 };
 
 } // namespace TARGET_LANGUAGE
