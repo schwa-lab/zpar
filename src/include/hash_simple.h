@@ -93,7 +93,6 @@ protected:
 public:
    explicit CHashMap(unsigned long TABLE_SIZE) : m_nTableSize(TABLE_SIZE), m_buckets(new CEntry*[m_nTableSize]) { 
       memset(m_buckets, 0, m_nTableSize*sizeof(CEntry*));
-      //getPool(); // ensure that the pool is constructed.
    }
    virtual ~CHashMap() { 
       clear();
@@ -104,11 +103,11 @@ protected:
    CEntry *&getEntry(const K &key) { return m_buckets[hash(key)%m_nTableSize]; }
    CEntry * const &getEntry(const K &key) const { return m_buckets[hash(key)%m_nTableSize]; }
 
-   static CMemoryPool<CEntry> &getPool() { static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
-   static CEntry* &getFreeMemory() { static CEntry* c_free = 0; return c_free; }
+   static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
+   static CEntry* &getFreeMemory() { thread_local static CEntry* c_free = 0; return c_free; }
    
    CEntry *allocate() {
-      static CEntry *retval;
+      thread_local static CEntry *retval;
       CEntry* &c_freed = getFreeMemory();
       if (c_freed) {
          retval = c_freed;
@@ -204,7 +203,7 @@ public:
       return false;
    }
    void clear() {
-      static V value;
+      thread_local static V value;
       CEntry * tail = 0;
       for (unsigned i = 0; i < m_nTableSize; ++i) {
          if (m_buckets[i]) {

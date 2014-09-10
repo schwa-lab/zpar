@@ -78,6 +78,10 @@ void auto_train(const std::string &sInputFile, const std::string &sFeatureFile, 
     parser.finishtraining();
     std::cout << "Done. " << std::endl;
   }
+
+  // Free up the sentence memory.
+  for (CDependencyParse *sent : sentences)
+    delete sent;
 }
 
 /*===============================================================

@@ -156,7 +156,7 @@ protected:
    CEntry *&getEntry(const K &key) { return m_buckets[hash(key)%TABLE_SIZE]; }
    CEntry * const &getEntry(const K &key) const { return m_buckets[hash(key)%TABLE_SIZE]; }
 
-   static CMemoryPool<CEntry> &getPool() { static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
+   static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
 
 public:
    V &operator[] (const K &key) { 
@@ -281,9 +281,9 @@ public:
 template <typename K, typename V, unsigned TABLE_SIZE>
 std::istream & operator >> (std::istream &is, CSmallHashMap<K, V, TABLE_SIZE> &score_map) {
    if (!is) return is ;
-   static std::string s ;
-   static K key;
-   static V value;
+   std::string s ;
+   K key;
+   V value;
    assert(score_map.empty());
    is >> s;
    ASSERT(s=="{"||s=="{}", "The small hashmap does not start with {");

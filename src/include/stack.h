@@ -120,12 +120,12 @@ public:
    }
 
 protected:
-   static CMemoryPool<CEntry> &getPool() { static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
-   static CEntry* &getFreeMemory() { static CEntry* c_free = 0; return c_free; }
+   static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
+   static CEntry* &getFreeMemory() { thread_local static CEntry* c_free = 0; return c_free; }
 
 public:
    CEntry *allocate() {
-      static CEntry *retval;
+      thread_local static CEntry *retval;
       CEntry * &c_free = getFreeMemory();
       if (c_free) {
          retval = c_free;
@@ -146,7 +146,7 @@ public:
       m_top = entry;
    }
    void pop(V&ret) const {
-      static V empty;
+      thread_local static V empty;
       ret = m_top->m_value;
       CEntry *&c_free = getFreeMemory();
       CEntry *entry = m_top->m_next;
@@ -171,7 +171,7 @@ public:
    void clear() {
       if (!m_top) return;
       CEntry *tail = m_top;
-      static V empty;
+      thread_local static V empty;
       while (tail->m_next) {
          tail->m_value = empty;
          tail = tail->m_next;
@@ -226,8 +226,8 @@ public:
 template <typename V>
 std::istream & operator >> (std::istream &is, CStack<V> &score_map) {
    if (!is) return is ;
-   static std::string s ;
-   static V value;
+   std::string s ;
+   V value;
    is >> s;
    ASSERT(s=="{"||s=="{}", "The stack does not start with {");
    if (s=="{}")
@@ -246,7 +246,7 @@ std::istream & operator >> (std::istream &is, CStack<V> &score_map) {
 
 template <typename V>
 std::ostream & operator << (std::ostream &os, const CStack<V> &score_map) {
-   static CStack<V> buffer;
+   CStack<V> buffer;
    os << "{";
    if (score_map.empty()) {
       os << "}"; // empty {}

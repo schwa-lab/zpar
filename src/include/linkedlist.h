@@ -120,12 +120,12 @@ public:
    }
 
 protected:
-   static CMemoryPool<CEntry> &getPool() { static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
-   static CEntry* &getFreeMemory() { static CEntry* c_free = 0; return c_free; }
+   static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
+   static CEntry* &getFreeMemory() { thread_local static CEntry* c_free = 0; return c_free; }
 
 public:
    CEntry *allocate() {
-      static CEntry *retval;
+      thread_local static CEntry *retval;
       CEntry * &c_free = getFreeMemory();
       if (c_free) {
          retval = c_free;
@@ -211,7 +211,7 @@ public:
    void clear() {
       if (!m_buckets) return;
       CEntry *tail = m_buckets;
-      static V empty;
+      thread_local static V empty;
       while (tail->m_next) {
          tail->m_value = empty;
          tail = tail->m_next;
