@@ -79,7 +79,7 @@ private:
 
 };
 
-}; // namespace TARGET_LANGUAGE
+} // namespace TARGET_LANGUAGE
 
 #endif
 

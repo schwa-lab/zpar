@@ -26,8 +26,8 @@ namespace depparser {
 
 #include "state.h"
 
-}; // namespace depparser
-};
+} // namespace depparser
+}
 
 #include "depparser_weight.h"
 
@@ -119,7 +119,7 @@ private:
 
 };
 
-}; // namespace TARGET_LANGUAGE
+} // namespace TARGET_LANGUAGE
 
 #endif
 

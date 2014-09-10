@@ -236,6 +236,6 @@ inline bool canBeRoot(const unsigned &tag) {
    return true;
 }
 
-};
+}
 
 #endif

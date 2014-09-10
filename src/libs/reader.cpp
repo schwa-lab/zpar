@@ -93,7 +93,7 @@ bool CSentenceReader::readRawSentence(CStringVector *vReturn, bool bSkipEmptyLin
       TRACE((unsigned long int)(cTemp))
    }
    return bReadSomething;
-};
+}
 
 /*---------------------------------------------------------------
  *
@@ -142,7 +142,7 @@ bool CSentenceReader::readSegmentedSentence(CStringVector *vReturn, bool bSkipEm
       sWord = "";
    }
    return bReadSomething;
-};
+}
 
 /*---------------------------------------------------------------
  *
@@ -224,7 +224,7 @@ bool CSentenceReader::readTaggedSentence(CTwoStringVector *vReturn, bool bSkipEm
       sWord = "";
    } 
    return bReadSomething;
-};
+}
 
 /*---------------------------------------------------------------
  * tokenizeWord - tokenize a word 
@@ -390,5 +390,5 @@ bool CSentenceReader::readSegmentedSentenceAndTokenize(CStringVector *vReturn, b
       sWord = "";
    }
    return bReadSomething;
-};
+}
 

@@ -79,7 +79,7 @@ void process(const std::string sInputFile, const std::string sOutputFile, const 
  
    // Read the next example
    if (bCoNLL)
-      bReadSuccessful = ( (*is) >> input_conll );
+      bReadSuccessful = static_cast<bool>( (*is) >> input_conll );
    else
       bReadSuccessful = input_reader->readTaggedSentence(&input_sent, false, TAG_SEPARATOR);
    while( bReadSuccessful ) {
@@ -128,7 +128,7 @@ void process(const std::string sInputFile, const std::string sOutputFile, const 
       
       // Read the next example
       if (bCoNLL)
-         bReadSuccessful = ( (*is) >> input_conll );
+         bReadSuccessful = static_cast<bool>( (*is) >> input_conll );
       else
          bReadSuccessful = input_reader->readTaggedSentence(&input_sent, false, TAG_SEPARATOR);
    }

@@ -6,7 +6,7 @@ const std::string &wordToString(const CWord &w) {
 }
 inline CWord stringToWord(const std::string &s) { // this method is unecessary, for word can be assigned by a std::string
    return CWord(s);
-};
+}
 
 // bigram word definition
 typedef CBigram<CWord> CTwoWords;

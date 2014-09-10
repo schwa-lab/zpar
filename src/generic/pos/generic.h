@@ -99,7 +99,7 @@ public:
    bool closed() const { return false; }
 }; 
 
-};
+}
 
 inline const unsigned long &hash(const generic::CTag &tag) {return tag.code(); }
 

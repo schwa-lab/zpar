@@ -83,7 +83,7 @@ public:
    virtual void updateScores(const CTwoStringVector* tagged, const CTwoStringVector* correct, unsigned long round) = 0;
 };
 
-}; // namespace chinese
+} // namespace chinese
 
 #endif
 

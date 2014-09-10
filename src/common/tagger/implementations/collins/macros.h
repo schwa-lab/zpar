@@ -19,7 +19,7 @@ const int AGENDA_SIZE = 8;
 //
 const int MAX_SENTENCE_SIZE = 1024; // restrict size of sentences 
 
-};
+}
 
 }
 

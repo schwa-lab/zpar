@@ -111,7 +111,7 @@ namespace TARGET_LANGUAGE {
 
 namespace depparser {
 
-const static unsigned DEP_TABLE_SIZE = (1<<17);//1000121;
+const static unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
 
 //
 // TYPE DEFINITIONS
@@ -377,9 +377,96 @@ public:
    void computeAverageFeatureWeights(int round);
    SCORE_TYPE dotProduct(const CWeight &w);
  
+    void debugUsage(void) const {
+std::cout << "m_mapSTw "; m_mapSTw.debugUsage();
+std::cout << "m_mapSTt "; m_mapSTt.debugUsage();
+std::cout << "m_mapSTwt "; m_mapSTwt.debugUsage();
+std::cout << "m_mapN0w "; m_mapN0w.debugUsage();
+std::cout << "m_mapN0t "; m_mapN0t.debugUsage();
+std::cout << "m_mapN0wt "; m_mapN0wt.debugUsage();
+std::cout << "m_mapN1w "; m_mapN1w.debugUsage();
+std::cout << "m_mapN1t "; m_mapN1t.debugUsage();
+std::cout << "m_mapN1wt "; m_mapN1wt.debugUsage();
+std::cout << "m_mapN2w "; m_mapN2w.debugUsage();
+std::cout << "m_mapN2t "; m_mapN2t.debugUsage();
+std::cout << "m_mapN2wt "; m_mapN2wt.debugUsage();
+std::cout << "m_mapSTHw "; m_mapSTHw.debugUsage();
+std::cout << "m_mapSTHt "; m_mapSTHt.debugUsage();
+std::cout << "m_mapSTi "; m_mapSTi.debugUsage();
+std::cout << "m_mapSTHHw "; m_mapSTHHw.debugUsage();
+std::cout << "m_mapSTHHt "; m_mapSTHHt.debugUsage();
+std::cout << "m_mapSTHi "; m_mapSTHi.debugUsage();
+std::cout << "m_mapSTLDw "; m_mapSTLDw.debugUsage();
+std::cout << "m_mapSTLDt "; m_mapSTLDt.debugUsage();
+std::cout << "m_mapSTLDi "; m_mapSTLDi.debugUsage();
+std::cout << "m_mapSTRDw "; m_mapSTRDw.debugUsage();
+std::cout << "m_mapSTRDt "; m_mapSTRDt.debugUsage();
+std::cout << "m_mapSTRDi "; m_mapSTRDi.debugUsage();
+std::cout << "m_mapN0LDw "; m_mapN0LDw.debugUsage();
+std::cout << "m_mapN0LDt "; m_mapN0LDt.debugUsage();
+std::cout << "m_mapN0LDi "; m_mapN0LDi.debugUsage();
+std::cout << "m_mapSTL2Dw "; m_mapSTL2Dw.debugUsage();
+std::cout << "m_mapSTL2Dt "; m_mapSTL2Dt.debugUsage();
+std::cout << "m_mapSTL2Di "; m_mapSTL2Di.debugUsage();
+std::cout << "m_mapSTR2Dw "; m_mapSTR2Dw.debugUsage();
+std::cout << "m_mapSTR2Dt "; m_mapSTR2Dt.debugUsage();
+std::cout << "m_mapSTR2Di "; m_mapSTR2Di.debugUsage();
+std::cout << "m_mapN0L2Dw "; m_mapN0L2Dw.debugUsage();
+std::cout << "m_mapN0L2Dt "; m_mapN0L2Dt.debugUsage();
+std::cout << "m_mapN0L2Di "; m_mapN0L2Di.debugUsage();
+std::cout << "m_mapHTw "; m_mapHTw.debugUsage();
+std::cout << "m_mapHTt "; m_mapHTt.debugUsage();
+std::cout << "m_mapHTwt "; m_mapHTwt.debugUsage();
+std::cout << "m_mapSTwtN0wt "; m_mapSTwtN0wt.debugUsage();
+std::cout << "m_mapSTwtN0w "; m_mapSTwtN0w.debugUsage();
+std::cout << "m_mapSTwN0wt "; m_mapSTwN0wt.debugUsage();
+std::cout << "m_mapSTtN0wt "; m_mapSTtN0wt.debugUsage();
+std::cout << "m_mapSTwtN0t "; m_mapSTwtN0t.debugUsage();
+std::cout << "m_mapSTwN0w "; m_mapSTwN0w.debugUsage();
+std::cout << "m_mapSTtN0t "; m_mapSTtN0t.debugUsage();
+std::cout << "m_mapN0tN1t "; m_mapN0tN1t.debugUsage();
+std::cout << "m_mapN0tN1tN2t "; m_mapN0tN1tN2t.debugUsage();
+std::cout << "m_mapSTtN0tN1t "; m_mapSTtN0tN1t.debugUsage();
+std::cout << "m_mapSTtN0tN0LDt "; m_mapSTtN0tN0LDt.debugUsage();
+std::cout << "m_mapN0tN0LDtN0L2Dt "; m_mapN0tN0LDtN0L2Dt.debugUsage();
+std::cout << "m_mapSTHtSTtN0t "; m_mapSTHtSTtN0t.debugUsage();
+std::cout << "m_mapHTtHT2tN0t "; m_mapHTtHT2tN0t.debugUsage();
+std::cout << "m_mapSTHHtSTHtSTt "; m_mapSTHHtSTHtSTt.debugUsage();
+std::cout << "m_mapSTtSTLDtN0t "; m_mapSTtSTLDtN0t.debugUsage();
+std::cout << "m_mapSTtSTLDtSTL2Dt "; m_mapSTtSTLDtSTL2Dt.debugUsage();
+std::cout << "m_mapSTtSTRDtN0t "; m_mapSTtSTRDtN0t.debugUsage();
+std::cout << "m_mapSTtSTRDtSTR2Dt "; m_mapSTtSTRDtSTR2Dt.debugUsage();
+std::cout << "m_mapSTwd "; m_mapSTwd.debugUsage();
+std::cout << "m_mapSTtd "; m_mapSTtd.debugUsage();
+std::cout << "m_mapN0wd "; m_mapN0wd.debugUsage();
+std::cout << "m_mapN0td "; m_mapN0td.debugUsage();
+std::cout << "m_mapSTwN0wd "; m_mapSTwN0wd.debugUsage();
+std::cout << "m_mapSTtN0td "; m_mapSTtN0td.debugUsage();
+std::cout << "m_mapSTwra "; m_mapSTwra.debugUsage();
+std::cout << "m_mapSTtra "; m_mapSTtra.debugUsage();
+std::cout << "m_mapSTwla "; m_mapSTwla.debugUsage();
+std::cout << "m_mapSTtla "; m_mapSTtla.debugUsage();
+std::cout << "m_mapN0wla "; m_mapN0wla.debugUsage();
+std::cout << "m_mapN0tla "; m_mapN0tla.debugUsage();
+std::cout << "m_mapSTwrp "; m_mapSTwrp.debugUsage();
+std::cout << "m_mapSTtrp "; m_mapSTtrp.debugUsage();
+std::cout << "m_mapSTwlp "; m_mapSTwlp.debugUsage();
+std::cout << "m_mapSTtlp "; m_mapSTtlp.debugUsage();
+std::cout << "m_mapN0wlp "; m_mapN0wlp.debugUsage();
+std::cout << "m_mapN0tlp "; m_mapN0tlp.debugUsage();
+std::cout << "m_mapSTl "; m_mapSTl.debugUsage();
+std::cout << "m_mapSTc "; m_mapSTc.debugUsage();
+std::cout << "m_mapSTf "; m_mapSTf.debugUsage();
+std::cout << "m_mapN0l "; m_mapN0l.debugUsage();
+std::cout << "m_mapN0c "; m_mapN0c.debugUsage();
+std::cout << "m_mapN0f "; m_mapN0f.debugUsage();
+std::cout << "m_mapN1l "; m_mapN1l.debugUsage();
+std::cout << "m_mapN1c "; m_mapN1c.debugUsage();
+std::cout << "m_mapN1f "; m_mapN1f.debugUsage();
+    }
 };
 
-};
-};
+}
+}
 
 #endif
