@@ -23,22 +23,19 @@ const int DEPENDENCY_LINK_NO_HEAD = -1;
  *==============================================================*/
 
 class CDependencyTreeNode {
-
 public:
    std::string word;
    std::string tag;
    int head;
 
 public:
-   CDependencyTreeNode() : word(""), tag(""), head(DEPENDENCY_LINK_NO_HEAD) { }
-   CDependencyTreeNode( const std::string &w, const std::string &t, const int &h) : word(w), tag(t), head(h) { }
-   virtual ~CDependencyTreeNode() {}
+   CDependencyTreeNode() : head(DEPENDENCY_LINK_NO_HEAD) { }
+   CDependencyTreeNode(const std::string &w, const std::string &t, const int h=DEPENDENCY_LINK_NO_HEAD) : word(w), tag(t), head(h) { }
 
 public:
-   bool operator ==(const CDependencyTreeNode &item) const { 
+   inline bool operator ==(const CDependencyTreeNode &item) const { 
       return word == item.word && tag == item.tag && head == item.head; 
    }
-
 };
 
 //==============================================================
