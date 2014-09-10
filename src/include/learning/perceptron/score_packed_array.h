@@ -22,6 +22,7 @@ template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScore {
 protected:
    CScore<SCORE_TYPE> scores[PACKED_SIZE];
+
 public:
    const SCORE_TYPE score(const unsigned &index, const int &n) const {
       return scores[index].score(n);

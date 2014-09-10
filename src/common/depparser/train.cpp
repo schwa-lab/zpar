@@ -22,7 +22,7 @@ using namespace TARGET_LANGUAGE;
  *
  *===============================================================*/
 
-void auto_train(const std::string &sOutputFile, const std::string &sFeatureFile, const bool &bRules, const std::string &sSuperPath, const bool &bCoNLL, const bool &bExtract, const std::string &sMetaPath) {
+void auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const bool &bRules, const std::string &sSuperPath, const bool &bCoNLL, const bool &bExtract, const std::string &sMetaPath) {
 
    std::cout << "Training iteration is started..." << std::endl ; std::cout.flush();
 
@@ -33,7 +33,7 @@ void auto_train(const std::string &sOutputFile, const std::string &sFeatureFile,
       parser.loadMeta(sMetaPath);
 #endif
 
-   std::ifstream is(sOutputFile.c_str());
+   std::ifstream is(sInputFile.c_str());
    assert(is.is_open());
 
    CDependencyParse ref_sent; 

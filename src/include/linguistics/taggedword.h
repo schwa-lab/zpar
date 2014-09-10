@@ -27,7 +27,6 @@
 // the word class, which includes hash
 template <typename CTag, char sTagSep>
 class CTaggedWord {
-
 public:
    const static char sSeparator = sTagSep;
 
@@ -41,7 +40,7 @@ public:
    CTaggedWord(const std::string &s, const std::string &t) : word(s), tag(t) { }
    CTaggedWord(const CWord &w, const CTag &t) : word(w), tag(t) { }
    CTaggedWord(const CTaggedWord &w) : word(w.word), tag(w.tag) { }
-   virtual ~CTaggedWord() {}
+   ~CTaggedWord() {}
 
 public:
    inline bool operator == (const CTaggedWord &w) const { 

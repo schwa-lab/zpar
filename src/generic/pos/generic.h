@@ -39,7 +39,6 @@ class CTag {
             lookup("-BEGIN-");
             lookup("-END-");
          } 
-         virtual ~CTagTokenizer() {}
    };
 
 public:

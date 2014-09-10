@@ -37,7 +37,6 @@ std::ostream & operator << (std::ostream &os, const CScore<SCORE_TYPE> &score) {
 
 template<typename SCORE_TYPE>
 class CScore {
-
 public:
    enum SCORE_AVERAGE { eNonAverage=0 , eAverage=1 } ;
 
@@ -47,23 +46,49 @@ protected:
    int lastupdate; // the round number for the last update action
 
 public:
-   CScore() : current(0), total(0), lastupdate(0) {/*current=0; total=0; lastupdate=0;*/}
-   CScore(const CScore &s1) : current(s1.current), total(s1.total), lastupdate(s1.lastupdate) {/*current=s1.current; total=s1.total; lastupdate=s1.lastupdate;*/}
-   virtual ~CScore() {};
+   CScore() : current(0), total(0), lastupdate(0) { }
+   CScore(const CScore &s1) : current(s1.current), total(s1.total), lastupdate(s1.lastupdate) { }
+   ~CScore() {};
 
-   void reset() {current=0; total=0; lastupdate=0;}
-   bool empty() const { return current==0 && total==0 && lastupdate==0; }
-   bool zero() const { return current==0 && total==0; }
-   void operator ++ (int) {current++;}
-   void operator -- (int) {current--;}
-   SCORE_TYPE &operator [] (const int &n) {if (n==eNonAverage) return current; else if (n==eAverage) return total; else { THROW("SCore only has two component, " << n << " required."); }}
-   const SCORE_TYPE &operator [] (const int &n) const {if (n==eNonAverage) return current; else if (n==eAverage) return total; else { THROW("SCore only has two component, " << n << " required."); }}
-   const SCORE_TYPE score(const int &n=eNonAverage) const {if (n==eNonAverage) return current; return total;}
-   void updateCurrent(const SCORE_TYPE &added, const int &round=0) {assert(round>=lastupdate); if(round>lastupdate){updateAverage(round);lastupdate=round;}current+=added;total+=added; }
-   void scaleCurrent(const SCORE_TYPE &scale, const int &round=0) {assert(round>=lastupdate); if(round>lastupdate){updateAverage(round);lastupdate=round;}total-=current;current*=scale;total+=current;}
+   inline void reset() { current = 0; total = 0; lastupdate = 0; }
+   inline bool empty() const { return current==0 && total==0 && lastupdate==0; }
+   inline bool zero() const { return current==0 && total==0; }
+   inline void operator ++ (int) { current++; }
+   inline void operator -- (int) { current--; }
+
+   inline SCORE_TYPE &operator [] (const int &n) { return (n == eNonAverage) ? current : total; }
+   inline const SCORE_TYPE &operator [] (const int &n) const { return (n == eNonAverage) ? current : total; }
+
+   inline const SCORE_TYPE score(const int &n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
+
+   void updateAverage(const int &round=0) {
+     if (round > lastupdate)
+       total += current*(round-lastupdate);
+     else if (round < lastupdate)
+       std::cout << "Round is: "<<round<<"<"<<lastupdate<<std::endl;
+   }
+
+   void updateCurrent(const SCORE_TYPE &added, const int &round=0) {
+     assert(round >= lastupdate);
+     if (round > lastupdate) {
+       updateAverage(round);
+       lastupdate=round;
+     }
+     current += added;
+     total += added;
+   }
+
+   void scaleCurrent(const SCORE_TYPE &scale, const int &round=0) {
+     assert(round >= lastupdate);
+     if (round > lastupdate) {
+       updateAverage(round);
+       lastupdate=round;
+     }
+     total -= current;
+     current *= scale;
+     total += current;
+   }
    //void updateCurrent(SCORE_TYPE added, int round=0) {if (round>=lastupdate){updateAverage(round);total+=added;lastupdate=round;}current+=added; }
-   void updateAverage(const int &round=0) {if (round>lastupdate)total += current*(round-lastupdate);
-   else if (round<lastupdate) std::cout << "Round is: "<<round<<"<"<<lastupdate<<std::endl;}
 };
 
 #endif

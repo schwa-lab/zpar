@@ -30,7 +30,6 @@ private:
    class CStringTokenizer : public CTokenizer<std::string, 65537> {
       public: 
          CStringTokenizer() : CTokenizer<std::string, 65537>(1/*reserve for the other unknown */) {lookup("");} 
-         virtual ~CStringTokenizer() {}
    };
    
 protected:

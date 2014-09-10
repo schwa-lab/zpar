@@ -96,7 +96,6 @@ std::ostream & operator << (std::ostream &os, CPackedScoreType<SCORE_TYPE, PACKE
 
 template <typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScoreMap : public CHashMap< K , CPackedScore<SCORE_TYPE, PACKED_SIZE> > {
-
 protected:
    const CPackedScore<SCORE_TYPE, PACKED_SIZE> m_zero ;
 
@@ -107,11 +106,10 @@ protected:
 
 public:
    const std::string name ;
-   bool initialized ;
    unsigned count ;
 
 public:
-   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) , name(input_name) , initialized(bInitMap) , count(0)
+   CPackedScoreMap(std::string input_name, int TABLE_SIZE) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE) , name(input_name) , count(0)
 #ifdef NO_NEG_FEATURE
 , m_positive(this)
 #endif
@@ -120,11 +118,6 @@ public:
    }
 
 public:
-   virtual inline void init() {
-      initialized = true;
-      CHashMap<K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::init();
-   }
-
 #ifdef NO_NEG_FEATURE
    inline void setPositiveFeature(const CPackedScoreMap &positive) {
       m_positive = &positive;
@@ -163,11 +156,11 @@ public:
    }
 
    void computeAverage(unsigned long int round) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
       count = 0;
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-      while (it != this->end()) {
+      for (iterator it = this->begin(); it != end; ++it) {
          it.second().updateAverage(round) ;
-         ++ it;
          ++ count;
       }
    }
@@ -182,10 +175,10 @@ public:
 
    void clear() {
       // first clear each ste of packed scores so that the memory will be freed
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-      while (it != this->end()) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
          it.second().clear() ;
-         ++ it;
       }
       // second clear hash
       CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::clear();
@@ -193,42 +186,42 @@ public:
 
 public:
    void addCurrent(CPackedScoreMap &mp, const int &round) {
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = mp.begin();
-      while (it != mp.end()) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
          (*this)[it.first()].addCurrent(it.second(), round);
-         ++ it;
       }
    }
    void subtractCurrent(CPackedScoreMap &mp, const int &round) {
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = mp.begin();
-      while (it != mp.end()) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
          (*this)[it.first()].subtractCurrent(it.second(), round);
-         ++ it;
       }
    }
    void scaleCurrent(const SCORE_TYPE &scale, const int &round) {
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-      while (it != this->end()) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
          it.second().scaleCurrent(scale, round);
-         ++it;
       }
    }
    SCORE_TYPE squareNorm() {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
       SCORE_TYPE retval = 0;
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-      while (it != this->end()) {
+      for (iterator it = this->begin(); it != end; ++it) {
          retval += it.second().squareNorm();
-         ++it;
       }
       return retval;
    }
 
    SCORE_TYPE dotProduct(CPackedScoreMap &mp) {
       SCORE_TYPE retval = 0;
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-      while (it != this->end()) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
          retval += it.second().dotProduct(mp.find(it.first(), m_zero));
-         ++ it;
       }
       return retval;
    }
@@ -254,21 +247,6 @@ std::istream & operator >> (std::istream &is, CPackedScoreMap<K, SCORE_TYPE, PAC
    // match name
    const unsigned &size = score_map.name.size();
    if ( s.substr(0, size)!=score_map.name ) THROW("hashmap_score_packed.h: the expected score map " << score_map.name << " is not matched.");
-   if ( !score_map.initialized ) {
-      // match size
-      if ( s.size()>size ) {
-         unsigned table_size = 0;
-         std::istringstream buffer(s.substr(size));
-         buffer >> table_size;
-         if (table_size) {
-            unsigned hash_size = 1;
-            while (hash_size<table_size) hash_size <<= 1;
-            hash_size <<= 1;
-            score_map.resize(hash_size);
-         }
-      }
-      score_map.init();
-   }
    is >> static_cast< CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> > &>(score_map) ;
    return is ;
 }
@@ -282,13 +260,13 @@ std::ostream & operator << (std::ostream &os, CPackedScoreMap<K, SCORE_TYPE, PAC
    else
       os << score_map.name << std::endl ;
 
-   typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = score_map.begin() ;
-   while ( it != score_map.end() ) {
+   typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+   const iterator end = score_map.end();
+   for (iterator it = score_map.begin(); it != end; ++it) {
 #ifndef NO_NEG_FEATURE
       if ( !it.second().empty() ) 
 #endif // do not write zero scores if allow negative scores
          os << it.first() << "\t:\t" << it.second() << std::endl ;
-      ++ it;
    }
    os << std::endl ;
    return os ;

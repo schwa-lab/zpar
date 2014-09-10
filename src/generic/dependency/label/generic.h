@@ -36,7 +36,6 @@ private:
             lookup("-NONE-");
             lookup("-ROOT-");
          } 
-         virtual ~CDependencyLabelTokenizer() {}
    };
 
 public:

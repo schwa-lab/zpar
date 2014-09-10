@@ -23,7 +23,6 @@ class CGenericTagset : public CTokenizer<std::string, 251> {
       CGenericTagset() : CTokenizer<std::string, 251>(0) {
          lookup("-NONE-");
       } 
-      virtual ~CGenericTagset() {}
 };
 
 /*===============================================================

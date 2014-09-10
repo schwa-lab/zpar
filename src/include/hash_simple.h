@@ -24,18 +24,10 @@ static const unsigned long POOL_BLOCK_SIZE=(1<<16);
 
 template <typename K, typename V>
 class CHashMap {
-
 protected:
-   unsigned long int m_nTableSize;
-
-protected:
-
    //===============================================================
-   //
    // Hash table entry
-   //
    //===============================================================
-
    class CEntry {
    public:
       K m_key;
@@ -44,20 +36,15 @@ protected:
 
    public:
       CEntry() : m_key(), m_value(), m_next(0) {}
-      CEntry(const K &key) : m_key(key), m_value(), m_next(0) {}
+      explicit CEntry(const K &key) : m_key(key), m_value(), m_next(0) {}
       CEntry(const K &key, const V &value) : m_key(key), m_value(value), m_next(0){}
    };
 
 public:
-
    //===============================================================
-   //
    // Hash table iterator class
-   //
    //===============================================================
-
    class iterator {
-
    private:
       unsigned long int m_nBucket;
       CHashMap<K, V> *m_parent;
@@ -100,30 +87,17 @@ public:
    //===============================================================
 
 protected:
-   CEntry **m_buckets;
+   const unsigned long int m_nTableSize;
+   CEntry **const m_buckets;
 
 public:
-   CHashMap(unsigned long TABLE_SIZE, bool initialize=true) : m_nTableSize(TABLE_SIZE), m_buckets(0) { 
-      getPool(); // ensure that the pool is constructed.
-      if (initialize) init();
-   }
-   CHashMap(const CHashMap<K, V>& wordmap) : m_nTableSize(0) { 
-      THROW("CHashMap does not support copy constructor!"); 
+   explicit CHashMap(unsigned long TABLE_SIZE) : m_nTableSize(TABLE_SIZE), m_buckets(new CEntry*[m_nTableSize]) { 
+      memset(m_buckets, 0, m_nTableSize*sizeof(CEntry*));
+      //getPool(); // ensure that the pool is constructed.
    }
    virtual ~CHashMap() { 
       clear();
       delete [] m_buckets;
-   }
-   void resize(const unsigned long &size) {
-      ASSERT(m_buckets==0, "Cannot resize hashmap after initialization");
-      m_nTableSize = size;
-   }
-   void init() {
-      ASSERT(m_buckets==0, "Cannot initialize hashmap after initialization");
-      m_buckets = new CEntry*[m_nTableSize] ;
-//      for (int i=0; i<m_nTableSize; ++i) 
-//         m_buckets[i]=0;
-      memset(m_buckets, 0, m_nTableSize*sizeof(CEntry*));
    }
 
 protected:

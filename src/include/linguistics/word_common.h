@@ -16,7 +16,7 @@ inline std::istream & operator >> (std::istream &is, CWord &w) {
    std::string s ;
    is >> s ;
    assert( s[0]=='[' && s[s.size()-1] == ']') ;
-   w = s.substr(1,s.size()-2) ;
+   w.load(s.substr(1,s.size()-2));
    return is ;
 }
 

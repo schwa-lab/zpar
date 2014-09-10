@@ -22,17 +22,15 @@ namespace depparser {
  *==============================================================*/
 
 class CWeightBase {
-
 protected:
    bool m_bTrain;
    bool m_bModified;
-   std::string m_sRecordPath;
-
    bool m_bRules;
+   std::string m_sRecordPath;
 
 public:
    // CONSTRUCTOR 
-   CWeightBase(const std::string &sFile, bool bTrain) : m_bTrain(bTrain) , m_sRecordPath(sFile) , m_bRules(false) { }
+   CWeightBase(const std::string &sFile, bool bTrain) : m_bTrain(bTrain) , m_bRules(false) , m_sRecordPath(sFile) { }
    virtual ~CWeightBase() { }
 
    void setRules(const bool &bRules) {
@@ -45,7 +43,6 @@ public:
 
    virtual void loadScores() = 0 ;
    virtual void saveScores() = 0 ; 
-
 };
 
 }

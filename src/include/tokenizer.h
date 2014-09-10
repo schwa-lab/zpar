@@ -29,9 +29,11 @@ class CTokenizer {
       std::vector<K> m_vecKeys;
       unsigned long m_nWaterMark;
       unsigned long m_nStartingToken;
+
    public:
-      CTokenizer(unsigned nTokenStartsFrom=0) : m_mapTokens(TOKENIZER_SIZE), m_nWaterMark(nTokenStartsFrom), m_nStartingToken(nTokenStartsFrom) {}
-      virtual ~CTokenizer() {}
+      explicit CTokenizer(unsigned nTokenStartsFrom=0) : m_mapTokens(TOKENIZER_SIZE), m_nWaterMark(nTokenStartsFrom), m_nStartingToken(nTokenStartsFrom) {}
+      ~CTokenizer() {}
+
       unsigned long lookup(const K &key) {
          unsigned long retval; 
          bool bNew = m_mapTokens.findorinsert(key, m_nWaterMark, retval); 
@@ -39,7 +41,8 @@ class CTokenizer {
             ++m_nWaterMark; 
             assert(m_nWaterMark!=0); // there is no overflow on the number of tokens!
             m_vecKeys.push_back(key);
-         } return retval;
+         }
+         return retval;
       }
       unsigned long find(const K &key, const unsigned long &val) const {return m_mapTokens.find(key, val);}
       const K &key(const unsigned long &token) const {assert( token < m_vecKeys.size()+m_nStartingToken ); return m_vecKeys[token-m_nStartingToken];}

@@ -40,7 +40,6 @@ protected:
             lookup("-NONE-");
             lookup("-BEGIN-");
          } 
-         virtual ~CConstituentLabelTokenizer() {}
    };
 
 public:
