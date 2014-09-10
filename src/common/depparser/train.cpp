@@ -9,6 +9,8 @@
  *                                          *
  ****************************************************************/
 #include <algorithm>
+#include <sstream>
+#include <thread>
 
 #include "definitions.h"
 #include "depparser.h"
@@ -37,6 +39,8 @@ read_input_file(const std::string &path, std::vector<CDependencyParse *> &senten
  *
  *===============================================================*/
 void auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const bool &bRules, const bool &bExtract, const std::string &sMetaPath, const unsigned int training_iterations) {
+  const unsigned int NTHREADS = 2;
+
   // Read in the input.
   std::cout << "Reading in the training data..." << std::flush;
   std::vector<CDependencyParse *> sentences;
@@ -45,41 +49,75 @@ void auto_train(const std::string &sInputFile, const std::string &sFeatureFile, 
 
   // Run each iteration of the perceptron learning.
   for (unsigned int iteration = 0; iteration != training_iterations; ++iteration) {
-    // Construct the parser.
-    CDepParser parser(sFeatureFile, true, false);
-    parser.setRules(bRules);
-#ifdef SUPPORT_META_FEATURE_DEFINITION
-    if (!sMetaPath.empty() )
-      parser.loadMeta(sMetaPath);
-#endif
-
     // Shuffle the sentence order between each iteration.
     std::random_shuffle(sentences.begin(), sentences.end());
 
-    // Train on each sentence.
-    std::cout << "Training iteration " << iteration << " has started..." << std::endl ; std::cout.flush();
-    for (auto n = 0; n != sentences.size(); ++n) {
-      CDependencyParse &sent = *sentences[n];
-      TRACE("Sentence " << n);
-
-      if (bExtract) {
-#ifdef SUPPORT_FEATURE_EXTRACTION
-        parser.extract_features(sent);
-#else
-        ASSERT(false, "Internal error: feature extract not allowed but option set.");
-#endif
-      }
-      else {
-        parser.train(sent, n + 1);
+    // Partition the sentences into shards.
+    std::vector<std::vector<CDependencyParse *>> sharded_sentences(NTHREADS);
+    {
+      unsigned int t = 0;
+      for (CDependencyParse *sent : sentences) {
+        sharded_sentences[t++].push_back(sent);
+        if (t == NTHREADS)
+          t = 0;
       }
     }
 
-    // Tell the parser that this training round has finished.
-    parser.finishtraining();
+    // Construct all of the parsers.
+    std::vector<CDepParser *> parsers(NTHREADS);
+    for (unsigned int t = 0; t != NTHREADS; ++t) {
+      std::ostringstream path;
+      path << sFeatureFile << "." << t;
+      CDepParser *parser = new CDepParser(path.str(), true, false);
+      parser->setRules(bRules);
+#ifdef SUPPORT_META_FEATURE_DEFINITION
+      if (!sMetaPath.empty() )
+        parser->loadMeta(sMetaPath);
+#endif
+      parsers[t] = (parser);
+    }
+
+    const auto &fn = [&](const unsigned int t) {
+      CDepParser &parser = *parsers[t];
+      const std::vector<CDependencyParse *> &sentences = sharded_sentences[t];
+
+      // Train on each sentence.
+      std::cout << "Training iteration " << iteration << " for thread " << t << " has started..." << std::endl ; std::cout.flush();
+      for (auto n = 0; n != sentences.size(); ++n) {
+        CDependencyParse &sent = *sentences[n];
+        TRACE("Sentence " << n);
+
+        if (bExtract) {
+#ifdef SUPPORT_FEATURE_EXTRACTION
+          parser.extract_features(sent);
+#else
+          ASSERT(false, "Internal error: feature extract not allowed but option set.");
+#endif
+        }
+        else {
+          parser.train(sent, n + 1);
+        }
+      }
+
+      // Tell the parser that this training round has finished.
+      parser.finishtraining();
+    };
+
+    // Run this iteration over the sharded sentences.
+    std::vector<std::thread> threads;
+    for (unsigned int t = 0; t != NTHREADS; ++t)
+      threads.push_back(std::thread(fn, t));
+    for (unsigned int t = 0; t != NTHREADS; ++t)
+      threads[t].join();
+
     std::cout << "Done. " << std::endl;
+
+    // Free up memory.
+    for (CDepParser *parser : parsers)
+      delete parser;
   }
 
-  // Free up the sentence memory.
+  // Free up memory.
   for (CDependencyParse *sent : sentences)
     delete sent;
 }
@@ -106,15 +144,15 @@ int main(int argc, char* argv[]) {
       std::cout << "\nUsage: " << argv[0] << " training_data model num_iterations" << std::endl ;
       std::cout << configurations.message() << std::endl;
       return 1;
-    } 
+    }
     configurations.loadConfigurations(options.opts);
-  
+
     int training_iterations;
     if (!fromString(training_iterations, options.args[3])) {
       std::cerr << "Error: the number of training iterations must be an integer." << std::endl;
       return 1;
     }
-  
+
     bool bRules = configurations.getConfiguration("r").empty() ? false : true;
     bool bExtract = false;
 #ifdef SUPPORT_FEATURE_EXTRACTION
@@ -129,7 +167,7 @@ int main(int argc, char* argv[]) {
     int time_start = clock();
     auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, training_iterations);
     std::cout << "Training has finished successfully. Total time taken is: " << double(clock()-time_start)/CLOCKS_PER_SEC << std::endl;
-  
+
     return 0;
   } catch (const std::string &e) {
     std::cerr << std::endl << "Error: " << e << std::endl;
