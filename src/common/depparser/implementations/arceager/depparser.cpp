@@ -36,7 +36,7 @@ const CTag g_noneTag = CTag::NONE;
  *
  *---------------------------------------------------------------*/
 
-inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedScoreType<SCORE_TYPE, action::MAX> &retval, const unsigned &action, SCORE_TYPE amount , int round ) {
+inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedScoreType<SCORE_TYPE, action::MAX> &retval, const unsigned &action, const SCORE_TYPE amount , const int round ) {
 
    const int &st_index = item->stackempty() ? -1 : item->stacktop(); // stack top
    const int &sth_index = st_index == -1 ? -1 : item->head(st_index); // stack top head
@@ -500,7 +500,7 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
    const int length = sentence.size() ; 
 
    const CStateItem *pGenerator ;
-   static CStateItem pCandidate(&m_lCache) ;
+   thread_local static CStateItem pCandidate(&m_lCache) ;
 
    // used only for training
    thread_local static bool bCorrect ;  // used in learning for early update

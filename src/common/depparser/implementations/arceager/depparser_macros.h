@@ -42,8 +42,7 @@ const unsigned MAX_SENTENCE_SIZE_BITS = 8 ;
 
 // normalise link size and the direction
 inline int encodeLinkDistance(const int &head_index, const int &dep_index) {
-   static int diff;
-   diff = head_index - dep_index;
+   int diff = head_index - dep_index;
    assert(diff != 0); 
    if (diff<0)
       diff=-diff;

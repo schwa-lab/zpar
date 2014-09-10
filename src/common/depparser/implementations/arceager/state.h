@@ -172,8 +172,7 @@ public:
 #endif
       assert( m_Stack.size() > 0 ) ;
       assert( m_lHeads[m_Stack.back()] == DEPENDENCY_LINK_NO_HEAD ) ;
-      static int left ;
-      left = m_Stack.back() ;
+      int left = m_Stack.back() ;
       m_Stack.pop_back() ;
       m_HeadStack.pop_back() ;
       m_lHeads[left] = m_nNextWord;
@@ -198,8 +197,7 @@ public:
    void ArcRight() { 
 #endif
       assert( m_Stack.size() > 0 ) ;
-      static int left ;
-      left = m_Stack.back() ;
+      int left = m_Stack.back() ;
       m_Stack.push_back( m_nNextWord ) ;
       m_lHeads[m_nNextWord] = left ;
 #ifdef LABELED
@@ -310,7 +308,7 @@ public:
 #else
    bool StandardMoveStep( const CDependencyParse &tree ) {
 #endif
-      static int top;
+      int top = 0;
       // when the next word is tree.size() it means that the sentence is done already
       if ( m_nNextWord == static_cast<int>(tree.size()) ) {
          assert( m_Stack.size() > 0 );
@@ -378,7 +376,7 @@ public:
    }
 
    unsigned FollowMove( const CStateItem *item ) {
-      static int top;
+      int top = 0;
       // if the next words are same then don't check head because it might be a finished sentence (m_nNextWord==sentence.sz)
       if ( m_nNextWord == item->m_nNextWord ) {
 //std::cout << "this" << std::endl; for (int i=0; i<m_Stack.size(); ++i) std::cout << m_Stack[i] << " "; std::cout << std::endl;
