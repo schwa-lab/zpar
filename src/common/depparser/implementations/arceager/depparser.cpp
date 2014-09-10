@@ -134,15 +134,15 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
       st_word_n0_word.allocate( st_word, n0_word );
    }
 
-   static CTuple2<CWord, CTag> word_tag;
-   static CTuple2<CWord, int> word_int;
-   static CTuple2<CTag, int> tag_int;
-   static CTuple3<CWord, CTag, CTag> word_tag_tag;
-   static CTuple3<CWord, CWord, CTag> word_word_tag;
-   static CTuple3<CWord, CWord, int> word_word_int;
-   static CTuple3<CTag, CTag, int> tag_tag_int;
-   static CTuple2<CWord, CSetOfTags<CDependencyLabel> > word_tagset;
-   static CTuple2<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
+   std::tuple<CWord, CTag> word_tag;
+   std::tuple<CWord, int> word_int;
+   std::tuple<CTag, int> tag_int;
+   std::tuple<CWord, CTag, CTag> word_tag_tag;
+   std::tuple<CWord, CWord, CTag> word_word_tag;
+   std::tuple<CWord, CWord, int> word_word_int;
+   std::tuple<CTag, CTag, int> tag_tag_int;
+   std::tuple<CWord, CSetOfTags<CDependencyLabel> > word_tagset;
+   std::tuple<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
 
    // single
    if (st_index != -1) {
@@ -220,13 +220,21 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    // s0 and n0
    if (st_index != -1) {
       cast_weights->m_mapSTwtN0wt.getOrUpdateScore( retval, st_word_tag_n0_word_tag, action, m_nScoreIndex, amount, round ); 
-      refer_or_allocate_tuple3(word_word_tag, &st_word, &n0_word, &st_tag);
+      std::get<0>(word_word_tag) = st_word;
+      std::get<1>(word_word_tag) = n0_word;
+      std::get<2>(word_word_tag) = st_tag;
       cast_weights->m_mapSTwtN0w.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
-      refer_or_allocate_tuple3(word_word_tag, &st_word, &n0_word, &n0_tag);
+      std::get<0>(word_word_tag) = st_word;
+      std::get<1>(word_word_tag) = n0_word;
+      std::get<2>(word_word_tag) = n0_tag;
       cast_weights->m_mapSTwN0wt.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
-      refer_or_allocate_tuple3(word_tag_tag, &st_word, &st_tag, &n0_tag);
+      std::get<0>(word_tag_tag) = st_word;
+      std::get<1>(word_tag_tag) = st_tag;
+      std::get<2>(word_tag_tag) = n0_tag;
       cast_weights->m_mapSTwtN0t.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ; 
-      refer_or_allocate_tuple3(word_tag_tag, &n0_word, &st_tag, &n0_tag);
+      std::get<0>(word_tag_tag) = n0_word;
+      std::get<1>(word_tag_tag) = st_tag;
+      std::get<2>(word_tag_tag) = n0_tag;
       cast_weights->m_mapSTtN0wt.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ;
       cast_weights->m_mapSTwN0w.getOrUpdateScore( retval, st_word_n0_word, action, m_nScoreIndex, amount, round ) ; 
       cast_weights->m_mapSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
@@ -250,58 +258,78 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
 
    // distance
    if (st_index!=-1 && n0_index!=-1) {
-      refer_or_allocate_tuple2(word_int, &st_word, &st_n0_dist);
+      std::get<0>(word_int) = st_word;
+      std::get<1>(word_int) = st_n0_dist;
       cast_weights->m_mapSTwd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_int, &st_tag, &st_n0_dist);
+      std::get<0>(tag_int) = st_tag;
+      std::get<1>(tag_int) = st_n0_dist;
       cast_weights->m_mapSTtd.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
-      refer_or_allocate_tuple2(word_int, &n0_word, &st_n0_dist);
+      std::get<0>(word_int) = n0_word;
+      std::get<1>(word_int) = st_n0_dist;
       cast_weights->m_mapN0wd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round ) ;
-      refer_or_allocate_tuple2(tag_int, &n0_tag, &st_n0_dist);
+      std::get<0>(tag_int) = n0_tag;
+      std::get<1>(tag_int) = st_n0_dist;
       cast_weights->m_mapN0td.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
-      refer_or_allocate_tuple3(word_word_int, &st_word, &n0_word, &st_n0_dist);
+      std::get<0>(word_word_int) = st_word;
+      std::get<1>(word_word_int) = n0_word;
+      std::get<2>(word_word_int) = st_n0_dist;
       cast_weights->m_mapSTwN0wd.getOrUpdateScore( retval, word_word_int, action, m_nScoreIndex, amount, round ) ; 
-      refer_or_allocate_tuple3(tag_tag_int, &st_tag, &n0_tag, &st_n0_dist);
+      std::get<0>(tag_tag_int) = st_tag;
+      std::get<1>(tag_tag_int) = n0_tag;
+      std::get<2>(tag_tag_int) = st_n0_dist;
       cast_weights->m_mapSTtN0td.getOrUpdateScore( retval, tag_tag_int, action, m_nScoreIndex, amount, round ) ; 
    }
 
    // st arity
    if (st_index != -1) {
-      refer_or_allocate_tuple2(word_int, &st_word, &st_rarity);
+      std::get<0>(word_int) = st_word;
+      std::get<1>(word_int) = st_rarity;
       cast_weights->m_mapSTwra.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_int, &st_tag, &st_rarity);
+      std::get<0>(tag_int) = st_tag;
+      std::get<1>(tag_int) = st_rarity;
       cast_weights->m_mapSTtra.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
-      refer_or_allocate_tuple2(word_int, &st_word, &st_larity);
+      std::get<0>(word_int) = st_word;
+      std::get<1>(word_int) = st_larity;
       cast_weights->m_mapSTwla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_int, &st_tag, &st_larity);
+      std::get<0>(tag_int) = st_tag;
+      std::get<1>(tag_int) = st_larity;
       cast_weights->m_mapSTtla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
    }
 
    // n0 arity
    if (n0_index!=-1) {
-      refer_or_allocate_tuple2(word_int, &n0_word, &n0_larity);
+      std::get<0>(word_int) = n0_word;
+      std::get<1>(word_int) = n0_larity;
       cast_weights->m_mapN0wla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_int, &n0_tag, &n0_larity);
+      std::get<0>(tag_int) = n0_tag;
+      std::get<1>(tag_int) = n0_larity;
       cast_weights->m_mapN0tla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
    }
 
    // st labelset
    if (st_index != -1){
-      refer_or_allocate_tuple2(word_tagset, &st_word, &st_rtagset);
+      std::get<0>(word_tagset) = st_word;
+      std::get<1>(word_tagset) = st_rtagset;
       cast_weights->m_mapSTwrp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_tagset, &st_tag, &st_rtagset);
+      std::get<0>(tag_tagset) = st_tag;
+      std::get<1>(tag_tagset) = st_rtagset;
       cast_weights->m_mapSTtrp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
 
-      refer_or_allocate_tuple2(word_tagset, &st_word, &st_ltagset);
+      std::get<0>(word_tagset) = st_word;
+      std::get<1>(word_tagset) = st_ltagset;
       cast_weights->m_mapSTwlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_tagset, &st_tag, &st_ltagset);
+      std::get<0>(tag_tagset) = st_tag;
+      std::get<1>(tag_tagset) = st_ltagset;
       cast_weights->m_mapSTtlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
    }
 
    // n0 labelset
    if (n0_index != -1){
-      refer_or_allocate_tuple2(word_tagset, &n0_word, &n0_ltagset);
+      std::get<0>(word_tagset) = n0_word;
+      std::get<1>(word_tagset) = n0_ltagset;
       cast_weights->m_mapN0wlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
-      refer_or_allocate_tuple2(tag_tagset, &n0_tag, &n0_ltagset);
+      std::get<0>(tag_tagset) = n0_tag;
+      std::get<1>(tag_tagset) = n0_ltagset;
       cast_weights->m_mapN0tlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
    }
 

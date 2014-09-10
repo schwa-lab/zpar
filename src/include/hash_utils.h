@@ -25,4 +25,13 @@ inline unsigned long hash(const T& t) { return t.hash(); }
 template<typename T1, typename T2>
 inline unsigned long hash(const std::pair<T1, T2> &o) { return hash(o.first)*33 + hash(o.second) ; }
 
+template<typename T1, typename T2>
+inline unsigned long hash(const std::tuple<T1, T2> &o) { return hash(std::get<0>(o))*31 + hash(std::get<1>(o)) ; }
+
+template<typename T1, typename T2, typename T3>
+inline unsigned long hash(const std::tuple<T1, T2, T3> &o) { return hash(std::get<0>(o))*31 + hash(std::get<1>(o))*29 + hash(std::get<2>(o)) ; }
+
+template<typename T1, typename T2, typename T3, typename T4>
+inline unsigned long hash(const std::tuple<T1, T2, T3, T4> &o) { return hash(std::get<0>(o))*31 + hash(std::get<1>(o))*29 + hash(std::get<2>(o))*23 + hash(std::get<3>(o)) ; }
+
 #endif
