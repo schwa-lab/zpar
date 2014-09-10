@@ -66,8 +66,8 @@ ENGLISH_CONPARSER_IMPL = muhua
 #
 #================================================================
 
-#DEBUG = -DDEBUG -g
-DEBUG = -DNDEBUG
+#DEBUG = -DDEBUG -g -O0
+DEBUG = -DNDEBUG -O3
 
 #================================================================
 #
@@ -87,7 +87,7 @@ include Makefile.common
 INCLUDES = -I$(SRC_INCLUDES)
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -pedantic -Wno-sign-compare -Wno-strict-aliasing -Wno-unused-function -Wno-unused-parameter -O3 $(INCLUDES) $(DEBUG) --std=c++11
+CXXFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic -Wno-sign-compare -Wno-strict-aliasing -Wno-unused-function -Wno-unused-parameter $(INCLUDES) $(DEBUG)
 
 LD=$(CXX)
 LDFLAGS = -ltcmalloc -lprofiler
