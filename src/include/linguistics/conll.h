@@ -22,20 +22,15 @@
  *==============================================================*/
 
 class CCoNLLInputNode : public CDependencyTreeNode {
-
 public:
    int id;
-   std::string word; // same as dependency
    std::string lemma;
    std::string ctag;
-   std::string tag;  // same as dependency
    std::string feats;
 
 public:
-   CCoNLLInputNode( ) : id(-1) { }
-   CCoNLLInputNode( const int &d, const std::string &w, const std::string &l, const std::string &c, const std::string &t, const std::string &f) : id(d), word(w), lemma(l), ctag(c), tag(t), feats(f) { }
-   virtual ~CCoNLLInputNode() {}
-
+   CCoNLLInputNode() : id(-1) { }
+   CCoNLLInputNode( const int &d, const std::string &w, const std::string &l, const std::string &c, const std::string &t, const std::string &f) : CDependencyTreeNode(w, t), id(d), lemma(l), ctag(c), feats(f) { }
 };
 
 /*==============================================================

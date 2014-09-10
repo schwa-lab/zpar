@@ -19,13 +19,8 @@
  *
  *==============================================================*/
 
-template<typename CSentenceNode>
-class CSentenceTemplate : public std::vector<CSentenceNode> {
-
-public:
-   CSentenceTemplate() {}
-   virtual ~CSentenceTemplate() {}
-};
+template <typename CSentenceNode>
+using CSentenceTemplate = std::vector<CSentenceNode>;
 
 //==============================================================
 

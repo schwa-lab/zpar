@@ -21,20 +21,17 @@
  *==============================================================*/
 
 class CLabeledDependencyTreeNode : public CDependencyTreeNode {
-
 public:
    std::string label;
 
 public:
-   CLabeledDependencyTreeNode( ) : CDependencyTreeNode(), label("") { }
-   CLabeledDependencyTreeNode( const std::string &w, const std::string &t, const int &h, const std::string &l) : CDependencyTreeNode(w, t, h), label(l) { }
-   virtual ~CLabeledDependencyTreeNode() {}
+   CLabeledDependencyTreeNode() : CDependencyTreeNode() { }
+   CLabeledDependencyTreeNode( const std::string &w, const std::string &t, const int h, const std::string &l) : CDependencyTreeNode(w, t, h), label(l) { }
 
 public:
-   bool operator ==(const CLabeledDependencyTreeNode &item) const { 
+   inline bool operator ==(const CLabeledDependencyTreeNode &item) const {
       return static_cast<CDependencyTreeNode>(*this) == static_cast<CDependencyTreeNode>(item) && label == item.label; 
    }
-
 };
 
 //==============================================================
