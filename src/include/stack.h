@@ -125,10 +125,9 @@ protected:
 
 public:
    CEntry *allocate() {
-      thread_local static CEntry *retval;
       CEntry * &c_free = getFreeMemory();
       if (c_free) {
-         retval = c_free;
+         CEntry *retval = c_free;
          c_free = c_free->m_next;
          retval->m_next = 0;
          return retval;
@@ -169,9 +168,10 @@ public:
       return false;
    }
    void clear() {
-      if (!m_top) return;
-      CEntry *tail = m_top;
       thread_local static V empty;
+      if (!m_top)
+        return;
+      CEntry *tail = m_top;
       while (tail->m_next) {
          tail->m_value = empty;
          tail = tail->m_next;

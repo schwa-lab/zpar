@@ -28,7 +28,7 @@
 template <typename CTag, char sTagSep>
 class CTaggedWord {
 public:
-   const static char sSeparator = sTagSep;
+   static const char sSeparator = sTagSep;
 
 public:
    CWord word;

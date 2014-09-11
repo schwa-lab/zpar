@@ -107,7 +107,7 @@ public:
    void load(const std::string &s) {
       m_nHash = 0;
       std::istringstream iss(s);
-      static std::string t;
+      std::string t;
       iss >> t;
       while (iss.good()) {
          if (t[0]=='.') 

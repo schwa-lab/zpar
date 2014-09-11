@@ -90,7 +90,7 @@ CXX = g++
 CXXFLAGS = -std=c++11 -Wall -Wextra -Werror -pedantic -Wno-sign-compare -Wno-strict-aliasing -Wno-unused-function -Wno-unused-parameter $(INCLUDES) $(DEBUG)
 
 LD=$(CXX)
-LDFLAGS = -ltcmalloc -lprofiler
+LDFLAGS = -pthread -ltcmalloc -lprofiler
 
 #================================================================
 #

@@ -42,10 +42,10 @@ test: $(SRC_DIR)/test.cpp $(OBJECT_DIR) $(DIST_DIR) $(SRC_INCLUDES)/bitarray.h $
 #----------------------------------------------------------------
 
 clean:
-	rm -rf $(OBJECT_DIR)
-	rm -f test.o
-	rm -f test.exe
-	rm -rf $(DIST_DIR)
-	rm -f *~
-	mkdir dist
-	mkdir obj
+	-rm -rf $(OBJECT_DIR)
+	-rm -f test.o
+	-rm -f test.exe
+	-rm -rf $(DIST_DIR)
+	-rm -f *~
+	-mkdir dist
+	-mkdir obj

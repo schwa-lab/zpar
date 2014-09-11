@@ -66,7 +66,7 @@ public:
    void load(const std::string &s) {
       clear();
       std::istringstream iss(s);
-      static std::string t;
+      std::string t;
       iss >> t;
       for (unsigned long i=0; i<size; ++i) {
          assert(iss.good());
@@ -224,7 +224,7 @@ inline std::ostream & operator << (std::ostream &os, const CSetOfTags<CTag> &c) 
 
    os << "[ ";
    for (unsigned i=0; i<CTag::COUNT; ++i) {
-      static CTag t;
+      CTag t;
       t.load(i);
       if (c.contains(t)) os << t << ' ';
    }

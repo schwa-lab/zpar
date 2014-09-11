@@ -16,8 +16,8 @@ using namespace TARGET_LANGUAGE;
 int CJointTree::readNode(std::istream &is) {
       int node;
       std::string s, name;
-      static std::string temp;
-      static std::string type;
+      std::string temp;
+      std::string type;
       is >> s;
       assert(s == "(");
       is >> name;

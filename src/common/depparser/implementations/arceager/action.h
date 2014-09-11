@@ -49,10 +49,10 @@ struct CScoredAction {
    unsigned action;
    SCORE_TYPE score;
 public:
-   bool operator < (const CScoredAction &a) const {
+   inline bool operator < (const CScoredAction &a) const {
       return score < a.score;
    }
-   bool operator > (const CScoredAction &a) const {
+   inline bool operator > (const CScoredAction &a) const {
       return score > a.score;
    }
 };

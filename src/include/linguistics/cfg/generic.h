@@ -47,15 +47,15 @@ public:
    enum {SENTENCE_BEGIN = 1};
    enum {FIRST = 2};
    enum {SIZE = GENERIC_CONLABEL_SIZE};
-   static unsigned long COUNT;
-   static unsigned long LAST;
+   //static unsigned long COUNT;
+   //static unsigned long LAST;
 
 protected:
    unsigned long m_code;
 
 protected:
    // static method assigns tokenizer as global dictionary of words
-   CConstituentLabelTokenizer &getTokenizer() const {static CConstituentLabelTokenizer tokenizer; return tokenizer;}
+   CConstituentLabelTokenizer &getTokenizer() const { thread_local static CConstituentLabelTokenizer tokenizer; return tokenizer;}
 
 public:
    CConstituentLabel() : m_code(NONE) { }
@@ -80,9 +80,9 @@ public:
    void load(const std::string &s) {
       m_code=getTokenizer().lookup(s); 
 //      if (getTokenizer().count()>COUNT) TRACE(s);
-      COUNT = getTokenizer().count();
-      LAST = COUNT-1;
-      assert((1<<SIZE)>COUNT);
+      //COUNT = getTokenizer().count();
+      //LAST = COUNT-1;
+      //assert((1<<SIZE)>COUNT);
    }
    void load(const unsigned long &code) {m_code=code;}
    const std::string &str() const { 

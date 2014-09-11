@@ -51,7 +51,7 @@ public:
    }
    void load(const unsigned long &code) {CConstituentLabel::m_code=code;}
    const std::string &str() const { 
-      static std::string tmp;
+      std::string tmp;
       tmp = CConstituentLabel(clearTmp(CConstituentLabel::m_code)).str();
       if (getTemporary()) {
          tmp += "*";

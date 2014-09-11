@@ -15,41 +15,38 @@
  * Memory pool entry
  *
  *==============================================================*/
-
 template <typename T>
 class CMemoryPoolEntry {
 public:
    T* blocks;
-
    CMemoryPoolEntry *prev;
-
    const unsigned long blocksize;
+
 public:
-   CMemoryPoolEntry(const unsigned long &bs): prev(0), blocksize(bs) {
-      blocks = new T[bs];
-   }
-   virtual ~CMemoryPoolEntry() {
+   explicit CMemoryPoolEntry(const unsigned long bs) : blocks(new T[bs]), prev(0), blocksize(bs) { }
+   ~CMemoryPoolEntry() {
       delete [] blocks;
    }
 };
+
 /*===============================================================
  *
  * Memory pool
  *
  *==============================================================*/
-
 template <typename T>
 class CMemoryPool {
 protected:
    CMemoryPoolEntry<T> *current;
    unsigned long nItem;
    unsigned long blocksize;
+
 public:
-   CMemoryPool(const unsigned long &bs): current(0), nItem(0), blocksize(bs) {
-   }
-   virtual ~CMemoryPool() {
+   explicit CMemoryPool(const unsigned long bs): current(0), nItem(0), blocksize(bs) { }
+   ~CMemoryPool() {
       reset();
    }
+
 protected:
    void newblock() {
       CMemoryPoolEntry<T> *iter = current;
@@ -59,8 +56,9 @@ protected:
       nItem = 0;
       blocksize<<=1;
    }
+
 public:
-   T* allocate() { 
+   T* allocate() {
       if (current==0 || nItem==current->blocksize) { // if start or block full
          newblock();
       }
