@@ -348,12 +348,11 @@ void CDepParser::updateScores(const CDependencyParse & parsed , const CDependenc
  *--------------------------------------------------------------*/
 
 inline void CDepParser::updateScoreForState( const CStateItem &from, const CStateItem *outout , const SCORE_TYPE &amount ) {
-   thread_local static CStateItem item(&m_lCache);
-   thread_local static unsigned action;
-   thread_local static CPackedScoreType<SCORE_TYPE, action::MAX> empty;
+   CPackedScoreType<SCORE_TYPE, action::MAX> empty;
+   CStateItem item(&m_lCache);
    item = from;
    while ( item != *outout ) {
-      action = item.FollowMove( outout );
+      const unsigned action = item.FollowMove( outout );
       getOrUpdateStackScore( &item, empty, action, amount, m_nTrainingRound );
 #ifdef LABELED
 //      if ( action::getLabel(action) )
@@ -372,12 +371,11 @@ inline void CDepParser::updateScoreForState( const CStateItem &from, const CStat
 void CDepParser::updateScoresForStates( const CStateItem *outout , const CStateItem *correct , SCORE_TYPE amount_add, SCORE_TYPE amount_subtract ) {
 
    // do not update those steps where they are correct
-   thread_local static CStateItem item(&m_lCache);
-   thread_local static unsigned action, correct_action;
+   CStateItem item(&m_lCache);
    item.clear();
    while ( item != *outout ) {
-      action = item.FollowMove( outout );
-      correct_action = item.FollowMove( correct );
+      const unsigned action = item.FollowMove( outout );
+      const unsigned correct_action = item.FollowMove( correct );
       if ( action == correct_action )
          item.Move( action );
       else break;
@@ -397,7 +395,7 @@ void CDepParser::updateScoresForStates( const CStateItem *outout , const CStateI
  *--------------------------------------------------------------*/
 
 inline void CDepParser::reduce( const CStateItem *item, const CPackedScoreType<SCORE_TYPE, action::MAX> &scores ) {
-   thread_local static action::CScoredAction scoredaction;
+   action::CScoredAction scoredaction;
    // update stack score
    scoredaction.action = action::REDUCE;
    scoredaction.score = item->score + scores[scoredaction.action]; 
@@ -411,8 +409,8 @@ inline void CDepParser::reduce( const CStateItem *item, const CPackedScoreType<S
  *--------------------------------------------------------------*/
 
 inline void CDepParser::arcleft( const CStateItem *item, const CPackedScoreType<SCORE_TYPE, action::MAX> &scores ) {
-   thread_local static action::CScoredAction scoredaction;
-   thread_local static unsigned label;
+   action::CScoredAction scoredaction;
+   unsigned label;
 #ifdef LABELED
    for (label=CDependencyLabel::FIRST; label<CDependencyLabel::COUNT; ++label) {
       if ( !m_weights->rules() || canAssignLabel(m_lCache, item->size(), item->stacktop(), label) ) {
@@ -436,8 +434,8 @@ inline void CDepParser::arcleft( const CStateItem *item, const CPackedScoreType<
  *--------------------------------------------------------------*/
 
 inline void CDepParser::arcright( const CStateItem *item, const CPackedScoreType<SCORE_TYPE, action::MAX> &scores ) {
-   thread_local static action::CScoredAction scoredaction;
-   thread_local static unsigned label;
+   action::CScoredAction scoredaction;
+   unsigned label;
 #ifdef LABELED
    for (label=CDependencyLabel::FIRST; label<CDependencyLabel::COUNT; ++label) {
       if ( !m_weights->rules() || canAssignLabel(m_lCache, item->stacktop(), item->size(), label) ) {
@@ -461,7 +459,7 @@ inline void CDepParser::arcright( const CStateItem *item, const CPackedScoreType
  *--------------------------------------------------------------*/
 
 inline void CDepParser::shift( const CStateItem *item, const CPackedScoreType<SCORE_TYPE, action::MAX> &scores ) {
-   thread_local static action::CScoredAction scoredaction;
+   action::CScoredAction scoredaction;
    // update stack score
    scoredaction.action = action::SHIFT;
    scoredaction.score = item->score + scores[scoredaction.action];
@@ -475,7 +473,7 @@ inline void CDepParser::shift( const CStateItem *item, const CPackedScoreType<SC
  *--------------------------------------------------------------*/
 
 inline void CDepParser::poproot( const CStateItem *item, const CPackedScoreType<SCORE_TYPE, action::MAX> &scores ) {
-   thread_local static action::CScoredAction scoredaction;
+   action::CScoredAction scoredaction;
    // update stack score
    scoredaction.action = action::POP_ROOT;
    scoredaction.score = item->score + scores[scoredaction.action];
@@ -499,14 +497,14 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
    int index;
    const int length = sentence.size() ; 
 
-   const CStateItem *pGenerator ;
-   thread_local static CStateItem pCandidate(&m_lCache) ;
+   const CStateItem *pGenerator = 0;
+   CStateItem pCandidate(&m_lCache) ;
 
    // used only for training
-   thread_local static bool bCorrect ;  // used in learning for early update
-   bool bContradictsRules;
-   thread_local static CStateItem correctState(&m_lCache) ;
-   thread_local static CPackedScoreType<SCORE_TYPE, action::MAX> packed_scores;
+   bool bCorrect = false ;  // used in learning for early update
+   bool bContradictsRules = false;
+   CStateItem correctState(&m_lCache) ;
+   CPackedScoreType<SCORE_TYPE, action::MAX> packed_scores;
 
    ASSERT(length<MAX_SENTENCE_SIZE, "The size of the sentence is larger than the system configuration.");
 
@@ -719,7 +717,7 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
 
 void CDepParser::parse( const CTwoStringVector &sentence , CDependencyParse *retval , int nBest , SCORE_TYPE *scores ) {
 
-   thread_local static CDependencyParse empty ;
+   CDependencyParse empty ;
 
    assert( !m_bCoNLL );
 
@@ -741,8 +739,8 @@ void CDepParser::parse( const CTwoStringVector &sentence , CDependencyParse *ret
 
 void CDepParser::train( const CDependencyParse &correct , int round ) {
 
-   thread_local static CTwoStringVector sentence ;
-   thread_local static CDependencyParse outout ; 
+   CTwoStringVector sentence ;
+   CDependencyParse outout ; 
 
    assert( !m_bCoNLL );
 #ifndef FRAGMENTED_TREE
@@ -837,9 +835,9 @@ void CDepParser::initCoNLLCache( const CCoNLLInputOrOutput &sentence ) {
 
 void CDepParser::parse_conll( const CCoNLLInput &sentence , CCoNLLOutput *retval , int nBest, SCORE_TYPE *scores ) {
 
-   thread_local static CDependencyParse empty ;
-   thread_local static CTwoStringVector input ;
-   thread_local static CDependencyParse outout[AGENDA_SIZE] ;
+   CDependencyParse empty ;
+   CTwoStringVector input ;
+   CDependencyParse outout[AGENDA_SIZE] ;
 
    assert( m_bCoNLL ) ;
 
@@ -872,9 +870,9 @@ void CDepParser::parse_conll( const CCoNLLInput &sentence , CCoNLLOutput *retval
 
 void CDepParser::train_conll( const CCoNLLOutput &correct , int round ) {
 
-   thread_local static CTwoStringVector sentence ;
-   thread_local static CDependencyParse outout ; 
-   thread_local static CDependencyParse reference ;
+   CTwoStringVector sentence ;
+   CDependencyParse outout ; 
+   CDependencyParse reference ;
 
    assert( m_bCoNLL ) ;
    assert( IsProjectiveDependencyTree(correct) ) ;

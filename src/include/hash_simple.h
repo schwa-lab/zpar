@@ -105,12 +105,11 @@ protected:
 
    static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
    static CEntry* &getFreeMemory() { thread_local static CEntry* c_free = 0; return c_free; }
-   
+
    CEntry *allocate() {
-      thread_local static CEntry *retval;
       CEntry* &c_freed = getFreeMemory();
       if (c_freed) {
-         retval = c_freed;
+         CEntry *retval = c_freed;
          c_freed = c_freed->m_next;
          retval->m_next = 0;
          return retval;
