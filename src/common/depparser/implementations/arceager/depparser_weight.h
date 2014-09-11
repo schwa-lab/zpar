@@ -371,9 +371,9 @@ public:
    // MEHTODS
    virtual void loadScores();
    virtual void saveScores();
-   void computeAverageFeatureWeights(int round);
-   SCORE_TYPE dotProduct(const CWeight &w);
 
+   void addWeighted(double mu, const CWeight &other);
+   void computeAverageFeatureWeights(int round);
    void debugUsage(void) const;
 };
 

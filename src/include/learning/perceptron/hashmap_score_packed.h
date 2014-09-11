@@ -108,7 +108,6 @@ public:
    const std::string name ;
    unsigned count ;
 
-public:
    CPackedScoreMap(std::string input_name, int TABLE_SIZE) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE) , name(input_name) , count(0)
 #ifdef NO_NEG_FEATURE
 , m_positive(this)
@@ -117,7 +116,6 @@ public:
       assert(m_zero.empty());
    }
 
-public:
 #ifdef NO_NEG_FEATURE
    inline void setPositiveFeature(const CPackedScoreMap &positive) {
       m_positive = &positive;
@@ -182,7 +180,6 @@ public:
       CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::clear();
    }
 
-public:
    void addCurrent(CPackedScoreMap &mp, const int &round) {
       typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
       const iterator end = this->end();
@@ -224,9 +221,15 @@ public:
       return retval;
    }
 
+   void addWeighted(const double mu, const CPackedScoreMap &other) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::const_iterator iterator;
+      const iterator end = other.end();
+      for (iterator it = other.begin(); it != end; ++it) {
+         (*this)[it.first()].addWeighted(mu, it.second());
+      }
+   }
 
 #ifdef DEBUG
-public:
    void trace() {
       std::cout << name << ": ";
       CHashMap< K , CPackedScore<SCORE_TYPE, PACKED_SIZE> >::trace();

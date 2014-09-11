@@ -88,6 +88,11 @@ public:
      current *= scale;
      total += current;
    }
+
+   void addWeighted(const double mu, const CScore &other) {
+      current += static_cast<SCORE_TYPE>(mu * other.current);
+      total += static_cast<SCORE_TYPE>(mu * other.total);
+   }
    //void updateCurrent(SCORE_TYPE added, int round=0) {if (round>=lastupdate){updateAverage(round);total+=added;lastupdate=round;}current+=added; }
 };
 
