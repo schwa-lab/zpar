@@ -25,14 +25,13 @@ using namespace TARGET_LANGUAGE::depparser;
  *--------------------------------------------------------------*/
 
 void TARGET_LANGUAGE::depparser::CWeight::loadScores() {
-   clock_t time_start = clock();
-   std::cout<<"Loading scores..."; std::cout.flush();
    std::ifstream file ; 
    std::string s;
-   file.open(m_sRecordPath.c_str()) ;
+   file.open(m_sInputPath.c_str()) ;
 
    if (!file.is_open()) {
-      std::cout << " empty." << std::endl; return;
+      std::cout << "No scores loaded." << std::endl;
+      return;
    }
 
 #ifdef LABELED
@@ -57,7 +56,6 @@ void TARGET_LANGUAGE::depparser::CWeight::loadScores() {
    }
 
    file.close() ;
-   std::cout << " done. (" << double(clock()-time_start)/CLOCKS_PER_SEC << "s)" << std::endl;
 }
 
 /*---------------------------------------------------------------
@@ -73,7 +71,7 @@ void TARGET_LANGUAGE::depparser::CWeight::loadScores() {
 void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
    std::cout<<"Saving scores..."; std::cout.flush();
    std::ofstream file ;
-   file.open(m_sRecordPath.c_str()) ;
+   file.open(m_sOutputPath.c_str()) ;
 
 #ifdef LABELED
    file << "Dependency labels:" << std::endl;
@@ -89,7 +87,6 @@ void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
    else file << "Rules=0" << std::endl;
 
    file.close();
-   std::cout<<" done."<<std::endl;
 }
 
 /*--------------------------------------------------------------
@@ -97,16 +94,105 @@ void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
  * computeAverageFeatureWeights - compute average feature weights
  *
  *-------------------------------------------------------------*/
-
 void TARGET_LANGUAGE::depparser::CWeight::computeAverageFeatureWeights(int round) {
    std::cout<<"Computing averaged (total) feature vector..."; std::cout.flush();
    iterate_templates(,.computeAverage(round);) ;
-
    std::cout<<"done."<<std::endl;
 }
 
 
-void TARGET_LANGUAGE::depparser::CWeight::debugUsage(void) const {
+void
+TARGET_LANGUAGE::depparser::CWeight::addWeighted(const double mu, const CWeight &other) {
+  m_mapSTw.addWeighted(mu, other.m_mapSTw);
+  m_mapSTt.addWeighted(mu, other.m_mapSTt);
+  m_mapSTwt.addWeighted(mu, other.m_mapSTwt);
+  m_mapN0w.addWeighted(mu, other.m_mapN0w);
+  m_mapN0t.addWeighted(mu, other.m_mapN0t);
+  m_mapN0wt.addWeighted(mu, other.m_mapN0wt);
+  m_mapN1w.addWeighted(mu, other.m_mapN1w);
+  m_mapN1t.addWeighted(mu, other.m_mapN1t);
+  m_mapN1wt.addWeighted(mu, other.m_mapN1wt);
+  m_mapN2w.addWeighted(mu, other.m_mapN2w);
+  m_mapN2t.addWeighted(mu, other.m_mapN2t);
+  m_mapN2wt.addWeighted(mu, other.m_mapN2wt);
+  m_mapSTHw.addWeighted(mu, other.m_mapSTHw);
+  m_mapSTHt.addWeighted(mu, other.m_mapSTHt);
+  m_mapSTi.addWeighted(mu, other.m_mapSTi);
+  m_mapSTHHw.addWeighted(mu, other.m_mapSTHHw);
+  m_mapSTHHt.addWeighted(mu, other.m_mapSTHHt);
+  m_mapSTHi.addWeighted(mu, other.m_mapSTHi);
+  m_mapSTLDw.addWeighted(mu, other.m_mapSTLDw);
+  m_mapSTLDt.addWeighted(mu, other.m_mapSTLDt);
+  m_mapSTLDi.addWeighted(mu, other.m_mapSTLDi);
+  m_mapSTRDw.addWeighted(mu, other.m_mapSTRDw);
+  m_mapSTRDt.addWeighted(mu, other.m_mapSTRDt);
+  m_mapSTRDi.addWeighted(mu, other.m_mapSTRDi);
+  m_mapN0LDw.addWeighted(mu, other.m_mapN0LDw);
+  m_mapN0LDt.addWeighted(mu, other.m_mapN0LDt);
+  m_mapN0LDi.addWeighted(mu, other.m_mapN0LDi);
+  m_mapSTL2Dw.addWeighted(mu, other.m_mapSTL2Dw);
+  m_mapSTL2Dt.addWeighted(mu, other.m_mapSTL2Dt);
+  m_mapSTL2Di.addWeighted(mu, other.m_mapSTL2Di);
+  m_mapSTR2Dw.addWeighted(mu, other.m_mapSTR2Dw);
+  m_mapSTR2Dt.addWeighted(mu, other.m_mapSTR2Dt);
+  m_mapSTR2Di.addWeighted(mu, other.m_mapSTR2Di);
+  m_mapN0L2Dw.addWeighted(mu, other.m_mapN0L2Dw);
+  m_mapN0L2Dt.addWeighted(mu, other.m_mapN0L2Dt);
+  m_mapN0L2Di.addWeighted(mu, other.m_mapN0L2Di);
+  m_mapHTw.addWeighted(mu, other.m_mapHTw);
+  m_mapHTt.addWeighted(mu, other.m_mapHTt);
+  m_mapHTwt.addWeighted(mu, other.m_mapHTwt);
+  m_mapSTwtN0wt.addWeighted(mu, other.m_mapSTwtN0wt);
+  m_mapSTwtN0w.addWeighted(mu, other.m_mapSTwtN0w);
+  m_mapSTwN0wt.addWeighted(mu, other.m_mapSTwN0wt);
+  m_mapSTtN0wt.addWeighted(mu, other.m_mapSTtN0wt);
+  m_mapSTwtN0t.addWeighted(mu, other.m_mapSTwtN0t);
+  m_mapSTwN0w.addWeighted(mu, other.m_mapSTwN0w);
+  m_mapSTtN0t.addWeighted(mu, other.m_mapSTtN0t);
+  m_mapN0tN1t.addWeighted(mu, other.m_mapN0tN1t);
+  m_mapN0tN1tN2t.addWeighted(mu, other.m_mapN0tN1tN2t);
+  m_mapSTtN0tN1t.addWeighted(mu, other.m_mapSTtN0tN1t);
+  m_mapSTtN0tN0LDt.addWeighted(mu, other.m_mapSTtN0tN0LDt);
+  m_mapN0tN0LDtN0L2Dt.addWeighted(mu, other.m_mapN0tN0LDtN0L2Dt);
+  m_mapSTHtSTtN0t.addWeighted(mu, other.m_mapSTHtSTtN0t);
+  m_mapHTtHT2tN0t.addWeighted(mu, other.m_mapHTtHT2tN0t);
+  m_mapSTHHtSTHtSTt.addWeighted(mu, other.m_mapSTHHtSTHtSTt);
+  m_mapSTtSTLDtN0t.addWeighted(mu, other.m_mapSTtSTLDtN0t);
+  m_mapSTtSTLDtSTL2Dt.addWeighted(mu, other.m_mapSTtSTLDtSTL2Dt);
+  m_mapSTtSTRDtN0t.addWeighted(mu, other.m_mapSTtSTRDtN0t);
+  m_mapSTtSTRDtSTR2Dt.addWeighted(mu, other.m_mapSTtSTRDtSTR2Dt);
+  m_mapSTwd.addWeighted(mu, other.m_mapSTwd);
+  m_mapSTtd.addWeighted(mu, other.m_mapSTtd);
+  m_mapN0wd.addWeighted(mu, other.m_mapN0wd);
+  m_mapN0td.addWeighted(mu, other.m_mapN0td);
+  m_mapSTwN0wd.addWeighted(mu, other.m_mapSTwN0wd);
+  m_mapSTtN0td.addWeighted(mu, other.m_mapSTtN0td);
+  m_mapSTwra.addWeighted(mu, other.m_mapSTwra);
+  m_mapSTtra.addWeighted(mu, other.m_mapSTtra);
+  m_mapSTwla.addWeighted(mu, other.m_mapSTwla);
+  m_mapSTtla.addWeighted(mu, other.m_mapSTtla);
+  m_mapN0wla.addWeighted(mu, other.m_mapN0wla);
+  m_mapN0tla.addWeighted(mu, other.m_mapN0tla);
+  m_mapSTwrp.addWeighted(mu, other.m_mapSTwrp);
+  m_mapSTtrp.addWeighted(mu, other.m_mapSTtrp);
+  m_mapSTwlp.addWeighted(mu, other.m_mapSTwlp);
+  m_mapSTtlp.addWeighted(mu, other.m_mapSTtlp);
+  m_mapN0wlp.addWeighted(mu, other.m_mapN0wlp);
+  m_mapN0tlp.addWeighted(mu, other.m_mapN0tlp);
+  m_mapSTl.addWeighted(mu, other.m_mapSTl);
+  m_mapSTc.addWeighted(mu, other.m_mapSTc);
+  m_mapSTf.addWeighted(mu, other.m_mapSTf);
+  m_mapN0l.addWeighted(mu, other.m_mapN0l);
+  m_mapN0c.addWeighted(mu, other.m_mapN0c);
+  m_mapN0f.addWeighted(mu, other.m_mapN0f);
+  m_mapN1l.addWeighted(mu, other.m_mapN1l);
+  m_mapN1c.addWeighted(mu, other.m_mapN1c);
+  m_mapN1f.addWeighted(mu, other.m_mapN1f);
+}
+
+
+void
+TARGET_LANGUAGE::depparser::CWeight::debugUsage(void) const {
   std::cout << "m_mapSTw "; m_mapSTw.debugUsage();
   std::cout << "m_mapSTt "; m_mapSTt.debugUsage();
   std::cout << "m_mapSTwt "; m_mapSTwt.debugUsage();

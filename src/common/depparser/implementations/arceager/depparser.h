@@ -73,10 +73,11 @@ private:
 
 public:
    // constructor and destructor
-   CDepParser( const std::string &sFeatureDBPath , bool bTrain , bool bCoNLL=false ) : CDepParserBase(sFeatureDBPath, bTrain, bCoNLL) { 
+   CDepParser( const std::string &sInputPath , bool bTrain , bool bCoNLL=false ) : CDepParser(sInputPath, sInputPath, bTrain, bCoNLL) { }
+   CDepParser( const std::string &sInputPath, const std::string &sOutputPath , bool bTrain , bool bCoNLL=false ) : CDepParserBase(bTrain, bCoNLL) {
       m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
       m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
-      m_weights = new depparser :: CWeight(sFeatureDBPath, bTrain );
+      m_weights = new depparser :: CWeight(sInputPath, sOutputPath, bTrain );
       m_nTrainingRound = 0; 
       m_nTotalErrors = 0;
 //      m_nScoreIndex = CScore<depparser::SCORE_TYPE>::eNonAverage ; 

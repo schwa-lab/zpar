@@ -20,17 +20,17 @@ namespace depparser {
  * CWeightBase - the definition of weights
  *
  *==============================================================*/
-
 class CWeightBase {
 protected:
    bool m_bTrain;
    bool m_bModified;
    bool m_bRules;
-   std::string m_sRecordPath;
+   const std::string m_sInputPath;
+   const std::string m_sOutputPath;
 
 public:
-   // CONSTRUCTOR 
-   CWeightBase(const std::string &sFile, bool bTrain) : m_bTrain(bTrain) , m_bRules(false) , m_sRecordPath(sFile) { }
+   CWeightBase(const std::string &sInputPath, bool bTrain) : CWeightBase(sInputPath, sInputPath, bTrain) { }
+   CWeightBase(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain) : m_bTrain(bTrain) , m_bRules(false) , m_sInputPath(sInputPath), m_sOutputPath(sOutputPath) { }
    virtual ~CWeightBase() { }
 
    void setRules(const bool &bRules) {
@@ -42,7 +42,7 @@ public:
    }
 
    virtual void loadScores() = 0 ;
-   virtual void saveScores() = 0 ; 
+   virtual void saveScores() = 0 ;
 };
 
 }

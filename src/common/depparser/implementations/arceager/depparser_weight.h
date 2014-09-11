@@ -144,11 +144,8 @@ typedef CPackedScoreMap<CCoNLLFeats, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
  * CWeight - the definition of weights, in feature
  *
  *==============================================================*/
-
 class CWeight : public CWeightBase {
-
 public:
-
    CWordMap m_mapSTw;
    CTagMap m_mapSTt;
    CTaggedWordMap m_mapSTwt;
@@ -256,8 +253,8 @@ public:
    CCoNLLFeatsMap m_mapN1f;
 
 public:
-
-   CWeight(const std::string &sPath, bool bTrain) : CWeightBase(sPath, bTrain) ,
+   CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
+   CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain) : CWeightBase(sInputPath, sOutputPath, bTrain) ,
 
                                                m_mapSTw("StackWord", DEP_TABLE_SIZE),
                                                m_mapSTt("StackTag", DEP_TABLE_SIZE),
