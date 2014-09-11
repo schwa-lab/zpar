@@ -56,15 +56,15 @@ private:
    CTwoTaggedWords st_word_tag_n0_word_tag ;
    CTwoWords st_word_n0_word ;
 
-   CTuple2<CWord, CTag> word_tag;
-   CTuple2<CWord, int> word_int;
-   CTuple2<CTag, int> tag_int;
-   CTuple3<CWord, CTag, CTag> word_tag_tag;
-   CTuple3<CWord, CWord, CTag> word_word_tag;
-   CTuple3<CWord, CWord, int> word_word_int;
-   CTuple3<CTag, CTag, int> tag_tag_int;
-   CTuple2<CWord, CSetOfTags<CDependencyLabel> > word_tagset;
-   CTuple2<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
+   std::tuple<CWord, CTag> word_tag;
+   std::tuple<CWord, int> word_int;
+   std::tuple<CTag, int> tag_int;
+   std::tuple<CWord, CTag, CTag> word_tag_tag;
+   std::tuple<CWord, CWord, CTag> word_word_tag;
+   std::tuple<CWord, CWord, int> word_word_int;
+   std::tuple<CTag, CTag, int> tag_tag_int;
+   std::tuple<CWord, CSetOfTags<CDependencyLabel> > word_tagset;
+   std::tuple<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
 
    int m_nTrainingRound;
    unsigned int m_nTotalErrors;

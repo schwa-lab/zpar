@@ -35,8 +35,56 @@
 #include <exception>
 #include <algorithm>
 #include <cmath>
+#include <tuple>
 
 //using namespace std;
+
+/* stream operators for tuple */
+
+template <typename T1, typename T2>
+std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple) {
+  os << std::get<0>(tuple) << " , " << std::get<1>(tuple);
+  return os;
+}
+
+template <typename T1, typename T2, typename T3>
+std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2, T3> &tuple) {
+  os << std::get<0>(tuple) << " , " << std::get<1>(tuple) << " , " << std::get<2>(tuple);
+  return os;
+}
+
+template <typename T1, typename T2>
+std::istream &operator>>(std::istream &is, std::tuple<T1, T2> &tuple) {
+  char c;
+  T1 tmp1;
+  is >> tmp1;
+  std::get<0>(tuple) = tmp1;
+  is >> c;
+  assert(c == ',');
+  T2 tmp2;
+  is >> tmp2;
+  std::get<1>(tuple) = tmp2;
+  return is;
+}
+
+template <typename T1, typename T2, typename T3>
+std::istream &operator>>(std::istream &is, std::tuple<T1, T2, T3> &tuple) {
+  char c;
+  T1 tmp1;
+  is >> tmp1;
+  std::get<0>(tuple) = tmp1;
+  is >> c;
+  assert(c == ',');
+  T2 tmp2;
+  is >> tmp2;
+  std::get<1>(tuple) = tmp2;
+  is >> c;
+  assert(c == ',');
+  T3 tmp3;
+  is >> tmp3;
+  std::get<2>(tuple) = tmp3;
+  return is;
+}
 
 /*===============================================================
  *
