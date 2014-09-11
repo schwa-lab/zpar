@@ -12,6 +12,8 @@
 #include <sstream>
 #include <thread>
 
+#include <time.h>
+
 #include "definitions.h"
 #include "depparser.h"
 #include "reader.h"
@@ -54,7 +56,7 @@ shard_sentences(const std::vector<CDependencyParse *> &sentences, std::vector<st
  *===============================================================*/
 static void
 auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const bool bRules, const bool bExtract, const std::string &sMetaPath, const unsigned int training_iterations) {
-  const unsigned int NTHREADS = 1;
+  const unsigned int NTHREADS = 10;
 
   // Read in the input.
   std::cout << "Reading in the training data..." << std::flush;
@@ -165,9 +167,18 @@ int main(int argc, char* argv[]) {
 #endif
 
     std::cout << "Training started" << std::endl;
-    int time_start = clock();
+
+    struct timespec time_start, time_end;
+    const clock_t clock_start = clock();
+    clock_gettime(CLOCK_MONOTONIC, &time_start);
     auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, training_iterations);
-    std::cout << "Training has finished successfully. Total time taken is: " << double(clock()-time_start)/CLOCKS_PER_SEC << std::endl;
+    const clock_t clock_end = clock();
+    clock_gettime(CLOCK_MONOTONIC, &time_end);
+
+    const double clock_elapsed = static_cast<double>(clock_end - clock_start)/CLOCKS_PER_SEC;
+    const double time_elapsed = (time_end.tv_sec - time_start.tv_sec) + (time_end.tv_nsec - time_start.tv_nsec)/1000000000.0;
+
+    std::cout << "Training has finished successfully. Total time taken: cpu=" << clock_elapsed << " wall=" << time_elapsed << std::endl;
 
     return 0;
   } catch (const std::string &e) {
