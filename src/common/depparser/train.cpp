@@ -64,11 +64,17 @@ auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const
 
   // Arrays of per-thread data.
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(NTHREADS);
-  std::vector<CDepParser *> parsers(NTHREADS);
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t, const unsigned int iteration) {
-    CDepParser &parser = *parsers[t];
+    std::ostringstream path;
+    path << sFeatureFile << "." << t;
+    CDepParser parser(path.str(), true, false);
+    parser.setRules(bRules);
+#ifdef SUPPORT_META_FEATURE_DEFINITION
+    if (!sMetaPath.empty())
+      parser.loadMeta(sMetaPath);
+#endif
     const std::vector<CDependencyParse *> &sentences = sharded_sentences[t];
 
     // Train on each sentence.
@@ -102,19 +108,6 @@ auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const
     // Partition the sentences into shards.
     shard_sentences(all_sentences, sharded_sentences, NTHREADS);
 
-    // Construct all of the parsers.
-    for (unsigned int t = 0; t != NTHREADS; ++t) {
-      std::ostringstream path;
-      path << sFeatureFile << "." << t;
-      CDepParser *parser = new CDepParser(path.str(), true, false);
-      parser->setRules(bRules);
-#ifdef SUPPORT_META_FEATURE_DEFINITION
-      if (!sMetaPath.empty() )
-        parser->loadMeta(sMetaPath);
-#endif
-      parsers[t] = (parser);
-    }
-
     // Run this iteration over the sharded sentences.
     std::vector<std::thread> threads;
     for (unsigned int t = 0; t != NTHREADS; ++t)
@@ -123,10 +116,6 @@ auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const
       threads[t].join();
 
     std::cout << "Done. " << std::endl;
-
-    // Free up memory.
-    //for (CDepParser *parser : parsers)
-      //delete parser;
   }
 
   // Free up memory.
