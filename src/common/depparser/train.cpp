@@ -9,6 +9,8 @@
  *                                          *
  ****************************************************************/
 #include <algorithm>
+#include <cstdio>
+#include <numeric>
 #include <sstream>
 #include <thread>
 
@@ -49,29 +51,59 @@ shard_sentences(const std::vector<CDependencyParse *> &sentences, std::vector<st
 }
 
 
+static std::string
+temp_model_path(const std::string &sModelPath, const unsigned int thread) {
+  std::ostringstream path;
+  path << sModelPath << "." << thread;
+  return path.str();
+}
+
+
+static void
+combine_partial_models(const std::string &sModelPath, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
+  // Compute the total number of errors.
+  const unsigned int nerrors_total = std::accumulate(nerrors.begin(), nerrors.end(), 0);
+
+  // Remove the model file before constructing the weights object over it so that the weights are zero to start off with.
+  std::remove(sModelPath.c_str());
+  depparser::CWeight summed(sModelPath, true);
+
+  for (unsigned int t = 0; t != nthreads; ++t) {
+    // Compute the percentage of errors that this partial model caused.
+    const double mu = nerrors[t] / static_cast<double>(nerrors_total);
+    std::cout << "Thread " << t << " had " << nerrors[t] << "/" << nerrors_total << " errors (" << (100 * mu) << ")" << std::endl;
+
+    // Load the partial model.
+    depparser::CWeight partial(temp_model_path(sModelPath, t), true);
+    summed.addWeighted(mu, partial);
+  }
+
+  // Dump out the accumulated weights.
+  summed.saveScores();
+}
+
+
 /*===============================================================
  *
  * auto_train - train by the parser itself, black-box training
  *
  *===============================================================*/
 static void
-auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const bool bRules, const bool bExtract, const std::string &sMetaPath, const unsigned int training_iterations) {
-  const unsigned int NTHREADS = 10;
-
+auto_train(const std::string &sInputPath, const std::string &sModelPath, const bool bRules, const bool bExtract, const std::string &sMetaPath, const unsigned int niterations, const unsigned int nthreads) {
   // Read in the input.
   std::cout << "Reading in the training data..." << std::flush;
   std::vector<CDependencyParse *> all_sentences;
-  read_input_file(sInputFile, all_sentences);
+  read_input_file(sInputPath, all_sentences);
   std::cout << " found " << all_sentences.size() << " sentences." << std::endl;
 
   // Arrays of per-thread data.
-  std::vector<std::vector<CDependencyParse *>> sharded_sentences(NTHREADS);
+  std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
+  std::vector<unsigned int> nerrors(nthreads);
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t, const unsigned int iteration) {
-    std::ostringstream path;
-    path << sFeatureFile << "." << t;
-    CDepParser parser(path.str(), true, false);
+    // Construct the parser.
+    CDepParser parser(sModelPath, temp_model_path(sModelPath, t), true, false);
     parser.setRules(bRules);
 #ifdef SUPPORT_META_FEATURE_DEFINITION
     if (!sMetaPath.empty())
@@ -83,8 +115,6 @@ auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const
     std::cout << "Training iteration " << iteration << " for thread " << t << " has started..." << std::endl ; std::cout.flush();
     for (auto n = 0; n != sentences.size(); ++n) {
       CDependencyParse &sent = *sentences[n];
-      TRACE("Sentence " << n);
-
       if (bExtract) {
 #ifdef SUPPORT_FEATURE_EXTRACTION
         parser.extract_features(sent);
@@ -99,25 +129,30 @@ auto_train(const std::string &sInputFile, const std::string &sFeatureFile, const
 
     // Tell the parser that this training round has finished.
     parser.finishtraining();
+    nerrors[t] = parser.getTotalTrainingErrors();
   };
 
 
   // Run each iteration of the perceptron learning.
-  for (unsigned int iteration = 0; iteration != training_iterations; ++iteration) {
+  for (unsigned int iteration = 0; iteration != niterations; ++iteration) {
     // Shuffle the sentence order between each iteration.
     std::random_shuffle(all_sentences.begin(), all_sentences.end());
 
     // Partition the sentences into shards.
-    shard_sentences(all_sentences, sharded_sentences, NTHREADS);
+    shard_sentences(all_sentences, sharded_sentences, nthreads);
 
     // Run this iteration over the sharded sentences.
     std::vector<std::thread> threads;
-    for (unsigned int t = 0; t != NTHREADS; ++t)
+    for (unsigned int t = 0; t != nthreads; ++t)
       threads.push_back(std::thread(fn, t, iteration));
-    for (unsigned int t = 0; t != NTHREADS; ++t)
+    for (unsigned int t = 0; t != nthreads; ++t)
       threads[t].join();
 
-    std::cout << "Done. " << std::endl;
+    // Combine the partial models together.
+    std::cout << "Combining partial models..." << std::endl;
+    combine_partial_models(sModelPath, nerrors, nthreads);
+
+    std::cout << "Training iteration " << iteration << " complete." << std::endl;
   }
 
   // Free up memory.
@@ -143,16 +178,22 @@ int main(int argc, char* argv[]) {
 #ifdef SUPPORT_META_FEATURE_DEFINITION
     configurations.defineConfiguration("t", "path", "meta feature types", "");
 #endif
-    if (options.args.size() != 4) {
-      std::cout << "\nUsage: " << argv[0] << " training_data model num_iterations" << std::endl ;
+    if (options.args.size() != 5) {
+      std::cout << "\nUsage: " << argv[0] << " training_data model niterations nthreads" << std::endl ;
       std::cout << configurations.message() << std::endl;
       return 1;
     }
     configurations.loadConfigurations(options.opts);
 
-    int training_iterations;
-    if (!fromString(training_iterations, options.args[3])) {
+    int niterations;
+    if (!fromString(niterations, options.args[3])) {
       std::cerr << "Error: the number of training iterations must be an integer." << std::endl;
+      return 1;
+    }
+
+    int nthreads;
+    if (!fromString(nthreads, options.args[4])) {
+      std::cerr << "Error: the number of threads must be an integer." << std::endl;
       return 1;
     }
 
@@ -171,7 +212,7 @@ int main(int argc, char* argv[]) {
     struct timespec time_start, time_end;
     const clock_t clock_start = clock();
     clock_gettime(CLOCK_MONOTONIC, &time_start);
-    auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, training_iterations);
+    auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, niterations, nthreads);
     const clock_t clock_end = clock();
     clock_gettime(CLOCK_MONOTONIC, &time_end);
 

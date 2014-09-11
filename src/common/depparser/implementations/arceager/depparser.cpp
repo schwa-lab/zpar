@@ -936,5 +936,4 @@ void CDepParser::extract_features_conll( const CCoNLLOutput &input) {
 void CDepParser::finishtraining() {
   static_cast<depparser::CWeight*>(m_weights)->computeAverageFeatureWeights(m_nTrainingRound);
   static_cast<depparser::CWeight*>(m_weights)->saveScores();
-  std::cout << "Total number of training errors are: " << m_nTotalErrors << std::endl;
 }

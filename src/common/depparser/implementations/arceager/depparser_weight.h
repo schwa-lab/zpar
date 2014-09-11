@@ -132,8 +132,8 @@ typedef CPackedScoreMap<std::tuple<CWord, int>, SCORE_TYPE, action::MAX> CWordIn
 typedef CPackedScoreMap<std::tuple<CTag, int>, SCORE_TYPE, action::MAX> CTagIntMap;
 typedef CPackedScoreMap<std::tuple<CTag, CTag, int>, SCORE_TYPE, action::MAX> CTagTagIntMap;
 typedef CPackedScoreMap<std::tuple<CWord, CWord, int>, SCORE_TYPE, action::MAX> CWordWordIntMap;
-typedef CPackedScoreMap<std::tuple< CWord, CSetOfTags<CDependencyLabel> >, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
-typedef CPackedScoreMap<std::tuple< CTag, CSetOfTags<CDependencyLabel> >, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
+typedef CPackedScoreMap<std::tuple<CWord, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
+typedef CPackedScoreMap<std::tuple<CTag, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
 
 typedef CPackedScoreMap<CLemma, SCORE_TYPE, action::MAX> CLemmaMap;
 typedef CPackedScoreMap<CCoNLLCPOS, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
@@ -362,13 +362,8 @@ public:
                                                m_mapN1c("Next+1CPOS", DEP_TABLE_SIZE),
                                                m_mapN1f("Next+1Feats", DEP_TABLE_SIZE)
    { loadScores(); }
+   virtual ~CWeight() { }
 
-   virtual ~CWeight() {
-//      iterate_templates(,.freePoolMemory(););
-//      CPackedScore<SCORE_TYPE, action::MAX>::freePoolMemory();
-   }
-
-   // MEHTODS
    virtual void loadScores();
    virtual void saveScores();
 

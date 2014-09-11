@@ -105,6 +105,8 @@ public:
    depparser::SCORE_TYPE getGlobalScore(const CDependencyParse &parsed);
    void updateScores(const CDependencyParse &parse, const CDependencyParse &correct, int round=0);
 
+   inline unsigned int getTotalTrainingErrors(void) const { return m_nTotalErrors; }
+
 private:
    enum SCORE_UPDATE {eAdd=0, eSubtract};
 
@@ -126,8 +128,6 @@ private:
    void arcleft( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;
    void arcright( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;
    void poproot( const depparser::CStateItem *item, const CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &scores) ;  
-
-   inline unsigned int getTotalTrainingErrors(void) const { return m_nTotalErrors; }
 };
 
 } // namespace TARGET_LANGUAGE
