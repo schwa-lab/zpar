@@ -203,18 +203,12 @@ public:
    }
 
 public:
-   iterator begin() {
-      return iterator(this, m_buckets);
-   }
-   iterator end() {
-      return iterator(this, 0);
-   }
-   const_iterator begin() const {
-      return const_iterator(this, m_buckets);
-   }
-   const_iterator end() const {
-      return const_iterator(this, 0);
-   }
+   iterator begin() { return iterator(this, m_buckets); }
+   iterator end() { return iterator(this, 0); }
+   const_iterator begin() const { return const_iterator(this, m_buckets); }
+   const_iterator end() const { return const_iterator(this, 0); }
+   const_iterator cbegin() const { return const_iterator(this, m_buckets); }
+   const_iterator cend() const { return const_iterator(this, 0); }
 
 public:
    void operator = (const CLinkedList& o) {

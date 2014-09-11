@@ -54,37 +54,65 @@ public:
       void validate() {
          // when the next item is at the end of the bucket, move on
          assert(m_nBucket < m_parent->m_nTableSize);
-         while (m_entry == 0) { 
-            if (m_nBucket == m_parent->m_nTableSize-1) 
-               return; 
-            else { 
-               m_entry = m_parent->m_buckets[++m_nBucket]; 
-               continue; 
-            } 
-         } 
+         while (m_entry == 0) {
+            if (m_nBucket == m_parent->m_nTableSize-1)
+               return;
+            else {
+               m_entry = m_parent->m_buckets[++m_nBucket];
+               continue;
+            }
+         }
       }
 
    public:
       iterator() {}
-      iterator(CHashMap<K, V> *parent, int bucket, CEntry *entry) : m_nBucket(bucket), m_parent(parent), m_entry(entry) {
-         validate();
-      }
+      iterator(CHashMap<K, V> *parent, int bucket, CEntry *entry) : m_nBucket(bucket), m_parent(parent), m_entry(entry) { validate(); }
       iterator(const iterator &it) { m_parent = it.m_parent; m_nBucket = it.m_nBucket; m_entry = it.m_entry; }
-      bool operator != (const iterator &it) const { return !((*this)==it);}
-      bool operator == (const iterator &it) const { return m_parent == it.m_parent && m_nBucket == it.m_nBucket && m_entry == it.m_entry; }
-      // move to next places
-      void operator ++ () { 
-         assert(m_entry != 0);
-         m_entry=m_entry->m_next ;  
-         validate();
+
+      inline bool operator == (const iterator &it) const { return m_parent == it.m_parent && m_nBucket == it.m_nBucket && m_entry == it.m_entry; }
+      inline bool operator != (const iterator &it) const { return !((*this)==it); }
+      inline void operator ++ () { assert(m_entry != 0); m_entry = m_entry->m_next ; validate(); }
+      inline bool valid() const { return !(m_nBucket < 0 || m_nBucket > m_parent->m_nTableSize-1 || m_entry == 0); }
+
+      inline const K &first() { return m_entry->m_key; }
+      inline V &second() { return m_entry->m_value; }
+   };
+
+
+   class const_iterator {
+   private:
+      unsigned long int m_nBucket;
+      const CHashMap<K, V> *m_parent;
+      const CEntry *m_entry;
+
+   private:
+      void validate() {
+         // when the next item is at the end of the bucket, move on
+         assert(m_nBucket < m_parent->m_nTableSize);
+         while (m_entry == 0) {
+            if (m_nBucket == m_parent->m_nTableSize-1)
+               return;
+            else {
+               m_entry = m_parent->m_buckets[++m_nBucket];
+               continue;
+            }
+         }
       }
-      bool valid() const { if (m_nBucket < 0 || m_nBucket > m_parent->m_nTableSize-1 || m_entry == 0) return false; return true; }
 
-      const K &first() { return m_entry->m_key; }
-      V &second() { return m_entry->m_value; }
-   }; 
+   public:
+      const_iterator() {}
+      const_iterator(const CHashMap<K, V> *parent, int bucket, const CEntry *entry) : m_nBucket(bucket), m_parent(parent), m_entry(entry) { validate(); }
+      const_iterator(const const_iterator &it) { m_parent = it.m_parent; m_nBucket = it.m_nBucket; m_entry = it.m_entry; }
 
-   //===============================================================
+      inline bool operator == (const const_iterator &it) const { return m_parent == it.m_parent && m_nBucket == it.m_nBucket && m_entry == it.m_entry; }
+      inline bool operator != (const const_iterator &it) const { return !((*this)==it); }
+      inline void operator ++ () { assert(m_entry != 0); m_entry = m_entry->m_next ; validate(); }
+      inline bool valid() const { return !(m_nBucket < 0 || m_nBucket > m_parent->m_nTableSize-1 || m_entry == 0); }
+
+      inline const K &first() { return m_entry->m_key; }
+      inline const V &second() { return m_entry->m_value; }
+   };
+
 
 protected:
    const unsigned long int m_nTableSize;
@@ -221,12 +249,12 @@ public:
    }
 
 public:
-   iterator begin() { 
-      return iterator(this, 0, m_buckets[0]); 
-   }
-   iterator end() { 
-      return iterator(this, m_nTableSize-1, 0); 
-   }
+   iterator begin() { return iterator(this, 0, m_buckets[0]); }
+   iterator end() { return iterator(this, m_nTableSize-1, 0); }
+   const_iterator begin() const { return const_iterator(this, 0, m_buckets[0]); }
+   const_iterator end() const { return const_iterator(this, m_nTableSize-1, 0); }
+   const_iterator cbegin() const { return const_iterator(this, 0, m_buckets[0]); }
+   const_iterator cend() const { return const_iterator(this, m_nTableSize-1, 0); }
 
   void debugUsage(void) const {
     unsigned int nitems = 0, nbuckets_used = 0, ncollisions = 0;
