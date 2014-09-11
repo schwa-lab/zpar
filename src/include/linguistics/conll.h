@@ -290,7 +290,7 @@ public:
    CCoNLLCPOS(const unsigned long &i) : CGenericTag(i) {}
    CCoNLLCPOS(const CCoNLLCPOS &c) : CGenericTag(c) {}
 public:
-   CGenericTagset &getTagset() const { static CGenericTagset tagset; return tagset; }
+   CGenericTagset &getTagset() const { thread_local static CGenericTagset tagset; return tagset; }
 };
 
 /*==============================================================
@@ -306,7 +306,7 @@ public:
    CCoNLLFeats(const unsigned long &i) : CGenericTag(i) {}
    CCoNLLFeats(const CCoNLLFeats &c) : CGenericTag(c) {}
 public:
-   CGenericTagset &getTagset() const { static CGenericTagset tagset; return tagset; }
+   CGenericTagset &getTagset() const { thread_local static CGenericTagset tagset; return tagset; }
 };
 
 void readCoNLLFeats(std::vector<CCoNLLFeats> &output, const std::string &input);

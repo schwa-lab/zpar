@@ -37,7 +37,7 @@ protected:
 
 protected:
    // static method assigns tokenizer as global dictionary of words
-   CStringTokenizer &getTokenizer() const {static CStringTokenizer tokenizer; return tokenizer;}
+   CStringTokenizer &getTokenizer() const { thread_local static CStringTokenizer tokenizer; return tokenizer; }
 
 public:
    enum {NONE=0, EMPTY=1};
