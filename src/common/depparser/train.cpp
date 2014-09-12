@@ -101,7 +101,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
   std::vector<unsigned int> nerrors(nthreads);
 
   // The per-thread training function.
-  const auto &fn = [&](const unsigned int t, const unsigned int iteration) {
+  const auto &fn = [&](const unsigned int t) {
     // Construct the parser.
     CDepParser parser(sModelPath, temp_model_path(sModelPath, t), true, false);
     parser.setRules(bRules);
@@ -112,7 +112,6 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
     const std::vector<CDependencyParse *> &sentences = sharded_sentences[t];
 
     // Train on each sentence.
-    std::cout << "Training iteration " << iteration << " for thread " << t << " has started..." << std::endl ; std::cout.flush();
     for (auto n = 0; n != sentences.size(); ++n) {
       CDependencyParse &sent = *sentences[n];
       if (bExtract) {
@@ -134,7 +133,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
 
 
   // Run each iteration of the perceptron learning.
-  for (unsigned int iteration = 0; iteration != niterations; ++iteration) {
+  for (unsigned int iteration = 1; iteration <= niterations; ++iteration) {
     // Shuffle the sentence order between each iteration.
     std::random_shuffle(all_sentences.begin(), all_sentences.end());
 
@@ -142,17 +141,18 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
     shard_sentences(all_sentences, sharded_sentences, nthreads);
 
     // Run this iteration over the sharded sentences.
+    std::cout << "[Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();
     std::vector<std::thread> threads;
     for (unsigned int t = 0; t != nthreads; ++t)
-      threads.push_back(std::thread(fn, t, iteration));
+      threads.push_back(std::thread(fn, t));
     for (unsigned int t = 0; t != nthreads; ++t)
       threads[t].join();
 
     // Combine the partial models together.
-    std::cout << "Combining partial models..." << std::endl;
+    std::cout << "[Iteration " << iteration << "] Combining partial models." << std::endl;
     combine_partial_models(sModelPath, nerrors, nthreads);
 
-    std::cout << "Training iteration " << iteration << " complete." << std::endl;
+    std::cout << "[Iteration " << iteration << "] Completed." << std::endl;
   }
 
   // Free up memory.

@@ -30,7 +30,7 @@ void TARGET_LANGUAGE::depparser::CWeight::loadScores() {
    file.open(m_sInputPath.c_str()) ;
 
    if (!file.is_open()) {
-      std::cout << "No scores loaded." << std::endl;
+      //std::cout << "No scores loaded." << std::endl;
       return;
    }
 
@@ -69,7 +69,7 @@ void TARGET_LANGUAGE::depparser::CWeight::loadScores() {
  *--------------------------------------------------------------*/
 
 void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
-   std::cout<<"Saving scores..."; std::cout.flush();
+   //std::cout<<"Saving scores..." << std::endl;
    std::ofstream file ;
    file.open(m_sOutputPath.c_str()) ;
 
@@ -95,9 +95,8 @@ void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
  *
  *-------------------------------------------------------------*/
 void TARGET_LANGUAGE::depparser::CWeight::computeAverageFeatureWeights(int round) {
-   std::cout<<"Computing averaged (total) feature vector..."; std::cout.flush();
+   //std::cout<<"Computing averaged (total) feature vector..." << std::endl;
    iterate_templates(,.computeAverage(round);) ;
-   std::cout<<"done."<<std::endl;
 }
 
 
