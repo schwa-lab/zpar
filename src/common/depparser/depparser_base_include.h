@@ -1,7 +1,10 @@
 // Copyright (C) University of Oxford 2010
+#ifndef _DEPPARSER_BASE_INCLUDE
+#define _DEPPARSER_BASE_INCLUDE
 #define SIMPLE_HASH
 #include "definitions.h"
 #include "utils.h"
+#include "pos/penn.h"
 #include "tags.h"
 #include "linguistics/word_tokenized.h"
 #include "linguistics/taggedword.h"
@@ -27,3 +30,7 @@ namespace depparser {
 #include "options.h"
 
 #include "supertag.h"
+
+#include <boost/variant.hpp>
+
+#endif

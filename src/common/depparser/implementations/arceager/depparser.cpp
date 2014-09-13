@@ -11,6 +11,7 @@
 
 #include "depparser.h"
 #include "depparser_weight.h"
+#include "hash_simple.h"
 
 using namespace TARGET_LANGUAGE;
 using namespace TARGET_LANGUAGE::depparser;
@@ -18,6 +19,18 @@ using namespace TARGET_LANGUAGE::depparser;
 const CWord g_emptyWord("");
 const CTaggedWord<CTag, TAG_SEPARATOR> g_emptyTaggedWord;
 const CTag g_noneTag = CTag::NONE;
+
+class hash_visitor : public boost::static_visitor<unsigned long> {
+public:
+    template<typename T>
+    unsigned long operator()( const T &t ) const { return hash(t); }
+};
+
+template<>
+inline unsigned long hash(const FeatureVariant &t) { 
+    return boost::apply_visitor(hash_visitor(), t);
+}
+
 
 #define cast_weights static_cast<CWeight*>(m_weights)
 #define refer_or_allocate_tuple2(x, o1, o2) { if (amount == 0) x.refer(o1, o2); else x.allocate(o1, o2); }
@@ -143,193 +156,196 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    static CTuple3<CTag, CTag, int> tag_tag_int;
    static CTuple2<CWord, CSetOfTags<CDependencyLabel> > word_tagset;
    static CTuple2<CTag, CSetOfTags<CDependencyLabel> > tag_tagset;
-
+ 
    // single
    if (st_index != -1) {
-      cast_weights->m_mapSTw.getOrUpdateScore( retval, st_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTt.getOrUpdateScore( retval, st_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTwt.getOrUpdateScore( retval, st_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTw, retval, st_word, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTt, retval, st_tag, action, m_nScoreIndex, amount, round ) ;
+    
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwt, retval, st_word_tag, action, m_nScoreIndex, amount, round) ;
    }
 
    if (n0_index != -1) {
-      cast_weights->m_mapN0w.getOrUpdateScore( retval, n0_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0t.getOrUpdateScore( retval, n0_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0wt.getOrUpdateScore( retval, n0_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0w, retval, n0_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0t, retval, n0_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0wt, retval, n0_word_tag, action, m_nScoreIndex, amount, round) ;
    }
 
    if (n1_index != -1) {
-      cast_weights->m_mapN1w.getOrUpdateScore( retval, n1_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN1t.getOrUpdateScore( retval, n1_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN1wt.getOrUpdateScore( retval, n1_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1w, retval, n1_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1t, retval, n1_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1wt, retval, n1_word_tag, action, m_nScoreIndex, amount, round) ;
    }
 
    if (n2_index != -1) {
-      cast_weights->m_mapN2w.getOrUpdateScore( retval, n2_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN2t.getOrUpdateScore( retval, n2_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN2wt.getOrUpdateScore( retval, n2_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN2w, retval, n2_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN2t, retval, n2_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN2wt, retval, n2_word_tag, action, m_nScoreIndex, amount, round) ;
    }
 
    if (sth_index != -1) {
-      cast_weights->m_mapSTHw.getOrUpdateScore( retval, sth_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTHt.getOrUpdateScore( retval, sth_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTi.getOrUpdateScore( retval, st_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHw, retval, sth_word, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHt, retval, sth_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTi, retval, st_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (sthh_index != -1) {
-      cast_weights->m_mapSTHHw.getOrUpdateScore( retval, sthh_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTHHt.getOrUpdateScore( retval, sthh_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTHi.getOrUpdateScore( retval, sth_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHHw, retval, sthh_word, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHHt, retval, sthh_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHi, retval, sth_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (stld_index != -1) {
-      cast_weights->m_mapSTLDw.getOrUpdateScore( retval, stld_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTLDt.getOrUpdateScore( retval, stld_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTLDi.getOrUpdateScore( retval, stld_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTLDw, retval, stld_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTLDt, retval, stld_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTLDi, retval, stld_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (strd_index != -1) {
-      cast_weights->m_mapSTRDw.getOrUpdateScore( retval, strd_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTRDt.getOrUpdateScore( retval, strd_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTRDi.getOrUpdateScore( retval, strd_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTRDw, retval, strd_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTRDt, retval, strd_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTRDi, retval, strd_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (n0ld_index != -1) {
-      cast_weights->m_mapN0LDw.getOrUpdateScore( retval, n0ld_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0LDt.getOrUpdateScore( retval, n0ld_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0LDi.getOrUpdateScore( retval, n0ld_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0LDw, retval, n0ld_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0LDt, retval, n0ld_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0LDi, retval, n0ld_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (stl2d_index != -1) {
-      cast_weights->m_mapSTL2Dw.getOrUpdateScore( retval, stl2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTL2Dt.getOrUpdateScore( retval, stl2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTL2Di.getOrUpdateScore( retval, stl2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTL2Dw, retval, stl2d_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTL2Dt, retval, stl2d_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTL2Di, retval, stl2d_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (str2d_index != -1) {
-      cast_weights->m_mapSTR2Dw.getOrUpdateScore( retval, str2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTR2Dt.getOrUpdateScore( retval, str2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTR2Di.getOrUpdateScore( retval, str2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTR2Dw, retval, str2d_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTR2Dt, retval, str2d_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTR2Di, retval, str2d_label, action, m_nScoreIndex, amount, round) ;
    }
 
    if (n0l2d_index != -1) {
-      cast_weights->m_mapN0L2Dw.getOrUpdateScore( retval, n0l2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0L2Dt.getOrUpdateScore( retval, n0l2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0L2Di.getOrUpdateScore( retval, n0l2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0L2Dw, retval, n0l2d_word, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0L2Dt, retval, n0l2d_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0L2Di, retval, n0l2d_label, action, m_nScoreIndex, amount, round) ;
    }
 
    // s0 and n0
    if (st_index != -1) {
-      cast_weights->m_mapSTwtN0wt.getOrUpdateScore( retval, st_word_tag_n0_word_tag, action, m_nScoreIndex, amount, round ); 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwtN0wt, retval, st_word_tag_n0_word_tag, action, m_nScoreIndex, amount, round ); 
       refer_or_allocate_tuple3(word_word_tag, &st_word, &n0_word, &st_tag);
-      cast_weights->m_mapSTwtN0w.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwtN0w, retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
       refer_or_allocate_tuple3(word_word_tag, &st_word, &n0_word, &n0_tag);
-      cast_weights->m_mapSTwN0wt.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwN0wt, retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
       refer_or_allocate_tuple3(word_tag_tag, &st_word, &st_tag, &n0_tag);
-      cast_weights->m_mapSTwtN0t.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwtN0t, retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ; 
       refer_or_allocate_tuple3(word_tag_tag, &n0_word, &st_tag, &n0_tag);
-      cast_weights->m_mapSTtN0wt.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTwN0w.getOrUpdateScore( retval, st_word_n0_word, action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtN0wt, retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwN0w, retval, st_word_n0_word, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtN0t, retval, CTagSet<CTag, 2>(encodeTags(st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
    }
 
    if (st_index != -1 && n0_index != -1) {
-      cast_weights->m_mapN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapN0tN1tN2t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n1_tag,n2_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0tN0LDt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n0ld_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapN0tN0LDtN0L2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n0ld_tag,n0l2d_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tN1t, retval, CTagSet<CTag, 2>(encodeTags(n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tN1tN2t, retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n1_tag,n2_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtN0tN1t, retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtN0tN0LDt, retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n0ld_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tN0LDtN0L2Dt, retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n0ld_tag,n0l2d_tag)), action, m_nScoreIndex, amount, round ) ; 
    }
    if (st_index!=-1) {
-      cast_weights->m_mapSTHtSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sth_tag,st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTHHtSTHtSTt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sthh_tag, sth_tag,st_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTLDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTLDtSTL2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,stl2d_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTRDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTRDtSTR2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,str2d_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHtSTtN0t, retval, CTagSet<CTag, 3>(encodeTags(sth_tag,st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTHHtSTHtSTt, retval, CTagSet<CTag, 3>(encodeTags(sthh_tag, sth_tag,st_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtSTLDtN0t, retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtSTLDtSTL2Dt, retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,stl2d_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtSTRDtN0t, retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtSTRDtSTR2Dt, retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,str2d_tag)), action, m_nScoreIndex, amount, round ) ; 
    }
 
    // distance
    if (st_index!=-1 && n0_index!=-1) {
       refer_or_allocate_tuple2(word_int, &st_word, &st_n0_dist);
-      cast_weights->m_mapSTwd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwd, retval, word_int, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_int, &st_tag, &st_n0_dist);
-      cast_weights->m_mapSTtd.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtd, retval, tag_int, action, m_nScoreIndex, amount, round ) ;
       refer_or_allocate_tuple2(word_int, &n0_word, &st_n0_dist);
-      cast_weights->m_mapN0wd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0wd, retval, word_int, action, m_nScoreIndex, amount, round ) ;
       refer_or_allocate_tuple2(tag_int, &n0_tag, &st_n0_dist);
-      cast_weights->m_mapN0td.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0td, retval, tag_int, action, m_nScoreIndex, amount, round ) ;
       refer_or_allocate_tuple3(word_word_int, &st_word, &n0_word, &st_n0_dist);
-      cast_weights->m_mapSTwN0wd.getOrUpdateScore( retval, word_word_int, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwN0wd, retval, word_word_int, action, m_nScoreIndex, amount, round ) ; 
       refer_or_allocate_tuple3(tag_tag_int, &st_tag, &n0_tag, &st_n0_dist);
-      cast_weights->m_mapSTtN0td.getOrUpdateScore( retval, tag_tag_int, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtN0td, retval, tag_tag_int, action, m_nScoreIndex, amount, round ) ; 
    }
 
    // st arity
    if (st_index != -1) {
       refer_or_allocate_tuple2(word_int, &st_word, &st_rarity);
-      cast_weights->m_mapSTwra.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwra, retval, word_int, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_int, &st_tag, &st_rarity);
-      cast_weights->m_mapSTtra.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtra, retval, tag_int, action, m_nScoreIndex, amount, round ) ;
       refer_or_allocate_tuple2(word_int, &st_word, &st_larity);
-      cast_weights->m_mapSTwla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwla, retval, word_int, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_int, &st_tag, &st_larity);
-      cast_weights->m_mapSTtla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtla, retval, tag_int, action, m_nScoreIndex, amount, round ) ;
    }
 
    // n0 arity
    if (n0_index!=-1) {
       refer_or_allocate_tuple2(word_int, &n0_word, &n0_larity);
-      cast_weights->m_mapN0wla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0wla, retval, word_int, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_int, &n0_tag, &n0_larity);
-      cast_weights->m_mapN0tla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tla, retval, tag_int, action, m_nScoreIndex, amount, round ) ;
    }
 
    // st labelset
    if (st_index != -1){
       refer_or_allocate_tuple2(word_tagset, &st_word, &st_rtagset);
-      cast_weights->m_mapSTwrp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwrp, retval, word_tagset, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_tagset, &st_tag, &st_rtagset);
-      cast_weights->m_mapSTtrp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtrp, retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
 
       refer_or_allocate_tuple2(word_tagset, &st_word, &st_ltagset);
-      cast_weights->m_mapSTwlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwlp, retval, word_tagset, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_tagset, &st_tag, &st_ltagset);
-      cast_weights->m_mapSTtlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTtlp, retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
    }
 
    // n0 labelset
    if (n0_index != -1){
       refer_or_allocate_tuple2(word_tagset, &n0_word, &n0_ltagset);
-      cast_weights->m_mapN0wlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0wlp, retval, word_tagset, action, m_nScoreIndex, amount, round) ;
       refer_or_allocate_tuple2(tag_tagset, &n0_tag, &n0_ltagset);
-      cast_weights->m_mapN0tlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tlp, retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
    }
 
+/*
    if (m_bCoNLL) {
 
       static unsigned i;
 
       if (st_index!=-1) {
-         if (!m_lCacheCoNLLLemma[st_index].empty()) cast_weights->m_mapSTl.getOrUpdateScore( retval, m_lCacheCoNLLLemma[st_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[st_index] != CCoNLLCPOS()) cast_weights->m_mapSTc.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[st_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[st_index].empty()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTl, retval, m_lCacheCoNLLLemma[st_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[st_index] != CCoNLLCPOS()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTc, retval, m_lCacheCoNLLCPOS[st_index], action, m_nScoreIndex, amount, round) ;
          for (i=0; i<m_lCacheCoNLLFeats[st_index].size(); ++i)
-            cast_weights->m_mapSTf.getOrUpdateScore( retval, m_lCacheCoNLLFeats[st_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTf, retval, m_lCacheCoNLLFeats[st_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (st_index!=-1)
 
       if (n0_index!=-1) {
-         if (!m_lCacheCoNLLLemma[n0_index].empty()) cast_weights->m_mapN0l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n0_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n0_index] != CCoNLLCPOS()) cast_weights->m_mapN0c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n0_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[n0_index].empty()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0l, retval, m_lCacheCoNLLLemma[n0_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n0_index] != CCoNLLCPOS()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0c, retval, m_lCacheCoNLLCPOS[n0_index], action, m_nScoreIndex, amount, round) ;
          for (i=0; i<m_lCacheCoNLLFeats[n0_index].size(); ++i)
-            cast_weights->m_mapN0f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n0_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0f, retval, m_lCacheCoNLLFeats[n0_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (n0_index!=-1)
 
       if (n1_index!=-1) {
-         if (!m_lCacheCoNLLLemma[n1_index].empty()) cast_weights->m_mapN1l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n1_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n1_index] != CCoNLLCPOS()) cast_weights->m_mapN1c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n1_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[n1_index].empty()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1l, retval, m_lCacheCoNLLLemma[n1_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n1_index] != CCoNLLCPOS()) cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1c, retval, m_lCacheCoNLLCPOS[n1_index], action, m_nScoreIndex, amount, round) ;
          for (i=0; i<m_lCacheCoNLLFeats[n1_index].size(); ++i)
-            cast_weights->m_mapN1f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n1_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN1f, retval, m_lCacheCoNLLFeats[n1_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (n1_index!=-1)
    }
+ */
 }
 
 /*---------------------------------------------------------------

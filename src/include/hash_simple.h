@@ -157,7 +157,7 @@ public:
       }
       while (true) {
          assert(entry);
-         if (entry->m_key==key)
+         if (entry->m_key == key)
             return entry->m_value;
          else {
             if (entry->m_next==0)

@@ -13,6 +13,7 @@
 #include "depparser.h"
 #include "reader.h"
 #include "writer.h"
+#include <google/profiler.h>
 
 using namespace TARGET_LANGUAGE;
 
@@ -24,7 +25,7 @@ using namespace TARGET_LANGUAGE;
 
 void auto_train(const std::string &sOutputFile, const std::string &sFeatureFile, const bool &bRules, const std::string &sSuperPath, const bool &bCoNLL, const bool &bExtract, const std::string &sMetaPath) {
 
-   std::cout << "Training iteration is started..." << std::endl ; std::cout.flush();
+   std::cout << "Training iteration started..." << std::endl ; std::cout.flush();
 
    CDepParser parser(sFeatureFile, true, bCoNLL);
    parser.setRules(bRules);
@@ -100,7 +101,6 @@ void auto_train(const std::string &sOutputFile, const std::string &sFeatureFile,
  *==============================================================*/
 
 int main(int argc, char* argv[]) {
-
    try {
       COptions options(argc, argv);
       CConfigurations configurations;

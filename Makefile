@@ -87,7 +87,7 @@ include Makefile.common
 INCLUDES = -I$(SRC_INCLUDES)
 
 CXX = g++
-CXXFLAGS = -Wall -Wextra -Werror -pedantic -Wno-sign-compare -Wno-strict-aliasing -Wno-unused-function -Wno-unused-parameter -O3 $(INCLUDES) $(DEBUG) --std=c++11
+CXXFLAGS = -Wall -Wextra -pedantic -Wno-sign-compare -Wno-strict-aliasing -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -O3 $(INCLUDES) $(DEBUG) --std=c++11
 
 LD=$(CXX)
 LDFLAGS = -ltcmalloc -lprofiler

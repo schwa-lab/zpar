@@ -23,6 +23,11 @@
 //#include "score_packed_list.h"
 //#include "score_packed_hash.h"
 #include "score_packed_array.h"
+#include "hash_utils.h" // Feature enum is there for now
+#include "hash_simple.h"
+#include "english/tags.h"
+#include "english/pos/penn.h"
+#include <utility>
 
 /*===============================================================
  *
@@ -95,7 +100,7 @@ std::ostream & operator << (std::ostream &os, CPackedScoreType<SCORE_TYPE, PACKE
  *==============================================================*/
 
 template <typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-class CPackedScoreMap : public CHashMap< K , CPackedScore<SCORE_TYPE, PACKED_SIZE> > {
+class CPackedScoreMap : public CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> > {
 
 protected:
    const CPackedScore<SCORE_TYPE, PACKED_SIZE> m_zero ;
@@ -111,7 +116,7 @@ public:
    unsigned count ;
 
 public:
-   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) , name(input_name) , initialized(bInitMap) , count(0)
+   CPackedScoreMap(std::string input_name, int TABLE_SIZE, bool bInitMap=true) : CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE, bInitMap) , m_zero(), name(input_name) , initialized(bInitMap) , count(0)
 #ifdef NO_NEG_FEATURE
 , m_positive(this)
 #endif
@@ -122,7 +127,7 @@ public:
 public:
    virtual inline void init() {
       initialized = true;
-      CHashMap<K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::init();
+      CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::init();
    }
 
 #ifdef NO_NEG_FEATURE
@@ -146,15 +151,16 @@ public:
       (*this)[ key ].updateCurrent( index , amount , round );
    }
 
-   inline void getOrUpdateScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &out , const K &key , const unsigned &index , const int &which , const SCORE_TYPE &amount=0 , const int &round=0 ) {
+   inline void getOrUpdateScore( Feature f, CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &out , const K &key , const unsigned &index , const int &which , const SCORE_TYPE &amount=0 , const int &round=0 ) {
+      const auto new_key = std::make_pair( f, key );
 #ifdef NO_NEG_FEATURE
       if ( round == -1 ) {
-         addPositiveFeature( key, index );
+         addPositiveFeature( key , index );
          return;
       }
 #endif
       if ( amount == 0 ) {
-         this->find(key, m_zero).add(out, which) ;
+         this->find( key , m_zero ).add( out, which ) ;
       }
       else {
          assert( round > 0 );
@@ -164,10 +170,10 @@ public:
 
    void computeAverage(unsigned long int round) {
       count = 0;
-      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
+      //typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator 
+      auto it = this->begin();
       while (it != this->end()) {
-         it.second().updateAverage(round) ;
-         ++ it;
+          ++ it;
          ++ count;
       }
    }
@@ -277,17 +283,21 @@ template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
 inline
 std::ostream & operator << (std::ostream &os, CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
    assert(os);
-   if (score_map.count)
+   if (score_map.count) {
       os << score_map.name << ' ' << score_map.count << std::endl ;
-   else
+      std::cout << score_map.name << ' ' << score_map.count << std::endl ;
+   } else {
       os << score_map.name << std::endl ;
+   }
 
-   typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = score_map.begin() ;
+   auto it = score_map.begin() ;
    while ( it != score_map.end() ) {
 #ifndef NO_NEG_FEATURE
       if ( !it.second().empty() ) 
-#endif // do not write zero scores if allow negative scores
+#endif // do not write zero scores if allow negative 
+         //os << it.first().second << "\t:\t" << it.second() << std::endl ;
          os << it.first() << "\t:\t" << it.second() << std::endl ;
+         //os << it.second() << std::endl ;
       ++ it;
    }
    os << std::endl ;
