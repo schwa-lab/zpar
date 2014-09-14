@@ -256,7 +256,7 @@ public:
   virtual void loadScores() override;
   virtual void saveScores() override;
 
-  void addWeighted(double mu, const CWeight &other);
+  void addWeighted(float mu, const CWeight &other);
   void computeAverageFeatureWeights(int round);
   void debugUsage(void) const;
 };
@@ -438,7 +438,7 @@ CWeight<SCORE_TYPE>::saveScores() {
 
 template <typename SCORE_TYPE>
 void
-CWeight<SCORE_TYPE>::addWeighted(const double mu, const CWeight<SCORE_TYPE> &other) {
+CWeight<SCORE_TYPE>::addWeighted(const float mu, const CWeight<SCORE_TYPE> &other) {
   m_mapSTw.addWeighted(mu, other.m_mapSTw);
   m_mapSTt.addWeighted(mu, other.m_mapSTt);
   m_mapSTwt.addWeighted(mu, other.m_mapSTwt);

@@ -72,7 +72,7 @@ public:
      total += current;
    }
 
-   void addWeighted(const double mu, const CScore &other) {
+   void addWeighted(const float mu, const CScore &other) {
       current += static_cast<SCORE_TYPE>(mu * other.current);
       total += static_cast<SCORE_TYPE>(mu * other.total);
    }

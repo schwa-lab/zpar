@@ -221,7 +221,7 @@ public:
       return retval;
    }
 
-   void addWeighted(const double mu, const CPackedScoreMap &other) {
+   void addWeighted(const float mu, const CPackedScoreMap &other) {
       typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::const_iterator iterator;
       const iterator end = other.end();
       for (iterator it = other.begin(); it != end; ++it) {

@@ -160,7 +160,7 @@ public:
     }
   }
 
-  void addWeighted(const double mu, const CPackedScore &other) {
+  void addWeighted(const float mu, const CPackedScore &other) {
     typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
     const iterator end = other.scores.end();
     for (iterator it = other.scores.begin(); it != end; ++it) {

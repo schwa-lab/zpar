@@ -70,7 +70,7 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
 
   for (unsigned int t = 0; t != nthreads; ++t) {
     // Compute the percentage of errors that this partial model caused.
-    const double mu = nerrors[t] / static_cast<double>(nerrors_total);
+    const float mu = nerrors[t] / static_cast<float>(nerrors_total);
     std::cout << "Thread " << t << " had " << nerrors[t] << "/" << nerrors_total << " errors (" << (100 * mu) << ")" << std::endl;
 
     // Load the partial model.
