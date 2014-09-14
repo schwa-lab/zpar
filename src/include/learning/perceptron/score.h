@@ -12,23 +12,6 @@
 #ifndef _SCORE_H
 #define _SCORE_H
 
-template<typename SCORE_TYPE>
-class CScore;
-
-template<typename SCORE_TYPE>
-std::istream & operator >> (std::istream &is, CScore<SCORE_TYPE> &score) {
-   char c ;
-   ASSERT(is >> score[0], "The first element of CScore cannot be read."); 
-   ASSERT((is >> c) && c=='/', "The separator CScore cannot be read");
-   ASSERT(is >> score[1], "The second element of CScore cannot be read");
-   return is ;
-}
-
-template<typename SCORE_TYPE>
-std::ostream & operator << (std::ostream &os, const CScore<SCORE_TYPE> &score) {
-   return os << score[0] << " / " << score[1] ;
-}
-
 /*===============================================================
  *
  * CScore - score definition
@@ -95,5 +78,29 @@ public:
    }
    //void updateCurrent(SCORE_TYPE added, int round=0) {if (round>=lastupdate){updateAverage(round);total+=added;lastupdate=round;}current+=added; }
 };
+
+
+template <typename SCORE_TYPE>
+inline std::istream &
+operator >> (std::istream &is, CScore<SCORE_TYPE> &score) {
+   char c ;
+   ASSERT(is >> score[0], "The first element of CScore cannot be read.");
+   ASSERT((is >> c) && c=='/', "The separator CScore cannot be read");
+   ASSERT(is >> score[1], "The second element of CScore cannot be read");
+   return is ;
+}
+
+
+template <typename SCORE_TYPE>
+inline std::ostream &
+operator << (std::ostream &os, const CScore<SCORE_TYPE> &score) {
+   return os << score[0] << " / " << score[1] ;
+}
+
+template <>
+inline std::ostream &
+operator << (std::ostream &os, const CScore<float> &score) {
+   return os << static_cast<int>(score[0]) << " / " << static_cast<int>(score[1]) ;
+}
 
 #endif
