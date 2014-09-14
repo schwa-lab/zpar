@@ -211,10 +211,14 @@ int main(int argc, char* argv[]) {
 
     struct timespec time_start, time_end;
     const clock_t clock_start = clock();
+#ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &time_start);
+#endif
     auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, niterations, nthreads);
     const clock_t clock_end = clock();
+#ifdef __linux__
     clock_gettime(CLOCK_MONOTONIC, &time_end);
+#endif
 
     const double clock_elapsed = static_cast<double>(clock_end - clock_start)/CLOCKS_PER_SEC;
     const double time_elapsed = (time_end.tv_sec - time_start.tv_sec) + (time_end.tv_nsec - time_start.tv_nsec)/1000000000.0;
