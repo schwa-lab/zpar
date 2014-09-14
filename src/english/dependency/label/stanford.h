@@ -10,6 +10,8 @@
 #ifndef _DEPENDENCY_L_STANFORD
 #define _DEPENDENCY_L_STANFORD
 
+#include <schwa/hashtable.h>
+
 #include "tags.h"
 
 namespace english {
@@ -78,7 +80,7 @@ const std::string STANFORD_DEP_STRINGS[] = {
    "preconj"
 };
 
-enum STANFORD_DEP_LABELS {
+enum STANFORD_DEP_LABELS : schwa::Label {
    STANFORD_DEP_NONE=0,
    STANFORD_DEP_ROOT,
    STANFORD_DEP_CC, 
@@ -143,12 +145,14 @@ const unsigned long STANFORD_DEP_COUNT_BITS = 6;
 
 class CDependencyLabel {
 public:
-   enum {NONE=0};
-   enum {ROOT=1};
-   enum {FIRST=1};
-   enum {COUNT=STANFORD_DEP_COUNT};
-   enum {MAX_COUNT=COUNT};
-   enum {SIZE=STANFORD_DEP_COUNT_BITS};
+   enum : schwa::Label {
+      NONE = 0,
+      ROOT = 1,
+      FIRST = 1,
+      COUNT = STANFORD_DEP_COUNT,
+      MAX_COUNT = COUNT,
+      SIZE = STANFORD_DEP_COUNT_BITS,
+   };
 
 protected:
    unsigned long m_code;

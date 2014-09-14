@@ -1,117 +1,163 @@
-// Copyright (C) University of Oxford 2010
-/***************************************************************
- *
- * weight.h - the dependency parser weights 
- *
- * Yue Zhang, 2007.8 - 2008.1
- *
- ***************************************************************/
-
 #ifndef _DEPPARSER_WEIGHTS_H
 #define _DEPPARSER_WEIGHTS_H
 
+#include <schwa/hashtable.h>
+
 #include "depparser_weight_base.h"
 
-#define iterate_templates(left, right) \
-   left(m_mapSTw)right\
-   left(m_mapSTt)right\
-   left(m_mapSTwt)right\
-   left(m_mapN0w)right\
-   left(m_mapN0t)right\
-   left(m_mapN0wt)right\
-   left(m_mapN1w)right\
-   left(m_mapN1t)right\
-   left(m_mapN1wt)right\
-   left(m_mapN2w)right\
-   left(m_mapN2t)right\
-   left(m_mapN2wt)right\
-   left(m_mapSTHw)right\
-   left(m_mapSTHt)right\
-   left(m_mapSTi)right\
-   left(m_mapSTHHw)right\
-   left(m_mapSTHHt)right\
-   left(m_mapSTHi)right\
-   left(m_mapSTLDw)right\
-   left(m_mapSTLDt)right\
-   left(m_mapSTLDi)right\
-   left(m_mapSTRDw)right\
-   left(m_mapSTRDt)right\
-   left(m_mapSTRDi)right\
-   left(m_mapN0LDw)right\
-   left(m_mapN0LDt)right\
-   left(m_mapN0LDi)right\
-   left(m_mapSTL2Dw)right\
-   left(m_mapSTL2Dt)right\
-   left(m_mapSTL2Di)right\
-   left(m_mapSTR2Dw)right\
-   left(m_mapSTR2Dt)right\
-   left(m_mapSTR2Di)right\
-   left(m_mapN0L2Dw)right\
-   left(m_mapN0L2Dt)right\
-   left(m_mapN0L2Di)right\
-   left(m_mapHTw)right\
-   left(m_mapHTt)right\
-   left(m_mapHTwt)right\
-\
-   left(m_mapSTwtN0wt)right\
-   left(m_mapSTwtN0w)right\
-   left(m_mapSTwN0wt)right\
-   left(m_mapSTtN0wt)right\
-   left(m_mapSTwtN0t)right\
-   left(m_mapSTwN0w)right\
-   left(m_mapSTtN0t)right\
-\
-   left(m_mapN0tN1t)right\
-   left(m_mapN0tN1tN2t)right\
-   left(m_mapSTtN0tN1t)right\
-   left(m_mapSTtN0tN0LDt)right\
-   left(m_mapN0tN0LDtN0L2Dt)right\
-   left(m_mapSTHtSTtN0t)right\
-   left(m_mapHTtHT2tN0t)right\
-   left(m_mapSTHHtSTHtSTt)right\
-   left(m_mapSTtSTLDtN0t)right\
-   left(m_mapSTtSTLDtSTL2Dt)right\
-   left(m_mapSTtSTRDtN0t)right\
-   left(m_mapSTtSTRDtSTR2Dt)right\
-\
-   left(m_mapSTwd)right\
-   left(m_mapSTtd)right\
-   left(m_mapN0wd)right\
-   left(m_mapN0td)right\
-   left(m_mapSTwN0wd)right\
-   left(m_mapSTtN0td)right\
-\
-   left(m_mapSTwra)right\
-   left(m_mapSTtra)right\
-   left(m_mapSTwla)right\
-   left(m_mapSTtla)right\
-   left(m_mapN0wla)right\
-   left(m_mapN0tla)right\
-\
-   left(m_mapSTwrp)right\
-   left(m_mapSTtrp)right\
-   left(m_mapSTwlp)right\
-   left(m_mapSTtlp)right\
-   left(m_mapN0wlp)right\
-   left(m_mapN0tlp)right\
-\
-   left(m_mapSTl)right\
-   left(m_mapSTc)right\
-   left(m_mapSTf)right\
-\
-   left(m_mapN0l)right\
-   left(m_mapN0c)right\
-   left(m_mapN0f)right\
-\
-   left(m_mapN1l)right\
-   left(m_mapN1c)right\
-   left(m_mapN1f)right
 
 namespace TARGET_LANGUAGE {
-
 namespace depparser {
 
+template <typename SCORE_TYPE>
+class Entry : public schwa::FeatureHashtableEntryBase {
+private:
+  SCORE_TYPE _current;
+  SCORE_TYPE _total;
+  unsigned int _last_updated;
+
+public:
+  Entry(void) : schwa::FeatureHashtableEntryBase(), _current(0), _total(0), _last_updated(0) { }
+  ~Entry(void) { }
+
+  inline SCORE_TYPE &operator [](const ScoreAverage n) { return (n == eNonAverage) ? _current : _total; }
+  inline const SCORE_TYPE &operator [](const ScoreAverage n) const { return (n == eNonAverage) ? _current : _total; }
+
+  inline const SCORE_TYPE score(const ScoreAverage n=eNonAverage) const { return (n == eNonAverage) ? _current : _total; }
+
+  inline void
+  updateAverage(const unsigned int round) {
+    if (round > _last_updated)
+      _total += _current*(round - _last_updated);
+  }
+
+private:
+  SCHWA_DISALLOW_COPY_AND_ASSIGN(Entry);
+};
+
+
+class CWeight : public CWeightBase {
+public:
+  static const schwa::FeatureType STw;
+  static const schwa::FeatureType STt;
+  static const schwa::FeatureType STwt;
+  static const schwa::FeatureType N0w;
+  static const schwa::FeatureType N0t;
+  static const schwa::FeatureType N0wt;
+  static const schwa::FeatureType N1w;
+  static const schwa::FeatureType N1t;
+  static const schwa::FeatureType N1wt;
+  static const schwa::FeatureType N2w;
+  static const schwa::FeatureType N2t;
+  static const schwa::FeatureType N2wt;
+  static const schwa::FeatureType STHw;
+  static const schwa::FeatureType STHt;
+  static const schwa::FeatureType STi;
+  static const schwa::FeatureType STHHw;
+  static const schwa::FeatureType STHHt;
+  static const schwa::FeatureType STHi;
+  static const schwa::FeatureType STLDw;
+  static const schwa::FeatureType STLDt;
+  static const schwa::FeatureType STLDi;
+  static const schwa::FeatureType STRDw;
+  static const schwa::FeatureType STRDt;
+  static const schwa::FeatureType STRDi;
+  static const schwa::FeatureType N0LDw;
+  static const schwa::FeatureType N0LDt;
+  static const schwa::FeatureType N0LDi;
+  static const schwa::FeatureType STL2Dw;
+  static const schwa::FeatureType STL2Dt;
+  static const schwa::FeatureType STL2Di;
+  static const schwa::FeatureType STR2Dw;
+  static const schwa::FeatureType STR2Dt;
+  static const schwa::FeatureType STR2Di;
+  static const schwa::FeatureType N0L2Dw;
+  static const schwa::FeatureType N0L2Dt;
+  static const schwa::FeatureType N0L2Di;
+  static const schwa::FeatureType HTw;
+  static const schwa::FeatureType HTt;
+  static const schwa::FeatureType HTwt;
+  static const schwa::FeatureType STwtN0wt;
+  static const schwa::FeatureType STwtN0w;
+  static const schwa::FeatureType STwN0wt;
+  static const schwa::FeatureType STtN0wt;
+  static const schwa::FeatureType STwtN0t;
+  static const schwa::FeatureType STwN0w;
+  static const schwa::FeatureType STtN0t;
+  static const schwa::FeatureType N0tN1t;
+  static const schwa::FeatureType N0tN1tN2t;
+  static const schwa::FeatureType STtN0tN1t;
+  static const schwa::FeatureType STtN0tN0LDt;
+  static const schwa::FeatureType N0tN0LDtN0L2Dt;
+  static const schwa::FeatureType STHtSTtN0t;
+  static const schwa::FeatureType HTtHT2tN0t;
+  static const schwa::FeatureType STHHtSTHtSTt;
+  static const schwa::FeatureType STtSTLDtN0t;
+  static const schwa::FeatureType STtSTLDtSTL2Dt;
+  static const schwa::FeatureType STtSTRDtN0t;
+  static const schwa::FeatureType STtSTRDtSTR2Dt;
+  static const schwa::FeatureType STwd;
+  static const schwa::FeatureType STtd;
+  static const schwa::FeatureType N0wd;
+  static const schwa::FeatureType N0td;
+  static const schwa::FeatureType STwN0wd;
+  static const schwa::FeatureType STtN0td;
+  static const schwa::FeatureType STwra;
+  static const schwa::FeatureType STtra;
+  static const schwa::FeatureType STwla;
+  static const schwa::FeatureType STtla;
+  static const schwa::FeatureType N0wla;
+  static const schwa::FeatureType N0tla;
+  static const schwa::FeatureType STwrp;
+  static const schwa::FeatureType STtrp;
+  static const schwa::FeatureType STwlp;
+  static const schwa::FeatureType STtlp;
+  static const schwa::FeatureType N0wlp;
+  static const schwa::FeatureType N0tlp;
+  static const schwa::FeatureType STl;
+  static const schwa::FeatureType STc;
+  static const schwa::FeatureType STf;
+  static const schwa::FeatureType N0l;
+  static const schwa::FeatureType N0c;
+  static const schwa::FeatureType N0f;
+  static const schwa::FeatureType N1l;
+  static const schwa::FeatureType N1c;
+  static const schwa::FeatureType N1f;
+
+protected:
+  schwa::FeatureHashtable<Entry<SCORE_TYPE>> _weights;
+
+public:
+  CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
+  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain);
+  virtual ~CWeight();
+
+  virtual void loadScores(void) override;
+  virtual void saveScores(void) override;
+
+  void addWeighted(double mu, const CWeight &other);
+  void computeAverageFeatureWeights(unsigned int round);
+  void debugUsage(void) const;
+
+  template <typename CP>
+  void getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, action::StackAction action, ScoreAverage sa, SCORE_TYPE amount, unsigned int round);
+};
+
+
+template <typename CP>
+inline void
+CWeight::getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const action::StackAction action, const ScoreAverage sa, const SCORE_TYPE amount, const unsigned int round) {
+  const schwa::Label label = action;
+
+  // Don't create an entry if the update amount is zero.
+  if (amount == 0 && _weights.find(type, cp, label) == _weights.end())
+    return;
+}
+
+
+#if 0
 const static unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
+
 
 //
 // TYPE DEFINITIONS
@@ -121,8 +167,6 @@ typedef CPackedScoreMap<CTag, SCORE_TYPE, action::MAX> CTagMap;
 typedef CPackedScoreMap<int, SCORE_TYPE, action::MAX> CIntMap;
 typedef CPackedScoreMap<CTagSet<CTag, 2>,  SCORE_TYPE, action::MAX> CTagSet2Map;
 typedef CPackedScoreMap<CTagSet<CTag, 3>, SCORE_TYPE, action::MAX> CTagSet3Map;
-typedef CPackedScoreMap<CTagSet<CTag, 4>, SCORE_TYPE, action::MAX> CTagSet4Map;
-typedef CPackedScoreMap<std::tuple<CWord, CTag>, SCORE_TYPE, action::MAX> CWordTagMap;
 typedef CPackedScoreMap<std::tuple<CWord, CTag, CTag>, SCORE_TYPE, action::MAX> CWordTagTagMap;
 typedef CPackedScoreMap<std::tuple<CWord, CWord, CTag>, SCORE_TYPE, action::MAX> CWordWordTagMap;
 typedef CPackedScoreMap<CTaggedWord<CTag, TAG_SEPARATOR>, SCORE_TYPE, action::MAX> CTaggedWordMap;
@@ -134,7 +178,6 @@ typedef CPackedScoreMap<std::tuple<CTag, CTag, int>, SCORE_TYPE, action::MAX> CT
 typedef CPackedScoreMap<std::tuple<CWord, CWord, int>, SCORE_TYPE, action::MAX> CWordWordIntMap;
 typedef CPackedScoreMap<std::tuple<CWord, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
 typedef CPackedScoreMap<std::tuple<CTag, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
-
 typedef CPackedScoreMap<CLemma, SCORE_TYPE, action::MAX> CLemmaMap;
 typedef CPackedScoreMap<CCoNLLCPOS, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
 typedef CPackedScoreMap<CCoNLLFeats, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
@@ -371,6 +414,7 @@ public:
    void computeAverageFeatureWeights(int round);
    void debugUsage(void) const;
 };
+#endif
 
 }
 }

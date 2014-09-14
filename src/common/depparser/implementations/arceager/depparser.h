@@ -69,7 +69,7 @@ private:
    int m_nTrainingRound;
    unsigned int m_nTotalErrors;
    //bool m_bScoreModified;
-   int m_nScoreIndex;
+   ScoreAverage m_nScoreAverage;
 
 public:
    // constructor and destructor
@@ -78,10 +78,9 @@ public:
       m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
       m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
       m_weights = new depparser :: CWeight(sInputPath, sOutputPath, bTrain );
-      m_nTrainingRound = 0; 
+      m_nTrainingRound = 0;
       m_nTotalErrors = 0;
-//      m_nScoreIndex = CScore<depparser::SCORE_TYPE>::eNonAverage ; 
-      if (bTrain) m_nScoreIndex = CScore<depparser::SCORE_TYPE>::eNonAverage ; else m_nScoreIndex = CScore<depparser::SCORE_TYPE>::eAverage ;
+      m_nScoreAverage = bTrain ? eNonAverage : eAverage;
    }
    ~CDepParser() {
       delete m_Agenda;
@@ -115,7 +114,7 @@ private:
 
    void work( const bool bTrain, const CTwoStringVector &sentence , CDependencyParse *retval, const CDependencyParse &correct, int nBest, depparser::SCORE_TYPE *scores ) ; 
 
-   void getOrUpdateStackScore( const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval, const unsigned &action, depparser::SCORE_TYPE amount=0, int round=0 );
+   void getOrUpdateStackScore( const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval, depparser::action::StackAction action, depparser::SCORE_TYPE amount, unsigned int round );
 
    // update the built-in weight std::vector for this feature object specifically
    void updateScoresForStates( const depparser::CStateItem *outout , const depparser::CStateItem *correct , depparser::SCORE_TYPE amount_add , depparser::SCORE_TYPE amount_subtract ) ;
@@ -133,5 +132,3 @@ private:
 } // namespace TARGET_LANGUAGE
 
 #endif
-
-

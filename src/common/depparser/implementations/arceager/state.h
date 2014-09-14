@@ -54,7 +54,7 @@ protected:
 #ifdef LABELED
    unsigned long m_lLabels[MAX_SENTENCE_SIZE];   // the label of each dependency link
 #endif
-   unsigned long m_nLastAction;                  // the last stack action
+   action::StackAction m_nLastAction;                  // the last stack action
    const std::vector < CTaggedWord<CTag, TAG_SEPARATOR> >* m_lCache;
 
 public:
@@ -262,11 +262,11 @@ public:
    }
 
    // the move action is a simple call to do action according to the action code
-   void Move ( const unsigned long &ac ) {
+   void Move ( const action::StackAction action ) {
 #ifdef LABELED
-      switch (action::getUnlabeledAction(ac)) {
+      switch (action::getUnlabeledAction(action)) {
 #else
-      switch (ac) {
+      switch (action) {
 #endif
       case action::NO_ACTION:
          return;
@@ -278,14 +278,14 @@ public:
          return;
       case action::ARC_LEFT:
 #ifdef LABELED
-         ArcLeft(action::getLabel(ac));
+         ArcLeft(action::getLabel(action));
 #else
          ArcLeft();
 #endif
          return;
       case action::ARC_RIGHT:
 #ifdef LABELED
-         ArcRight(action::getLabel(ac));
+         ArcRight(action::getLabel(action));
 #else
          ArcRight();
 #endif
@@ -294,7 +294,7 @@ public:
          PopRoot();
          return;
       default:
-         THROW("unknown action: " << ac << '.');
+         THROW("unknown action: " << action << '.');
       }
    }
 
@@ -375,7 +375,7 @@ public:
       assert( m_Stack.size() == 0 );
    }
 
-   unsigned FollowMove( const CStateItem *item ) {
+   action::StackAction FollowMove( const CStateItem *item ) {
       int top = 0;
       // if the next words are same then don't check head because it might be a finished sentence (m_nNextWord==sentence.sz)
       if ( m_nNextWord == item->m_nNextWord ) {

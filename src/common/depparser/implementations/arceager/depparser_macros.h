@@ -19,9 +19,9 @@
 
 //label
 #ifdef LABELED
-const unsigned DEP_LABEL_COUNT=CDependencyLabel::MAX_COUNT;
+const uint16_t DEP_LABEL_COUNT = CDependencyLabel::MAX_COUNT;
 #else
-const unsigned DEP_LABEL_COUNT = 1;
+const uint16_t DEP_LABEL_COUNT = 1;
 #endif
 
 typedef float SCORE_TYPE ;

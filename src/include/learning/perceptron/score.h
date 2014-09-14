@@ -34,12 +34,14 @@ std::ostream & operator << (std::ostream &os, const CScore<SCORE_TYPE> &score) {
  * CScore - score definition
  *
  *==============================================================*/
+enum ScoreAverage {
+  eNonAverage = 0,
+  eAverage = 1,
+};
+
 
 template<typename SCORE_TYPE>
 class CScore {
-public:
-   enum SCORE_AVERAGE { eNonAverage=0 , eAverage=1 } ;
-
 protected:
    SCORE_TYPE current;
    SCORE_TYPE total;
@@ -56,10 +58,10 @@ public:
    inline void operator ++ (int) { current++; }
    inline void operator -- (int) { current--; }
 
-   inline SCORE_TYPE &operator [] (const int &n) { return (n == eNonAverage) ? current : total; }
-   inline const SCORE_TYPE &operator [] (const int &n) const { return (n == eNonAverage) ? current : total; }
+   inline SCORE_TYPE &operator [] (const ScoreAverage n) { return (n == eNonAverage) ? current : total; }
+   inline const SCORE_TYPE &operator [] (const ScoreAverage n) const { return (n == eNonAverage) ? current : total; }
 
-   inline const SCORE_TYPE score(const int &n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
+   inline const SCORE_TYPE score(const ScoreAverage n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
 
    void updateAverage(const int &round=0) {
      if (round > lastupdate)

@@ -211,15 +211,15 @@ public:
       return retval;
    }
 
-   SCORE_TYPE dotProduct(CPackedScoreMap &mp) {
-      SCORE_TYPE retval = 0;
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         retval += it.second().dotProduct(mp.find(it.first(), m_zero));
-      }
-      return retval;
-   }
+   //SCORE_TYPE dotProduct(CPackedScoreMap &mp) {
+      //SCORE_TYPE retval = 0;
+      //typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      //const iterator end = this->end();
+      //for (iterator it = this->begin(); it != end; ++it) {
+         //retval += it.second().dotProduct(mp.find(it.first(), m_zero));
+      //}
+      //return retval;
+   //}
 
    void addWeighted(const double mu, const CPackedScoreMap &other) {
       typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::const_iterator iterator;
