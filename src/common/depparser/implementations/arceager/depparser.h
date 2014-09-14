@@ -77,7 +77,7 @@ public:
    CDepParser( const std::string &sInputPath, const std::string &sOutputPath , bool bTrain , bool bCoNLL=false ) : CDepParserBase(bTrain, bCoNLL) {
       m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
       m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
-      m_weights = new depparser :: CWeight(sInputPath, sOutputPath, bTrain );
+      m_weights = new depparser::CWeight<int>(sInputPath, sOutputPath, bTrain );
       m_nTrainingRound = 0; 
       m_nTotalErrors = 0;
 //      m_nScoreIndex = CScore<depparser::SCORE_TYPE>::eNonAverage ; 

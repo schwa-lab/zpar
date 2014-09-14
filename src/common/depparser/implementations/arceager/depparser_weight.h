@@ -1,376 +1,629 @@
 // Copyright (C) University of Oxford 2010
 /***************************************************************
  *
- * weight.h - the dependency parser weights 
+ * weight.h - the dependency parser weights
  *
  * Yue Zhang, 2007.8 - 2008.1
  *
  ***************************************************************/
-
 #ifndef _DEPPARSER_WEIGHTS_H
 #define _DEPPARSER_WEIGHTS_H
 
 #include "depparser_weight_base.h"
 
 #define iterate_templates(left, right) \
-   left(m_mapSTw)right\
-   left(m_mapSTt)right\
-   left(m_mapSTwt)right\
-   left(m_mapN0w)right\
-   left(m_mapN0t)right\
-   left(m_mapN0wt)right\
-   left(m_mapN1w)right\
-   left(m_mapN1t)right\
-   left(m_mapN1wt)right\
-   left(m_mapN2w)right\
-   left(m_mapN2t)right\
-   left(m_mapN2wt)right\
-   left(m_mapSTHw)right\
-   left(m_mapSTHt)right\
-   left(m_mapSTi)right\
-   left(m_mapSTHHw)right\
-   left(m_mapSTHHt)right\
-   left(m_mapSTHi)right\
-   left(m_mapSTLDw)right\
-   left(m_mapSTLDt)right\
-   left(m_mapSTLDi)right\
-   left(m_mapSTRDw)right\
-   left(m_mapSTRDt)right\
-   left(m_mapSTRDi)right\
-   left(m_mapN0LDw)right\
-   left(m_mapN0LDt)right\
-   left(m_mapN0LDi)right\
-   left(m_mapSTL2Dw)right\
-   left(m_mapSTL2Dt)right\
-   left(m_mapSTL2Di)right\
-   left(m_mapSTR2Dw)right\
-   left(m_mapSTR2Dt)right\
-   left(m_mapSTR2Di)right\
-   left(m_mapN0L2Dw)right\
-   left(m_mapN0L2Dt)right\
-   left(m_mapN0L2Di)right\
-   left(m_mapHTw)right\
-   left(m_mapHTt)right\
-   left(m_mapHTwt)right\
+  left(m_mapSTw)right\
+  left(m_mapSTt)right\
+  left(m_mapSTwt)right\
+  left(m_mapN0w)right\
+  left(m_mapN0t)right\
+  left(m_mapN0wt)right\
+  left(m_mapN1w)right\
+  left(m_mapN1t)right\
+  left(m_mapN1wt)right\
+  left(m_mapN2w)right\
+  left(m_mapN2t)right\
+  left(m_mapN2wt)right\
+  left(m_mapSTHw)right\
+  left(m_mapSTHt)right\
+  left(m_mapSTi)right\
+  left(m_mapSTHHw)right\
+  left(m_mapSTHHt)right\
+  left(m_mapSTHi)right\
+  left(m_mapSTLDw)right\
+  left(m_mapSTLDt)right\
+  left(m_mapSTLDi)right\
+  left(m_mapSTRDw)right\
+  left(m_mapSTRDt)right\
+  left(m_mapSTRDi)right\
+  left(m_mapN0LDw)right\
+  left(m_mapN0LDt)right\
+  left(m_mapN0LDi)right\
+  left(m_mapSTL2Dw)right\
+  left(m_mapSTL2Dt)right\
+  left(m_mapSTL2Di)right\
+  left(m_mapSTR2Dw)right\
+  left(m_mapSTR2Dt)right\
+  left(m_mapSTR2Di)right\
+  left(m_mapN0L2Dw)right\
+  left(m_mapN0L2Dt)right\
+  left(m_mapN0L2Di)right\
+  left(m_mapHTw)right\
+  left(m_mapHTt)right\
+  left(m_mapHTwt)right\
 \
-   left(m_mapSTwtN0wt)right\
-   left(m_mapSTwtN0w)right\
-   left(m_mapSTwN0wt)right\
-   left(m_mapSTtN0wt)right\
-   left(m_mapSTwtN0t)right\
-   left(m_mapSTwN0w)right\
-   left(m_mapSTtN0t)right\
+  left(m_mapSTwtN0wt)right\
+  left(m_mapSTwtN0w)right\
+  left(m_mapSTwN0wt)right\
+  left(m_mapSTtN0wt)right\
+  left(m_mapSTwtN0t)right\
+  left(m_mapSTwN0w)right\
+  left(m_mapSTtN0t)right\
 \
-   left(m_mapN0tN1t)right\
-   left(m_mapN0tN1tN2t)right\
-   left(m_mapSTtN0tN1t)right\
-   left(m_mapSTtN0tN0LDt)right\
-   left(m_mapN0tN0LDtN0L2Dt)right\
-   left(m_mapSTHtSTtN0t)right\
-   left(m_mapHTtHT2tN0t)right\
-   left(m_mapSTHHtSTHtSTt)right\
-   left(m_mapSTtSTLDtN0t)right\
-   left(m_mapSTtSTLDtSTL2Dt)right\
-   left(m_mapSTtSTRDtN0t)right\
-   left(m_mapSTtSTRDtSTR2Dt)right\
+  left(m_mapN0tN1t)right\
+  left(m_mapN0tN1tN2t)right\
+  left(m_mapSTtN0tN1t)right\
+  left(m_mapSTtN0tN0LDt)right\
+  left(m_mapN0tN0LDtN0L2Dt)right\
+  left(m_mapSTHtSTtN0t)right\
+  left(m_mapHTtHT2tN0t)right\
+  left(m_mapSTHHtSTHtSTt)right\
+  left(m_mapSTtSTLDtN0t)right\
+  left(m_mapSTtSTLDtSTL2Dt)right\
+  left(m_mapSTtSTRDtN0t)right\
+  left(m_mapSTtSTRDtSTR2Dt)right\
 \
-   left(m_mapSTwd)right\
-   left(m_mapSTtd)right\
-   left(m_mapN0wd)right\
-   left(m_mapN0td)right\
-   left(m_mapSTwN0wd)right\
-   left(m_mapSTtN0td)right\
+  left(m_mapSTwd)right\
+  left(m_mapSTtd)right\
+  left(m_mapN0wd)right\
+  left(m_mapN0td)right\
+  left(m_mapSTwN0wd)right\
+  left(m_mapSTtN0td)right\
 \
-   left(m_mapSTwra)right\
-   left(m_mapSTtra)right\
-   left(m_mapSTwla)right\
-   left(m_mapSTtla)right\
-   left(m_mapN0wla)right\
-   left(m_mapN0tla)right\
+  left(m_mapSTwra)right\
+  left(m_mapSTtra)right\
+  left(m_mapSTwla)right\
+  left(m_mapSTtla)right\
+  left(m_mapN0wla)right\
+  left(m_mapN0tla)right\
 \
-   left(m_mapSTwrp)right\
-   left(m_mapSTtrp)right\
-   left(m_mapSTwlp)right\
-   left(m_mapSTtlp)right\
-   left(m_mapN0wlp)right\
-   left(m_mapN0tlp)right\
+  left(m_mapSTwrp)right\
+  left(m_mapSTtrp)right\
+  left(m_mapSTwlp)right\
+  left(m_mapSTtlp)right\
+  left(m_mapN0wlp)right\
+  left(m_mapN0tlp)right\
 \
-   left(m_mapSTl)right\
-   left(m_mapSTc)right\
-   left(m_mapSTf)right\
+  left(m_mapSTl)right\
+  left(m_mapSTc)right\
+  left(m_mapSTf)right\
 \
-   left(m_mapN0l)right\
-   left(m_mapN0c)right\
-   left(m_mapN0f)right\
+  left(m_mapN0l)right\
+  left(m_mapN0c)right\
+  left(m_mapN0f)right\
 \
-   left(m_mapN1l)right\
-   left(m_mapN1c)right\
-   left(m_mapN1f)right
+  left(m_mapN1l)right\
+  left(m_mapN1c)right\
+  left(m_mapN1f)right
 
 namespace TARGET_LANGUAGE {
 
 namespace depparser {
-
-const static unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
-
-//
-// TYPE DEFINITIONS
-//
-typedef CPackedScoreMap<CWord, SCORE_TYPE, action::MAX> CWordMap;
-typedef CPackedScoreMap<CTag, SCORE_TYPE, action::MAX> CTagMap;
-typedef CPackedScoreMap<int, SCORE_TYPE, action::MAX> CIntMap;
-typedef CPackedScoreMap<CTagSet<CTag, 2>,  SCORE_TYPE, action::MAX> CTagSet2Map;
-typedef CPackedScoreMap<CTagSet<CTag, 3>, SCORE_TYPE, action::MAX> CTagSet3Map;
-typedef CPackedScoreMap<CTagSet<CTag, 4>, SCORE_TYPE, action::MAX> CTagSet4Map;
-typedef CPackedScoreMap<std::tuple<CWord, CTag>, SCORE_TYPE, action::MAX> CWordTagMap;
-typedef CPackedScoreMap<std::tuple<CWord, CTag, CTag>, SCORE_TYPE, action::MAX> CWordTagTagMap;
-typedef CPackedScoreMap<std::tuple<CWord, CWord, CTag>, SCORE_TYPE, action::MAX> CWordWordTagMap;
-typedef CPackedScoreMap<CTaggedWord<CTag, TAG_SEPARATOR>, SCORE_TYPE, action::MAX> CTaggedWordMap;
-typedef CPackedScoreMap<CTwoWords, SCORE_TYPE, action::MAX> CTwoWordsMap;
-typedef CPackedScoreMap<CTwoTaggedWords, SCORE_TYPE, action::MAX> CTwoTaggedWordsMap;
-typedef CPackedScoreMap<std::tuple<CWord, int>, SCORE_TYPE, action::MAX> CWordIntMap;
-typedef CPackedScoreMap<std::tuple<CTag, int>, SCORE_TYPE, action::MAX> CTagIntMap;
-typedef CPackedScoreMap<std::tuple<CTag, CTag, int>, SCORE_TYPE, action::MAX> CTagTagIntMap;
-typedef CPackedScoreMap<std::tuple<CWord, CWord, int>, SCORE_TYPE, action::MAX> CWordWordIntMap;
-typedef CPackedScoreMap<std::tuple<CWord, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
-typedef CPackedScoreMap<std::tuple<CTag, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
-
-typedef CPackedScoreMap<CLemma, SCORE_TYPE, action::MAX> CLemmaMap;
-typedef CPackedScoreMap<CCoNLLCPOS, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
-typedef CPackedScoreMap<CCoNLLFeats, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
 
 /*===============================================================
  *
  * CWeight - the definition of weights, in feature
  *
  *==============================================================*/
+template <typename SCORE_TYPE>
 class CWeight : public CWeightBase {
 public:
-   CWordMap m_mapSTw;
-   CTagMap m_mapSTt;
-   CTaggedWordMap m_mapSTwt;
+  static constexpr const unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
 
-   CWordMap m_mapN0w;
-   CTagMap m_mapN0t;
-   CTaggedWordMap m_mapN0wt;
+  typedef CPackedScoreMap<CWord, SCORE_TYPE, action::MAX> CWordMap;
+  typedef CPackedScoreMap<CTag, SCORE_TYPE, action::MAX> CTagMap;
+  typedef CPackedScoreMap<int, SCORE_TYPE, action::MAX> CIntMap;
+  typedef CPackedScoreMap<CTagSet<CTag, 2>,  SCORE_TYPE, action::MAX> CTagSet2Map;
+  typedef CPackedScoreMap<CTagSet<CTag, 3>, SCORE_TYPE, action::MAX> CTagSet3Map;
+  typedef CPackedScoreMap<CTagSet<CTag, 4>, SCORE_TYPE, action::MAX> CTagSet4Map;
+  typedef CPackedScoreMap<std::tuple<CWord, CTag>, SCORE_TYPE, action::MAX> CWordTagMap;
+  typedef CPackedScoreMap<std::tuple<CWord, CTag, CTag>, SCORE_TYPE, action::MAX> CWordTagTagMap;
+  typedef CPackedScoreMap<std::tuple<CWord, CWord, CTag>, SCORE_TYPE, action::MAX> CWordWordTagMap;
+  typedef CPackedScoreMap<CTaggedWord<CTag, TAG_SEPARATOR>, SCORE_TYPE, action::MAX> CTaggedWordMap;
+  typedef CPackedScoreMap<CTwoWords, SCORE_TYPE, action::MAX> CTwoWordsMap;
+  typedef CPackedScoreMap<CTwoTaggedWords, SCORE_TYPE, action::MAX> CTwoTaggedWordsMap;
+  typedef CPackedScoreMap<std::tuple<CWord, int>, SCORE_TYPE, action::MAX> CWordIntMap;
+  typedef CPackedScoreMap<std::tuple<CTag, int>, SCORE_TYPE, action::MAX> CTagIntMap;
+  typedef CPackedScoreMap<std::tuple<CTag, CTag, int>, SCORE_TYPE, action::MAX> CTagTagIntMap;
+  typedef CPackedScoreMap<std::tuple<CWord, CWord, int>, SCORE_TYPE, action::MAX> CWordWordIntMap;
+  typedef CPackedScoreMap<std::tuple<CWord, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
+  typedef CPackedScoreMap<std::tuple<CTag, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
+  typedef CPackedScoreMap<CLemma, SCORE_TYPE, action::MAX> CLemmaMap;
+  typedef CPackedScoreMap<CCoNLLCPOS, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
+  typedef CPackedScoreMap<CCoNLLFeats, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
 
-   CWordMap m_mapN1w;
-   CTagMap m_mapN1t;
-   CTaggedWordMap m_mapN1wt;
+  CWordMap m_mapSTw;
+  CTagMap m_mapSTt;
+  CTaggedWordMap m_mapSTwt;
 
-   CWordMap m_mapN2w;
-   CTagMap m_mapN2t;
-   CTaggedWordMap m_mapN2wt;
+  CWordMap m_mapN0w;
+  CTagMap m_mapN0t;
+  CTaggedWordMap m_mapN0wt;
 
-   CWordMap m_mapSTHw;
-   CTagMap m_mapSTHt;
-   CIntMap m_mapSTi;
+  CWordMap m_mapN1w;
+  CTagMap m_mapN1t;
+  CTaggedWordMap m_mapN1wt;
 
-   CWordMap m_mapSTHHw;
-   CTagMap m_mapSTHHt;
-   CIntMap m_mapSTHi;
+  CWordMap m_mapN2w;
+  CTagMap m_mapN2t;
+  CTaggedWordMap m_mapN2wt;
 
-   CWordMap m_mapSTLDw;
-   CTagMap m_mapSTLDt;
-   CIntMap m_mapSTLDi;
+  CWordMap m_mapSTHw;
+  CTagMap m_mapSTHt;
+  CIntMap m_mapSTi;
 
-   CWordMap m_mapSTRDw;
-   CTagMap m_mapSTRDt;
-   CIntMap m_mapSTRDi;
+  CWordMap m_mapSTHHw;
+  CTagMap m_mapSTHHt;
+  CIntMap m_mapSTHi;
 
-   CWordMap m_mapN0LDw;
-   CTagMap m_mapN0LDt;
-   CIntMap m_mapN0LDi;
+  CWordMap m_mapSTLDw;
+  CTagMap m_mapSTLDt;
+  CIntMap m_mapSTLDi;
 
-   CWordMap m_mapSTL2Dw;
-   CTagMap m_mapSTL2Dt;
-   CIntMap m_mapSTL2Di;
+  CWordMap m_mapSTRDw;
+  CTagMap m_mapSTRDt;
+  CIntMap m_mapSTRDi;
 
-   CWordMap m_mapSTR2Dw;
-   CTagMap m_mapSTR2Dt;
-   CIntMap m_mapSTR2Di;
+  CWordMap m_mapN0LDw;
+  CTagMap m_mapN0LDt;
+  CIntMap m_mapN0LDi;
 
-   CWordMap m_mapN0L2Dw;
-   CTagMap m_mapN0L2Dt;
-   CIntMap m_mapN0L2Di;
+  CWordMap m_mapSTL2Dw;
+  CTagMap m_mapSTL2Dt;
+  CIntMap m_mapSTL2Di;
 
-   CWordMap m_mapHTw;
-   CTagMap m_mapHTt;
-   CTaggedWordMap m_mapHTwt;
+  CWordMap m_mapSTR2Dw;
+  CTagMap m_mapSTR2Dt;
+  CIntMap m_mapSTR2Di;
 
-   CTwoTaggedWordsMap m_mapSTwtN0wt;
-   CWordWordTagMap m_mapSTwtN0w;
-   CWordWordTagMap m_mapSTwN0wt;
-   CWordTagTagMap m_mapSTtN0wt;
-   CWordTagTagMap m_mapSTwtN0t;
-   CTwoWordsMap m_mapSTwN0w;
-   CTagSet2Map m_mapSTtN0t;
+  CWordMap m_mapN0L2Dw;
+  CTagMap m_mapN0L2Dt;
+  CIntMap m_mapN0L2Di;
 
-   CTagSet2Map m_mapN0tN1t;
-   CTagSet3Map m_mapN0tN1tN2t;
-   CTagSet3Map m_mapSTtN0tN1t;
-   CTagSet3Map m_mapSTtN0tN0LDt;
-   CTagSet3Map m_mapN0tN0LDtN0L2Dt;
-   CTagSet3Map m_mapSTHtSTtN0t;
-   CTagSet3Map m_mapHTtHT2tN0t;
-   CTagSet3Map m_mapSTHHtSTHtSTt;
-   CTagSet3Map m_mapSTtSTLDtN0t;
-   CTagSet3Map m_mapSTtSTLDtSTL2Dt;
-   CTagSet3Map m_mapSTtSTRDtN0t;
-   CTagSet3Map m_mapSTtSTRDtSTR2Dt;
+  CWordMap m_mapHTw;
+  CTagMap m_mapHTt;
+  CTaggedWordMap m_mapHTwt;
 
-   CWordIntMap m_mapSTwd;
-   CTagIntMap m_mapSTtd;
-   CWordIntMap m_mapN0wd;
-   CTagIntMap m_mapN0td;
-   CWordWordIntMap m_mapSTwN0wd;
-   CTagTagIntMap m_mapSTtN0td;
+  CTwoTaggedWordsMap m_mapSTwtN0wt;
+  CWordWordTagMap m_mapSTwtN0w;
+  CWordWordTagMap m_mapSTwN0wt;
+  CWordTagTagMap m_mapSTtN0wt;
+  CWordTagTagMap m_mapSTwtN0t;
+  CTwoWordsMap m_mapSTwN0w;
+  CTagSet2Map m_mapSTtN0t;
 
-   CWordIntMap m_mapSTwra;
-   CTagIntMap m_mapSTtra;
-   CWordIntMap m_mapSTwla;
-   CTagIntMap m_mapSTtla;
-   CWordIntMap m_mapN0wla;
-   CTagIntMap m_mapN0tla;
+  CTagSet2Map m_mapN0tN1t;
+  CTagSet3Map m_mapN0tN1tN2t;
+  CTagSet3Map m_mapSTtN0tN1t;
+  CTagSet3Map m_mapSTtN0tN0LDt;
+  CTagSet3Map m_mapN0tN0LDtN0L2Dt;
+  CTagSet3Map m_mapSTHtSTtN0t;
+  CTagSet3Map m_mapHTtHT2tN0t;
+  CTagSet3Map m_mapSTHHtSTHtSTt;
+  CTagSet3Map m_mapSTtSTLDtN0t;
+  CTagSet3Map m_mapSTtSTLDtSTL2Dt;
+  CTagSet3Map m_mapSTtSTRDtN0t;
+  CTagSet3Map m_mapSTtSTRDtSTR2Dt;
 
-   CWordSetOfLabelsMap m_mapSTwrp;
-   CTagSetOfLabelsMap m_mapSTtrp;
-   CWordSetOfLabelsMap m_mapSTwlp;
-   CTagSetOfLabelsMap m_mapSTtlp;
-   CWordSetOfLabelsMap m_mapN0wlp;
-   CTagSetOfLabelsMap m_mapN0tlp;
+  CWordIntMap m_mapSTwd;
+  CTagIntMap m_mapSTtd;
+  CWordIntMap m_mapN0wd;
+  CTagIntMap m_mapN0td;
+  CWordWordIntMap m_mapSTwN0wd;
+  CTagTagIntMap m_mapSTtN0td;
 
-   CLemmaMap m_mapSTl;
-   CCoNLLCPOSMap m_mapSTc;
-   CCoNLLFeatsMap m_mapSTf;
+  CWordIntMap m_mapSTwra;
+  CTagIntMap m_mapSTtra;
+  CWordIntMap m_mapSTwla;
+  CTagIntMap m_mapSTtla;
+  CWordIntMap m_mapN0wla;
+  CTagIntMap m_mapN0tla;
 
-   CLemmaMap m_mapN0l;
-   CCoNLLCPOSMap m_mapN0c;
-   CCoNLLFeatsMap m_mapN0f;
+  CWordSetOfLabelsMap m_mapSTwrp;
+  CTagSetOfLabelsMap m_mapSTtrp;
+  CWordSetOfLabelsMap m_mapSTwlp;
+  CTagSetOfLabelsMap m_mapSTtlp;
+  CWordSetOfLabelsMap m_mapN0wlp;
+  CTagSetOfLabelsMap m_mapN0tlp;
 
-   CLemmaMap m_mapN1l;
-   CCoNLLCPOSMap m_mapN1c;
-   CCoNLLFeatsMap m_mapN1f;
+  CLemmaMap m_mapSTl;
+  CCoNLLCPOSMap m_mapSTc;
+  CCoNLLFeatsMap m_mapSTf;
+
+  CLemmaMap m_mapN0l;
+  CCoNLLCPOSMap m_mapN0c;
+  CCoNLLFeatsMap m_mapN0f;
+
+  CLemmaMap m_mapN1l;
+  CCoNLLCPOSMap m_mapN1c;
+  CCoNLLFeatsMap m_mapN1f;
 
 public:
-   CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
-   CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain) : CWeightBase(sInputPath, sOutputPath, bTrain) ,
+  CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
+  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain);
+  virtual ~CWeight() { }
 
-                                               m_mapSTw("StackWord", DEP_TABLE_SIZE),
-                                               m_mapSTt("StackTag", DEP_TABLE_SIZE),
-                                               m_mapSTwt("StackWordTag", DEP_TABLE_SIZE),
+  virtual void loadScores() override;
+  virtual void saveScores() override;
 
-                                               m_mapN0w("NextWord", DEP_TABLE_SIZE),
-                                               m_mapN0t("NextTag", DEP_TABLE_SIZE),
-                                               m_mapN0wt("NextWordTag", DEP_TABLE_SIZE),
-
-                                               m_mapN1w("Next+1Word", DEP_TABLE_SIZE),
-                                               m_mapN1t("Next+1Tag", DEP_TABLE_SIZE),
-                                               m_mapN1wt("Next+1WordTag", DEP_TABLE_SIZE),
-
-                                               m_mapN2w("Next+2Word", DEP_TABLE_SIZE),
-                                               m_mapN2t("Next+2Tag", DEP_TABLE_SIZE),
-                                               m_mapN2wt("Next+2WordTag", DEP_TABLE_SIZE),
-
-                                               m_mapSTHw("StackHeadWord", DEP_TABLE_SIZE),
-                                               m_mapSTHt("StackHeadTag", DEP_TABLE_SIZE),
-                                               m_mapSTi("StackLabel", DEP_TABLE_SIZE),
-
-                                               m_mapSTHHw("StackHeadHeadWord", DEP_TABLE_SIZE),
-                                               m_mapSTHHt("StackHeadHeadTag", DEP_TABLE_SIZE),
-                                               m_mapSTHi("StackLabel", DEP_TABLE_SIZE),
-
-                                               m_mapSTLDw("StackLDWord", DEP_TABLE_SIZE),
-                                               m_mapSTLDt("StackLDTag", DEP_TABLE_SIZE),
-                                               m_mapSTLDi("StackLDLabel", DEP_TABLE_SIZE),
-
-                                               m_mapSTRDw("StackRDWord", DEP_TABLE_SIZE),
-                                               m_mapSTRDt("StackRDTag", DEP_TABLE_SIZE),
-                                               m_mapSTRDi("StackRDLabel", DEP_TABLE_SIZE),
-
-                                               m_mapN0LDw("NextLDWord", DEP_TABLE_SIZE),
-                                               m_mapN0LDt("NextLDTag", DEP_TABLE_SIZE),
-                                               m_mapN0LDi("NextLDLabel", DEP_TABLE_SIZE),
-
-                                               m_mapSTL2Dw("StackL2DWord", DEP_TABLE_SIZE),
-                                               m_mapSTL2Dt("StackL2DTag", DEP_TABLE_SIZE),
-                                               m_mapSTL2Di("StackL2DLabel", DEP_TABLE_SIZE),
-
-                                               m_mapSTR2Dw("StackR2DWord", DEP_TABLE_SIZE),
-                                               m_mapSTR2Dt("StackR2DTag", DEP_TABLE_SIZE),
-                                               m_mapSTR2Di("StackR2DLabel", DEP_TABLE_SIZE),
-
-                                               m_mapN0L2Dw("NextL2DWord", DEP_TABLE_SIZE),
-                                               m_mapN0L2Dt("NextL2DTag", DEP_TABLE_SIZE),
-                                               m_mapN0L2Di("NextL2DLabel", DEP_TABLE_SIZE),
-
-                                               m_mapHTw("HeadStackWord", DEP_TABLE_SIZE),
-                                               m_mapHTt("HeadStackTag", DEP_TABLE_SIZE),
-                                               m_mapHTwt("HeadStackWordTag", DEP_TABLE_SIZE),
-
-                                               m_mapSTwtN0wt("StackWordTagNextWordTag", DEP_TABLE_SIZE),
-                                               m_mapSTwtN0w("StackWordTagNextWord", DEP_TABLE_SIZE),
-                                               m_mapSTwN0wt("StackWordNextWordTag", DEP_TABLE_SIZE),
-                                               m_mapSTtN0wt("StackTagNextWordTag", DEP_TABLE_SIZE),
-                                               m_mapSTwtN0t("StackWordTagNextTag", DEP_TABLE_SIZE),
-                                               m_mapSTwN0w("StackWordNextWord", DEP_TABLE_SIZE),
-                                               m_mapSTtN0t("StackTagNextTag", DEP_TABLE_SIZE),
-
-                                               m_mapN0tN1t("NextTagNext+1Tag", DEP_TABLE_SIZE),
-                                               m_mapN0tN1tN2t("NextTagTrigram", DEP_TABLE_SIZE),
-                                               m_mapSTtN0tN1t("StackTagNextTagNext+1Tag", DEP_TABLE_SIZE),
-                                               m_mapSTtN0tN0LDt("StackTagNextTagNextLDTag", DEP_TABLE_SIZE),
-                                               m_mapN0tN0LDtN0L2Dt("StackTagNextTagNextLDTagNextTagNextL2DTag", DEP_TABLE_SIZE),
-                                               m_mapSTHtSTtN0t("StackHeadTagStackTagNextTag", DEP_TABLE_SIZE),
-                                               m_mapHTtHT2tN0t("HeadStackTagHeadStack2TagNextTag", DEP_TABLE_SIZE),
-                                               m_mapSTHHtSTHtSTt("StackHeadHeadTagStackHeadTagStackTag", DEP_TABLE_SIZE),
-                                               m_mapSTtSTLDtN0t("StackTagStackLDTagNextTag", DEP_TABLE_SIZE),
-                                               m_mapSTtSTLDtSTL2Dt("StackTagStackLDTagStackL2DTag", DEP_TABLE_SIZE),
-                                               m_mapSTtSTRDtN0t("StackTagStackRDTagNextTag", DEP_TABLE_SIZE),
-                                               m_mapSTtSTRDtSTR2Dt("StackTagStackRDTagStackR2DTag", DEP_TABLE_SIZE),
-
-                                               m_mapSTwd("StackWordDist", DEP_TABLE_SIZE),
-                                               m_mapSTtd("StackTagDist", DEP_TABLE_SIZE),
-                                               m_mapN0wd("NextWordDist", DEP_TABLE_SIZE),
-                                               m_mapN0td("NextTagDist", DEP_TABLE_SIZE),
-                                               m_mapSTwN0wd("StackWordNextWordDist", DEP_TABLE_SIZE),
-                                               m_mapSTtN0td("StackTagNextTagDist", DEP_TABLE_SIZE),
-
-                                               m_mapSTwra("StackWordRightArity", DEP_TABLE_SIZE),
-                                               m_mapSTtra("StackTagRightArity", DEP_TABLE_SIZE),
-                                               m_mapSTwla("StackWordLeftArity", DEP_TABLE_SIZE),
-                                               m_mapSTtla("StackTagLeftArity", DEP_TABLE_SIZE),
-                                               m_mapN0wla("NextWordRightArity", DEP_TABLE_SIZE),
-                                               m_mapN0tla("NextTagRightArity", DEP_TABLE_SIZE),
-
-                                               m_mapSTwrp("StackWordRightSetoftags", DEP_TABLE_SIZE),
-                                               m_mapSTtrp("StackTagRightSetoftags", DEP_TABLE_SIZE),
-                                               m_mapSTwlp("StackWordLeftSetoftags", DEP_TABLE_SIZE),
-                                               m_mapSTtlp("StackTagLeftSetoftags", DEP_TABLE_SIZE),
-                                               m_mapN0wlp("Next0WordLeftSetoftags", DEP_TABLE_SIZE),
-                                               m_mapN0tlp("Next0TagLeftSetoftags", DEP_TABLE_SIZE),
-
-                                               m_mapSTl("StackLemma", DEP_TABLE_SIZE),
-                                               m_mapSTc("StackCPOS", DEP_TABLE_SIZE),
-                                               m_mapSTf("StackFeats", DEP_TABLE_SIZE),
-
-                                               m_mapN0l("NextLemma", DEP_TABLE_SIZE),
-                                               m_mapN0c("NextCPOS", DEP_TABLE_SIZE),
-                                               m_mapN0f("NextFeats", DEP_TABLE_SIZE),
-
-                                               m_mapN1l("Next+1Lemma", DEP_TABLE_SIZE),
-                                               m_mapN1c("Next+1CPOS", DEP_TABLE_SIZE),
-                                               m_mapN1f("Next+1Feats", DEP_TABLE_SIZE)
-   { loadScores(); }
-   virtual ~CWeight() { }
-
-   virtual void loadScores();
-   virtual void saveScores();
-
-   void addWeighted(double mu, const CWeight &other);
-   void computeAverageFeatureWeights(int round);
-   void debugUsage(void) const;
+  void addWeighted(double mu, const CWeight &other);
+  void computeAverageFeatureWeights(int round);
+  void debugUsage(void) const;
 };
+
+
+template <typename SCORE_TYPE>
+CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain)
+  : CWeightBase(sInputPath, sOutputPath, bTrain),
+    m_mapSTw("StackWord", DEP_TABLE_SIZE),
+    m_mapSTt("StackTag", DEP_TABLE_SIZE),
+    m_mapSTwt("StackWordTag", DEP_TABLE_SIZE),
+
+    m_mapN0w("NextWord", DEP_TABLE_SIZE),
+    m_mapN0t("NextTag", DEP_TABLE_SIZE),
+    m_mapN0wt("NextWordTag", DEP_TABLE_SIZE),
+
+    m_mapN1w("Next+1Word", DEP_TABLE_SIZE),
+    m_mapN1t("Next+1Tag", DEP_TABLE_SIZE),
+    m_mapN1wt("Next+1WordTag", DEP_TABLE_SIZE),
+
+    m_mapN2w("Next+2Word", DEP_TABLE_SIZE),
+    m_mapN2t("Next+2Tag", DEP_TABLE_SIZE),
+    m_mapN2wt("Next+2WordTag", DEP_TABLE_SIZE),
+
+    m_mapSTHw("StackHeadWord", DEP_TABLE_SIZE),
+    m_mapSTHt("StackHeadTag", DEP_TABLE_SIZE),
+    m_mapSTi("StackLabel", DEP_TABLE_SIZE),
+
+    m_mapSTHHw("StackHeadHeadWord", DEP_TABLE_SIZE),
+    m_mapSTHHt("StackHeadHeadTag", DEP_TABLE_SIZE),
+    m_mapSTHi("StackLabel", DEP_TABLE_SIZE),
+
+    m_mapSTLDw("StackLDWord", DEP_TABLE_SIZE),
+    m_mapSTLDt("StackLDTag", DEP_TABLE_SIZE),
+    m_mapSTLDi("StackLDLabel", DEP_TABLE_SIZE),
+
+    m_mapSTRDw("StackRDWord", DEP_TABLE_SIZE),
+    m_mapSTRDt("StackRDTag", DEP_TABLE_SIZE),
+    m_mapSTRDi("StackRDLabel", DEP_TABLE_SIZE),
+
+    m_mapN0LDw("NextLDWord", DEP_TABLE_SIZE),
+    m_mapN0LDt("NextLDTag", DEP_TABLE_SIZE),
+    m_mapN0LDi("NextLDLabel", DEP_TABLE_SIZE),
+
+    m_mapSTL2Dw("StackL2DWord", DEP_TABLE_SIZE),
+    m_mapSTL2Dt("StackL2DTag", DEP_TABLE_SIZE),
+    m_mapSTL2Di("StackL2DLabel", DEP_TABLE_SIZE),
+
+    m_mapSTR2Dw("StackR2DWord", DEP_TABLE_SIZE),
+    m_mapSTR2Dt("StackR2DTag", DEP_TABLE_SIZE),
+    m_mapSTR2Di("StackR2DLabel", DEP_TABLE_SIZE),
+
+    m_mapN0L2Dw("NextL2DWord", DEP_TABLE_SIZE),
+    m_mapN0L2Dt("NextL2DTag", DEP_TABLE_SIZE),
+    m_mapN0L2Di("NextL2DLabel", DEP_TABLE_SIZE),
+
+    m_mapHTw("HeadStackWord", DEP_TABLE_SIZE),
+    m_mapHTt("HeadStackTag", DEP_TABLE_SIZE),
+    m_mapHTwt("HeadStackWordTag", DEP_TABLE_SIZE),
+
+    m_mapSTwtN0wt("StackWordTagNextWordTag", DEP_TABLE_SIZE),
+    m_mapSTwtN0w("StackWordTagNextWord", DEP_TABLE_SIZE),
+    m_mapSTwN0wt("StackWordNextWordTag", DEP_TABLE_SIZE),
+    m_mapSTtN0wt("StackTagNextWordTag", DEP_TABLE_SIZE),
+    m_mapSTwtN0t("StackWordTagNextTag", DEP_TABLE_SIZE),
+    m_mapSTwN0w("StackWordNextWord", DEP_TABLE_SIZE),
+    m_mapSTtN0t("StackTagNextTag", DEP_TABLE_SIZE),
+
+    m_mapN0tN1t("NextTagNext+1Tag", DEP_TABLE_SIZE),
+    m_mapN0tN1tN2t("NextTagTrigram", DEP_TABLE_SIZE),
+    m_mapSTtN0tN1t("StackTagNextTagNext+1Tag", DEP_TABLE_SIZE),
+    m_mapSTtN0tN0LDt("StackTagNextTagNextLDTag", DEP_TABLE_SIZE),
+    m_mapN0tN0LDtN0L2Dt("StackTagNextTagNextLDTagNextTagNextL2DTag", DEP_TABLE_SIZE),
+    m_mapSTHtSTtN0t("StackHeadTagStackTagNextTag", DEP_TABLE_SIZE),
+    m_mapHTtHT2tN0t("HeadStackTagHeadStack2TagNextTag", DEP_TABLE_SIZE),
+    m_mapSTHHtSTHtSTt("StackHeadHeadTagStackHeadTagStackTag", DEP_TABLE_SIZE),
+    m_mapSTtSTLDtN0t("StackTagStackLDTagNextTag", DEP_TABLE_SIZE),
+    m_mapSTtSTLDtSTL2Dt("StackTagStackLDTagStackL2DTag", DEP_TABLE_SIZE),
+    m_mapSTtSTRDtN0t("StackTagStackRDTagNextTag", DEP_TABLE_SIZE),
+    m_mapSTtSTRDtSTR2Dt("StackTagStackRDTagStackR2DTag", DEP_TABLE_SIZE),
+
+    m_mapSTwd("StackWordDist", DEP_TABLE_SIZE),
+    m_mapSTtd("StackTagDist", DEP_TABLE_SIZE),
+    m_mapN0wd("NextWordDist", DEP_TABLE_SIZE),
+    m_mapN0td("NextTagDist", DEP_TABLE_SIZE),
+    m_mapSTwN0wd("StackWordNextWordDist", DEP_TABLE_SIZE),
+    m_mapSTtN0td("StackTagNextTagDist", DEP_TABLE_SIZE),
+
+    m_mapSTwra("StackWordRightArity", DEP_TABLE_SIZE),
+    m_mapSTtra("StackTagRightArity", DEP_TABLE_SIZE),
+    m_mapSTwla("StackWordLeftArity", DEP_TABLE_SIZE),
+    m_mapSTtla("StackTagLeftArity", DEP_TABLE_SIZE),
+    m_mapN0wla("NextWordRightArity", DEP_TABLE_SIZE),
+    m_mapN0tla("NextTagRightArity", DEP_TABLE_SIZE),
+
+    m_mapSTwrp("StackWordRightSetoftags", DEP_TABLE_SIZE),
+    m_mapSTtrp("StackTagRightSetoftags", DEP_TABLE_SIZE),
+    m_mapSTwlp("StackWordLeftSetoftags", DEP_TABLE_SIZE),
+    m_mapSTtlp("StackTagLeftSetoftags", DEP_TABLE_SIZE),
+    m_mapN0wlp("Next0WordLeftSetoftags", DEP_TABLE_SIZE),
+    m_mapN0tlp("Next0TagLeftSetoftags", DEP_TABLE_SIZE),
+
+    m_mapSTl("StackLemma", DEP_TABLE_SIZE),
+    m_mapSTc("StackCPOS", DEP_TABLE_SIZE),
+    m_mapSTf("StackFeats", DEP_TABLE_SIZE),
+
+    m_mapN0l("NextLemma", DEP_TABLE_SIZE),
+    m_mapN0c("NextCPOS", DEP_TABLE_SIZE),
+    m_mapN0f("NextFeats", DEP_TABLE_SIZE),
+
+    m_mapN1l("Next+1Lemma", DEP_TABLE_SIZE),
+    m_mapN1c("Next+1CPOS", DEP_TABLE_SIZE),
+    m_mapN1f("Next+1Feats", DEP_TABLE_SIZE)
+  {
+  loadScores();
+}
+
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::loadScores() {
+   std::ifstream file ;
+   std::string s;
+   file.open(m_sInputPath.c_str()) ;
+
+   if (!file.is_open()) {
+      //std::cout << "No scores loaded." << std::endl;
+      return;
+   }
+
+#ifdef LABELED
+   getline(file, s);
+   ASSERT(s=="Dependency labels:", "Dependency labels not found in model file") ;
+   getline(file, s);
+   std::istringstream iss(s);
+   CDependencyLabel label;
+   while(iss >> label);
+   getline(file, s);
+   ASSERT(s=="", "No empty line after the dependency labels") ;
+#endif
+   iterate_templates(file >>,;);
+
+   getline(file, s);
+   if (s=="Rules=1") {
+      setRules(true);
+   }
+   else {
+      ASSERT(s=="Rules=0", "Rules flag not found from the model file");
+      setRules(false);
+   }
+
+   file.close() ;
+}
+
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::saveScores() {
+   //std::cout<<"Saving scores..." << std::endl;
+   std::ofstream file ;
+   file.open(m_sOutputPath.c_str()) ;
+
+#ifdef LABELED
+   file << "Dependency labels:" << std::endl;
+   for (unsigned label=CDependencyLabel::FIRST; label<CDependencyLabel::COUNT; ++label)
+      file << CDependencyLabel(label) << ' ';
+   file << std::endl << std::endl;
+#endif
+   iterate_templates(file<<,;)
+#ifdef DEBUG
+   iterate_templates(,.trace(););
+#endif
+   if (m_bRules) file << "Rules=1" << std::endl;
+   else file << "Rules=0" << std::endl;
+
+   file.close();
+}
+
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::addWeighted(const double mu, const CWeight<SCORE_TYPE> &other) {
+  m_mapSTw.addWeighted(mu, other.m_mapSTw);
+  m_mapSTt.addWeighted(mu, other.m_mapSTt);
+  m_mapSTwt.addWeighted(mu, other.m_mapSTwt);
+  m_mapN0w.addWeighted(mu, other.m_mapN0w);
+  m_mapN0t.addWeighted(mu, other.m_mapN0t);
+  m_mapN0wt.addWeighted(mu, other.m_mapN0wt);
+  m_mapN1w.addWeighted(mu, other.m_mapN1w);
+  m_mapN1t.addWeighted(mu, other.m_mapN1t);
+  m_mapN1wt.addWeighted(mu, other.m_mapN1wt);
+  m_mapN2w.addWeighted(mu, other.m_mapN2w);
+  m_mapN2t.addWeighted(mu, other.m_mapN2t);
+  m_mapN2wt.addWeighted(mu, other.m_mapN2wt);
+  m_mapSTHw.addWeighted(mu, other.m_mapSTHw);
+  m_mapSTHt.addWeighted(mu, other.m_mapSTHt);
+  m_mapSTi.addWeighted(mu, other.m_mapSTi);
+  m_mapSTHHw.addWeighted(mu, other.m_mapSTHHw);
+  m_mapSTHHt.addWeighted(mu, other.m_mapSTHHt);
+  m_mapSTHi.addWeighted(mu, other.m_mapSTHi);
+  m_mapSTLDw.addWeighted(mu, other.m_mapSTLDw);
+  m_mapSTLDt.addWeighted(mu, other.m_mapSTLDt);
+  m_mapSTLDi.addWeighted(mu, other.m_mapSTLDi);
+  m_mapSTRDw.addWeighted(mu, other.m_mapSTRDw);
+  m_mapSTRDt.addWeighted(mu, other.m_mapSTRDt);
+  m_mapSTRDi.addWeighted(mu, other.m_mapSTRDi);
+  m_mapN0LDw.addWeighted(mu, other.m_mapN0LDw);
+  m_mapN0LDt.addWeighted(mu, other.m_mapN0LDt);
+  m_mapN0LDi.addWeighted(mu, other.m_mapN0LDi);
+  m_mapSTL2Dw.addWeighted(mu, other.m_mapSTL2Dw);
+  m_mapSTL2Dt.addWeighted(mu, other.m_mapSTL2Dt);
+  m_mapSTL2Di.addWeighted(mu, other.m_mapSTL2Di);
+  m_mapSTR2Dw.addWeighted(mu, other.m_mapSTR2Dw);
+  m_mapSTR2Dt.addWeighted(mu, other.m_mapSTR2Dt);
+  m_mapSTR2Di.addWeighted(mu, other.m_mapSTR2Di);
+  m_mapN0L2Dw.addWeighted(mu, other.m_mapN0L2Dw);
+  m_mapN0L2Dt.addWeighted(mu, other.m_mapN0L2Dt);
+  m_mapN0L2Di.addWeighted(mu, other.m_mapN0L2Di);
+  m_mapHTw.addWeighted(mu, other.m_mapHTw);
+  m_mapHTt.addWeighted(mu, other.m_mapHTt);
+  m_mapHTwt.addWeighted(mu, other.m_mapHTwt);
+  m_mapSTwtN0wt.addWeighted(mu, other.m_mapSTwtN0wt);
+  m_mapSTwtN0w.addWeighted(mu, other.m_mapSTwtN0w);
+  m_mapSTwN0wt.addWeighted(mu, other.m_mapSTwN0wt);
+  m_mapSTtN0wt.addWeighted(mu, other.m_mapSTtN0wt);
+  m_mapSTwtN0t.addWeighted(mu, other.m_mapSTwtN0t);
+  m_mapSTwN0w.addWeighted(mu, other.m_mapSTwN0w);
+  m_mapSTtN0t.addWeighted(mu, other.m_mapSTtN0t);
+  m_mapN0tN1t.addWeighted(mu, other.m_mapN0tN1t);
+  m_mapN0tN1tN2t.addWeighted(mu, other.m_mapN0tN1tN2t);
+  m_mapSTtN0tN1t.addWeighted(mu, other.m_mapSTtN0tN1t);
+  m_mapSTtN0tN0LDt.addWeighted(mu, other.m_mapSTtN0tN0LDt);
+  m_mapN0tN0LDtN0L2Dt.addWeighted(mu, other.m_mapN0tN0LDtN0L2Dt);
+  m_mapSTHtSTtN0t.addWeighted(mu, other.m_mapSTHtSTtN0t);
+  m_mapHTtHT2tN0t.addWeighted(mu, other.m_mapHTtHT2tN0t);
+  m_mapSTHHtSTHtSTt.addWeighted(mu, other.m_mapSTHHtSTHtSTt);
+  m_mapSTtSTLDtN0t.addWeighted(mu, other.m_mapSTtSTLDtN0t);
+  m_mapSTtSTLDtSTL2Dt.addWeighted(mu, other.m_mapSTtSTLDtSTL2Dt);
+  m_mapSTtSTRDtN0t.addWeighted(mu, other.m_mapSTtSTRDtN0t);
+  m_mapSTtSTRDtSTR2Dt.addWeighted(mu, other.m_mapSTtSTRDtSTR2Dt);
+  m_mapSTwd.addWeighted(mu, other.m_mapSTwd);
+  m_mapSTtd.addWeighted(mu, other.m_mapSTtd);
+  m_mapN0wd.addWeighted(mu, other.m_mapN0wd);
+  m_mapN0td.addWeighted(mu, other.m_mapN0td);
+  m_mapSTwN0wd.addWeighted(mu, other.m_mapSTwN0wd);
+  m_mapSTtN0td.addWeighted(mu, other.m_mapSTtN0td);
+  m_mapSTwra.addWeighted(mu, other.m_mapSTwra);
+  m_mapSTtra.addWeighted(mu, other.m_mapSTtra);
+  m_mapSTwla.addWeighted(mu, other.m_mapSTwla);
+  m_mapSTtla.addWeighted(mu, other.m_mapSTtla);
+  m_mapN0wla.addWeighted(mu, other.m_mapN0wla);
+  m_mapN0tla.addWeighted(mu, other.m_mapN0tla);
+  m_mapSTwrp.addWeighted(mu, other.m_mapSTwrp);
+  m_mapSTtrp.addWeighted(mu, other.m_mapSTtrp);
+  m_mapSTwlp.addWeighted(mu, other.m_mapSTwlp);
+  m_mapSTtlp.addWeighted(mu, other.m_mapSTtlp);
+  m_mapN0wlp.addWeighted(mu, other.m_mapN0wlp);
+  m_mapN0tlp.addWeighted(mu, other.m_mapN0tlp);
+  m_mapSTl.addWeighted(mu, other.m_mapSTl);
+  m_mapSTc.addWeighted(mu, other.m_mapSTc);
+  m_mapSTf.addWeighted(mu, other.m_mapSTf);
+  m_mapN0l.addWeighted(mu, other.m_mapN0l);
+  m_mapN0c.addWeighted(mu, other.m_mapN0c);
+  m_mapN0f.addWeighted(mu, other.m_mapN0f);
+  m_mapN1l.addWeighted(mu, other.m_mapN1l);
+  m_mapN1c.addWeighted(mu, other.m_mapN1c);
+  m_mapN1f.addWeighted(mu, other.m_mapN1f);
+}
+
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::computeAverageFeatureWeights(int round) {
+   //std::cout<<"Computing averaged (total) feature vector..." << std::endl;
+   iterate_templates(,.computeAverage(round);) ;
+}
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::debugUsage() const {
+  std::cout << "m_mapSTw "; m_mapSTw.debugUsage();
+  std::cout << "m_mapSTt "; m_mapSTt.debugUsage();
+  std::cout << "m_mapSTwt "; m_mapSTwt.debugUsage();
+  std::cout << "m_mapN0w "; m_mapN0w.debugUsage();
+  std::cout << "m_mapN0t "; m_mapN0t.debugUsage();
+  std::cout << "m_mapN0wt "; m_mapN0wt.debugUsage();
+  std::cout << "m_mapN1w "; m_mapN1w.debugUsage();
+  std::cout << "m_mapN1t "; m_mapN1t.debugUsage();
+  std::cout << "m_mapN1wt "; m_mapN1wt.debugUsage();
+  std::cout << "m_mapN2w "; m_mapN2w.debugUsage();
+  std::cout << "m_mapN2t "; m_mapN2t.debugUsage();
+  std::cout << "m_mapN2wt "; m_mapN2wt.debugUsage();
+  std::cout << "m_mapSTHw "; m_mapSTHw.debugUsage();
+  std::cout << "m_mapSTHt "; m_mapSTHt.debugUsage();
+  std::cout << "m_mapSTi "; m_mapSTi.debugUsage();
+  std::cout << "m_mapSTHHw "; m_mapSTHHw.debugUsage();
+  std::cout << "m_mapSTHHt "; m_mapSTHHt.debugUsage();
+  std::cout << "m_mapSTHi "; m_mapSTHi.debugUsage();
+  std::cout << "m_mapSTLDw "; m_mapSTLDw.debugUsage();
+  std::cout << "m_mapSTLDt "; m_mapSTLDt.debugUsage();
+  std::cout << "m_mapSTLDi "; m_mapSTLDi.debugUsage();
+  std::cout << "m_mapSTRDw "; m_mapSTRDw.debugUsage();
+  std::cout << "m_mapSTRDt "; m_mapSTRDt.debugUsage();
+  std::cout << "m_mapSTRDi "; m_mapSTRDi.debugUsage();
+  std::cout << "m_mapN0LDw "; m_mapN0LDw.debugUsage();
+  std::cout << "m_mapN0LDt "; m_mapN0LDt.debugUsage();
+  std::cout << "m_mapN0LDi "; m_mapN0LDi.debugUsage();
+  std::cout << "m_mapSTL2Dw "; m_mapSTL2Dw.debugUsage();
+  std::cout << "m_mapSTL2Dt "; m_mapSTL2Dt.debugUsage();
+  std::cout << "m_mapSTL2Di "; m_mapSTL2Di.debugUsage();
+  std::cout << "m_mapSTR2Dw "; m_mapSTR2Dw.debugUsage();
+  std::cout << "m_mapSTR2Dt "; m_mapSTR2Dt.debugUsage();
+  std::cout << "m_mapSTR2Di "; m_mapSTR2Di.debugUsage();
+  std::cout << "m_mapN0L2Dw "; m_mapN0L2Dw.debugUsage();
+  std::cout << "m_mapN0L2Dt "; m_mapN0L2Dt.debugUsage();
+  std::cout << "m_mapN0L2Di "; m_mapN0L2Di.debugUsage();
+  std::cout << "m_mapHTw "; m_mapHTw.debugUsage();
+  std::cout << "m_mapHTt "; m_mapHTt.debugUsage();
+  std::cout << "m_mapHTwt "; m_mapHTwt.debugUsage();
+  std::cout << "m_mapSTwtN0wt "; m_mapSTwtN0wt.debugUsage();
+  std::cout << "m_mapSTwtN0w "; m_mapSTwtN0w.debugUsage();
+  std::cout << "m_mapSTwN0wt "; m_mapSTwN0wt.debugUsage();
+  std::cout << "m_mapSTtN0wt "; m_mapSTtN0wt.debugUsage();
+  std::cout << "m_mapSTwtN0t "; m_mapSTwtN0t.debugUsage();
+  std::cout << "m_mapSTwN0w "; m_mapSTwN0w.debugUsage();
+  std::cout << "m_mapSTtN0t "; m_mapSTtN0t.debugUsage();
+  std::cout << "m_mapN0tN1t "; m_mapN0tN1t.debugUsage();
+  std::cout << "m_mapN0tN1tN2t "; m_mapN0tN1tN2t.debugUsage();
+  std::cout << "m_mapSTtN0tN1t "; m_mapSTtN0tN1t.debugUsage();
+  std::cout << "m_mapSTtN0tN0LDt "; m_mapSTtN0tN0LDt.debugUsage();
+  std::cout << "m_mapN0tN0LDtN0L2Dt "; m_mapN0tN0LDtN0L2Dt.debugUsage();
+  std::cout << "m_mapSTHtSTtN0t "; m_mapSTHtSTtN0t.debugUsage();
+  std::cout << "m_mapHTtHT2tN0t "; m_mapHTtHT2tN0t.debugUsage();
+  std::cout << "m_mapSTHHtSTHtSTt "; m_mapSTHHtSTHtSTt.debugUsage();
+  std::cout << "m_mapSTtSTLDtN0t "; m_mapSTtSTLDtN0t.debugUsage();
+  std::cout << "m_mapSTtSTLDtSTL2Dt "; m_mapSTtSTLDtSTL2Dt.debugUsage();
+  std::cout << "m_mapSTtSTRDtN0t "; m_mapSTtSTRDtN0t.debugUsage();
+  std::cout << "m_mapSTtSTRDtSTR2Dt "; m_mapSTtSTRDtSTR2Dt.debugUsage();
+  std::cout << "m_mapSTwd "; m_mapSTwd.debugUsage();
+  std::cout << "m_mapSTtd "; m_mapSTtd.debugUsage();
+  std::cout << "m_mapN0wd "; m_mapN0wd.debugUsage();
+  std::cout << "m_mapN0td "; m_mapN0td.debugUsage();
+  std::cout << "m_mapSTwN0wd "; m_mapSTwN0wd.debugUsage();
+  std::cout << "m_mapSTtN0td "; m_mapSTtN0td.debugUsage();
+  std::cout << "m_mapSTwra "; m_mapSTwra.debugUsage();
+  std::cout << "m_mapSTtra "; m_mapSTtra.debugUsage();
+  std::cout << "m_mapSTwla "; m_mapSTwla.debugUsage();
+  std::cout << "m_mapSTtla "; m_mapSTtla.debugUsage();
+  std::cout << "m_mapN0wla "; m_mapN0wla.debugUsage();
+  std::cout << "m_mapN0tla "; m_mapN0tla.debugUsage();
+  std::cout << "m_mapSTwrp "; m_mapSTwrp.debugUsage();
+  std::cout << "m_mapSTtrp "; m_mapSTtrp.debugUsage();
+  std::cout << "m_mapSTwlp "; m_mapSTwlp.debugUsage();
+  std::cout << "m_mapSTtlp "; m_mapSTtlp.debugUsage();
+  std::cout << "m_mapN0wlp "; m_mapN0wlp.debugUsage();
+  std::cout << "m_mapN0tlp "; m_mapN0tlp.debugUsage();
+  std::cout << "m_mapSTl "; m_mapSTl.debugUsage();
+  std::cout << "m_mapSTc "; m_mapSTc.debugUsage();
+  std::cout << "m_mapSTf "; m_mapSTf.debugUsage();
+  std::cout << "m_mapN0l "; m_mapN0l.debugUsage();
+  std::cout << "m_mapN0c "; m_mapN0c.debugUsage();
+  std::cout << "m_mapN0f "; m_mapN0f.debugUsage();
+  std::cout << "m_mapN1l "; m_mapN1l.debugUsage();
+  std::cout << "m_mapN1c "; m_mapN1c.debugUsage();
+  std::cout << "m_mapN1f "; m_mapN1f.debugUsage();
+}
+
 
 }
 }

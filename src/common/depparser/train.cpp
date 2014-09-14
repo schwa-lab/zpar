@@ -66,7 +66,7 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
 
   // Remove the model file before constructing the weights object over it so that the weights are zero to start off with.
   std::remove(sModelPath.c_str());
-  depparser::CWeight summed(sModelPath, true);
+  depparser::CWeight<float> summed(sModelPath, true);
 
   for (unsigned int t = 0; t != nthreads; ++t) {
     // Compute the percentage of errors that this partial model caused.
@@ -74,7 +74,7 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
     std::cout << "Thread " << t << " had " << nerrors[t] << "/" << nerrors_total << " errors (" << (100 * mu) << ")" << std::endl;
 
     // Load the partial model.
-    depparser::CWeight partial(temp_model_path(sModelPath, t), true);
+    depparser::CWeight<float> partial(temp_model_path(sModelPath, t), true);
     summed.addWeighted(mu, partial);
   }
 
