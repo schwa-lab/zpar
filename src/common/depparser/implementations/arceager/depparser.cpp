@@ -160,6 +160,8 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    // single
    if (st_index != -1) {
       cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTw, retval, st_word, action, m_nScoreIndex, amount, round) ;
+   }
+/*
       cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTt, retval, st_tag, action, m_nScoreIndex, amount, round ) ;
     
       cast_weights->weight_map.getOrUpdateScore( Feature::m_mapSTwt, retval, st_word_tag, action, m_nScoreIndex, amount, round) ;
@@ -318,7 +320,7 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
       refer_or_allocate_tuple2(tag_tagset, &n0_tag, &n0_ltagset);
       cast_weights->weight_map.getOrUpdateScore( Feature::m_mapN0tlp, retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
    }
-
+*/
 /*
    if (m_bCoNLL) {
 

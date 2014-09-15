@@ -155,16 +155,16 @@ public:
       const auto new_key = std::make_pair( f, key );
 #ifdef NO_NEG_FEATURE
       if ( round == -1 ) {
-         addPositiveFeature( key , index );
+         addPositiveFeature( new_key , index );
          return;
       }
 #endif
       if ( amount == 0 ) {
-         this->find( key , m_zero ).add( out, which ) ;
+         this->find( new_key , m_zero ).add( out, which ) ;
       }
       else {
          assert( round > 0 );
-         updateScore( key , index , amount , round ) ;
+         updateScore( new_key , index , amount , round ) ;
       }
    }
 

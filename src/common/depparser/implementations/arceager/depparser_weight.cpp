@@ -14,6 +14,7 @@
 //#include "english/tags.h"
 //#include "boost/variant.hpp"
 #include "depparser_weight.h"
+#include <unordered_map>
 
 using namespace TARGET_LANGUAGE;
 using namespace TARGET_LANGUAGE::depparser;
@@ -84,7 +85,19 @@ void TARGET_LANGUAGE::depparser::CWeight::saveScores() {
       file << CDependencyLabel(label) << ' ';
    file << std::endl << std::endl;
 #endif
-   file << weight_map;
+/*
+   auto output = std::unordered_map<std::string, std::vector<CPackedScore>>();
+
+   //for ( const auto p: weight_map ) {
+   for ( auto it = weight_map.begin(); it != weight_map.end(); ++it ) {
+      output[feat_to_str[Feature::m_mapSTw]].push_back(it.second);
+   }
+   
+   //for ( const auto p: output ) {
+   //   file << p.first;
+      //file << p.second;
+   //}
+*/
    ////iterate_templates(file<<,;)
 #ifdef DEBUG
    ////iterate_templates(,.trace(););

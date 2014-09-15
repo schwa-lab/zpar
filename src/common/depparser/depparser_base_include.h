@@ -31,6 +31,9 @@ namespace depparser {
 
 #include "supertag.h"
 
+#define BOOST_MPL_CFG_NO_PREPROCESSED_HEADERS 
+#define BOOST_MPL_LIMIT_LIST_SIZE 3
+#define BOOST_MPL_LIMIT_VECTOR_SIZE 3
 #include <boost/variant.hpp>
 
 #endif
