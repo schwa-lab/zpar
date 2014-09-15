@@ -72,7 +72,7 @@ public:
    xxhash64(void *state) const {
      schwa::Hasher64<CWord>()(word, state);
      schwa::Hasher64<CTag>()(tag, state);
-     return xxhash::XXH_OK
+     return xxhash::XXH_OK;
    }
 };
    

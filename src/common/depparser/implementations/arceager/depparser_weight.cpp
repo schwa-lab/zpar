@@ -119,7 +119,7 @@ CWeight::addWeighted(const double mu, const CWeight &other) {
 
 
 void
-CWeight::computeAverageFeatureWeights(const unsigned int round) {
+CWeight::computeAverageFeatureWeights(const unsigned int iteration) {
   LOG(INFO) << "[CWeight::computeAverage] TODO" << std::endl;
 }
 

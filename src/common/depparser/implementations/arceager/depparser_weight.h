@@ -26,9 +26,19 @@ public:
   inline const SCORE_TYPE score(const ScoreAverage n=eNonAverage) const { return (n == eNonAverage) ? _current : _total; }
 
   inline void
-  updateAverage(const unsigned int round) {
-    if (round > _last_updated)
-      _total += _current*(round - _last_updated);
+  updateAverage(const unsigned int iteration) {
+    if (iteration > _last_updated)
+      _total += _current*(iteration - _last_updated);
+  }
+
+  void
+  updateCurrent(const SCORE_TYPE added, const unsigned int iteration) {
+    if (iteration > _last_updated) {
+      updateAverage(iteration);
+      _last_updated = iteration;
+    }
+    _current += added;
+    _total += added;
   }
 
 private:
@@ -136,22 +146,23 @@ public:
   virtual void saveScores(void) override;
 
   void addWeighted(double mu, const CWeight &other);
-  void computeAverageFeatureWeights(unsigned int round);
+  void computeAverageFeatureWeights(unsigned int iteration);
   void debugUsage(void) const;
 
   template <typename CP>
-  void getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, action::StackAction action, ScoreAverage sa, SCORE_TYPE amount, unsigned int round);
+  void getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, action::StackAction action, ScoreAverage sa, SCORE_TYPE amount, unsigned int iteration);
 };
 
 
 template <typename CP>
 inline void
-CWeight::getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const action::StackAction action, const ScoreAverage sa, const SCORE_TYPE amount, const unsigned int round) {
+CWeight::getOrUpdateScore(const schwa::FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const action::StackAction action, const ScoreAverage sa, const SCORE_TYPE amount, const unsigned int iteration) {
   const schwa::Label label = action;
 
   // Don't create an entry if the update amount is zero.
   if (amount == 0 && _weights.find(type, cp, label) == _weights.end())
     return;
+  _weights.get(type, cp, label).updateCurrent(amount, iteration);
 }
 
 
