@@ -76,6 +76,11 @@ public:
    }
    void load(const unsigned long &i) { m_nHash = i; }
    void clear() { m_nHash = 0; }
+
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, &m_nHash, sizeof(decltype(m_nHash)));
+   }
 };
 
 //===============================================================
@@ -191,6 +196,11 @@ public:
 //   const unsigned long long &code() const { return m_code; }
    unsigned long long hash() const {
      return *reinterpret_cast<const unsigned long long *>(m_code);
+   }
+
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, m_code, sizeof(m_code));
    }
 
 public:

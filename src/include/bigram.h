@@ -92,6 +92,11 @@ public:
       } 
    }
 
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, &m_nHash, sizeof(decltype(m_nHash)));
+   }
+
 protected:
    inline void computehash() { m_nHash = m_unigram1->hash() * 31 + m_unigram2->hash(); }
 };

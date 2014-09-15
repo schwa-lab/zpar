@@ -67,6 +67,13 @@ public:
       this->word = (word) ;
       tag = tt ;
    }
+
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+     schwa::Hasher64<CWord>()(word, state);
+     schwa::Hasher64<CTag>()(tag, state);
+     return xxhash::XXH_OK
+   }
 };
    
 //===============================================================

@@ -82,7 +82,12 @@ public:
    inline bool empty() { return m_nHash==EMPTY; }
    inline bool unknown() { return m_nHash==UNKNOWN; }
    inline void clear() { m_nHash=EMPTY; }
-}; 
+
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, &m_nHash, sizeof(decltype(m_nHash)));
+   }
+};
 
 //===============================================================
 

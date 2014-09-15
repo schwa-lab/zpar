@@ -185,6 +185,11 @@ public:
          }
       }
    }
+
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, &m_code, sizeof(decltype(m_code)));
+   }
 };
 
 

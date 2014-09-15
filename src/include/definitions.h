@@ -37,6 +37,10 @@
 #include <cmath>
 #include <tuple>
 
+#include <schwa/hashtable.h>
+
+namespace xxhash = ::schwa::third_party::xxhash;
+
 //using namespace std;
 
 /* stream operators for tuple */
@@ -84,6 +88,37 @@ std::istream &operator>>(std::istream &is, std::tuple<T1, T2, T3> &tuple) {
   is >> tmp3;
   std::get<2>(tuple) = tmp3;
   return is;
+}
+
+namespace schwa {
+
+  template <typename T0, typename T1>
+  struct Hasher64<std::tuple<T0, T1>> : public Hasher64Base<std::tuple<T0, T1>> {
+    using typename Hasher64Base<std::tuple<T0, T1>>::argument_type;
+    using typename Hasher64Base<std::tuple<T0, T1>>::result_type;
+
+    inline xxhash::XXH_errorcode
+    operator ()(const argument_type &obj, void *state) const {
+      Hasher64<T0>()(std::get<0>(obj), state);
+      Hasher64<T1>()(std::get<1>(obj), state);
+      return xxhash::XXH_OK;
+    }
+  };
+
+  template <typename T0, typename T1, typename T2>
+  struct Hasher64<std::tuple<T0, T1, T2>> : public Hasher64Base<std::tuple<T0, T1, T2>> {
+    using typename Hasher64Base<std::tuple<T0, T1, T2>>::argument_type;
+    using typename Hasher64Base<std::tuple<T0, T1, T2>>::result_type;
+
+    inline xxhash::XXH_errorcode
+    operator ()(const argument_type &obj, void *state) const {
+      Hasher64<T0>()(std::get<0>(obj), state);
+      Hasher64<T1>()(std::get<1>(obj), state);
+      Hasher64<T2>()(std::get<2>(obj), state);
+      return xxhash::XXH_OK;
+    }
+  };
+
 }
 
 /*===============================================================

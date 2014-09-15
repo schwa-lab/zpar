@@ -126,6 +126,11 @@ public:
    }
    bool closed() const { return PENN_TAG_CLOSED[m_code]; }
 
+   inline xxhash::XXH_errorcode
+   xxhash64(void *state) const {
+      return xxhash::XXH64_update(state, &m_code, sizeof(decltype(m_code)));
+   }
+
 public:
    bool operator == (const CTag &t1) const { return m_code == t1.m_code; }
    bool operator != (const CTag &t1) const { return m_code != t1.m_code; }
