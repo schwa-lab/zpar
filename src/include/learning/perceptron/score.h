@@ -82,25 +82,68 @@ public:
 
 template <typename SCORE_TYPE>
 inline std::istream &
-operator >> (std::istream &is, CScore<SCORE_TYPE> &score) {
-   char c ;
-   ASSERT(is >> score[0], "The first element of CScore cannot be read.");
-   ASSERT((is >> c) && c=='/', "The separator CScore cannot be read");
-   ASSERT(is >> score[1], "The second element of CScore cannot be read");
-   return is ;
+operator >> (std::istream &is, CScore<SCORE_TYPE> &score);
+
+template <>
+inline std::istream &
+operator >>(std::istream &is, CScore<int> &score) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
+  score[0] = mp::read_int(is);
+  score[1] = mp::read_int(is);
+  return is ;
+}
+
+template <>
+inline std::istream &
+operator >>(std::istream &is, CScore<long> &score) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
+  score[0] = mp::read_int(is);
+  score[1] = mp::read_int(is);
+  return is ;
+}
+
+template <>
+inline std::istream &
+operator >>(std::istream &is, CScore<float> &score) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
+  score[0] = mp::read_int(is);
+  score[1] = mp::read_int(is);
+  return is ;
 }
 
 
 template <typename SCORE_TYPE>
 inline std::ostream &
-operator << (std::ostream &os, const CScore<SCORE_TYPE> &score) {
-   return os << score[0] << " / " << score[1] ;
+operator <<(std::ostream &os, const CScore<SCORE_TYPE> &score);
+
+template <>
+inline std::ostream &
+operator <<(std::ostream &os, const CScore<int> &score) {
+  mp::write_array_size(os, 2);
+  mp::write_int(os, score[0]);
+  mp::write_int(os, score[1]);
+  return os;
 }
 
 template <>
 inline std::ostream &
-operator << (std::ostream &os, const CScore<float> &score) {
-   return os << static_cast<int>(score[0]) << " / " << static_cast<int>(score[1]) ;
+operator <<(std::ostream &os, const CScore<long> &score) {
+  mp::write_array_size(os, 2);
+  mp::write_int(os, static_cast<int>(score[0]));
+  mp::write_int(os, static_cast<int>(score[1]));
+  return os;
+}
+
+template <>
+inline std::ostream &
+operator <<(std::ostream &os, const CScore<float> &score) {
+  mp::write_array_size(os, 2);
+  mp::write_int(os, static_cast<int32_t>(score[0]));
+  mp::write_int(os, static_cast<int32_t>(score[1]));
+  return os;
 }
 
 #endif

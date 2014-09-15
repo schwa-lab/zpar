@@ -18,15 +18,14 @@
  *
  *==============================================================*/
 
-template<typename CTag, unsigned long size>
+template<typename CTag, unsigned long SIZE>
 class CTagSet {
-
 protected:
    unsigned long m_nHash;
 
 public:
    CTagSet() : m_nHash(0) { }
-   CTagSet(const unsigned long hash) : m_nHash(hash) { assert(hash>>(CTag::SIZE*size)==0); }
+   CTagSet(const unsigned long hash) : m_nHash(hash) { assert((hash >> (CTag::SIZE * SIZE)) == 0); }
    virtual ~CTagSet() {}
 
 private:
@@ -55,20 +54,21 @@ public:
       std::string retval = "";
       unsigned long hs = m_nHash;
       unsigned long tc;
-      for (unsigned long i=0; i<size; ++i) {
-         if (retval.empty()==false) retval = " " + retval;
-         tc = hs & ((1 << CTag::SIZE) -1);
+      for (unsigned long i = 0; i < SIZE; ++i) {
+         if (!retval.empty())
+            retval = " " + retval;
+         tc = hs & ((1 << CTag::SIZE) - 1);
          retval = CTag(tc).str() + retval;
          hs >>= CTag::SIZE;
       }
-      return retval; 
+      return retval;
    }
    void load(const std::string &s) {
       clear();
       std::istringstream iss(s);
       std::string t;
       iss >> t;
-      for (unsigned long i=0; i<size; ++i) {
+      for (unsigned long i=0; i<SIZE; ++i) {
          assert(iss.good());
          *this += CTag(t).code();
          iss >> t;
@@ -76,12 +76,17 @@ public:
    }
    void load(const unsigned long &i) { m_nHash = i; }
    void clear() { m_nHash = 0; }
+
+   template <typename T0, unsigned long T1>
+   friend std::istream &operator >>(std::istream &, CTagSet<T0, T1> &c);
+   template <typename T0, unsigned long T1>
+   friend std::ostream &operator <<(std::ostream &, const CTagSet<T0, T1> &c);
 };
 
 //===============================================================
 
-template<typename CTag, unsigned long size>
-inline const unsigned long &hash(const CTagSet<CTag, size> &set) {return set.hash();}
+template<typename CTag, unsigned long SIZE>
+inline const unsigned long &hash(const CTagSet<CTag, SIZE> &set) {return set.hash();}
 
 //===============================================================
 
@@ -102,38 +107,22 @@ inline unsigned long encodeTags(const CTag &tag1, const CTag &tag2, const CTag &
           (tag3.code()<<CTag::SIZE) | tag4.code() ;
 }
 
+
 //===============================================================
-
-template<typename CTag, unsigned long size>
-inline std::istream & operator >> (std::istream &is, CTagSet<CTag, size> &c) {
-
-   std::string s;
-   std::string t;
-   is >> t;
-   assert(t=="[");
-
-   is >> t;
-   s = "";
-   while (t!="]") {
-     s+=t;
-     s+=" ";
-     is >> t;
-   }
-
-   c.load(s);
-
-   return is;
+template<typename CTag, unsigned long SIZE>
+inline std::istream &
+operator >>(std::istream &is, CTagSet<CTag, SIZE> &c) {
+  c.m_nHash = mp::read_uint(is);
+  return is;
 }
 
-template<typename CTag, unsigned long size>
-inline std::ostream & operator << (std::ostream &os, const CTagSet<CTag, size> &c) {
-
-   os << "[ ";
-   os << c.str();
-   os << " ]";
-
-   return os;
+template<typename CTag, unsigned long SIZE>
+inline std::ostream &
+operator <<(std::ostream &os, const CTagSet<CTag, SIZE> &c) {
+  mp::write_uint(os, c.m_nHash);
+  return os;
 }
+
 
 //=============================================================================
 //
@@ -156,7 +145,6 @@ struct MAX : public _MAX<(A > B), T, A, B> { };
 
 template<typename CTag>
 class CSetOfTags {
-
 protected:
    typedef unsigned char CBasicType;
    static constexpr const unsigned long BASIC_SIZE = sizeof(CBasicType)*8;
@@ -195,43 +183,32 @@ public:
 
 public:
    bool operator == (const CSetOfTags &s) const { return memcmp(m_code, s.m_code, sizeof(m_code))==0; }
+
+   template <typename T0>
+   friend std::istream &operator >>(std::istream &, CSetOfTags<T0> &s);
+   template <typename T0>
+   friend std::ostream &operator <<(std::ostream &, const CSetOfTags<T0> &s);
 };
 
+
 //==============================================================================
-
 template<typename CTag>
-inline std::istream & operator >> (std::istream &is, CSetOfTags<CTag> &c) {
-
-   std::string s;
-   CTag t;
-   is >> s;
-   assert(s=="[");
-   c.clear();
-
-   is >> s;
-   while (s!="]") {
-     t.load(s);
-//     ASSERT(t.code()<sizeof(unsigned long long)*8, "tagset.h: The number of tagsexceeds the capacity of CSetOfTags.");
-     c.add(t);
-     is >> s;
-   }
-
-   return is;
+inline std::istream &
+operator >>(std::istream &is, CSetOfTags<CTag> &c) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == sizeof(c.m_code)); (void)nitems;
+  for (uint32_t i = 0; i != nitems; ++i)
+    c.m_code[i] = static_cast<typename CSetOfTags<CTag>::CBasicType>(mp::read_uint8(is));
+  return is;
 }
 
 template<typename CTag>
-inline std::ostream & operator << (std::ostream &os, const CSetOfTags<CTag> &c) {
-
-   os << "[ ";
-   for (unsigned i=0; i<CTag::COUNT; ++i) {
-      CTag t;
-      t.load(i);
-      if (c.contains(t)) os << t << ' ';
-   }
-   os << "]";
-
-   return os;
+inline std::ostream &
+operator <<(std::ostream &os, const CSetOfTags<CTag> &c) {
+  mp::write_array_size(os, sizeof(c.m_code));
+  for (uint32_t i = 0; i != sizeof(c.m_code); ++i)
+    mp::write_uint8(os, c.m_code[i]);
+  return os;
 }
 
 #endif
-

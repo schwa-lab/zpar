@@ -60,8 +60,10 @@ public:
    }
 };
 
+
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-std::istream & operator >> (std::istream &is, CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &score) {
+inline std::istream &
+operator >>(std::istream &is, CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &score) {
    assert(PACKED_SIZE>0);
    std::string s;
    is >> s;
@@ -78,7 +80,8 @@ std::istream & operator >> (std::istream &is, CPackedScoreType<SCORE_TYPE, PACKE
 }
 
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-std::ostream & operator << (std::ostream &os, CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &score) {
+inline std::ostream &
+operator <<(std::ostream &os, const CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &score) {
    assert(PACKED_SIZE>0);
    os << " [ ";
    os << score[0];
@@ -87,6 +90,7 @@ std::ostream & operator << (std::ostream &os, CPackedScoreType<SCORE_TYPE, PACKE
    os << " ] ";
    return os;
 }
+
 
 /*===============================================================
  *
@@ -237,40 +241,102 @@ public:
 #endif
 };
 
+
 //===============================================================
+template <typename T, bool IS_INTEGRAL_OR_FLOAT>
+struct _MessagePackIO {
+  static inline std::istream &
+  read(std::istream &is, T &key) {
+    return is >> key;
+  }
+
+  static inline std::ostream &
+  write(std::ostream &os, const T &key) {
+    return os << key;
+  }
+};
+
+template <typename T>
+struct _MessagePackIO<T, true> {
+  static inline std::istream &
+  read(std::istream &is, T &key) {
+    mp::read(is, key);
+    return is;
+  }
+
+  static inline std::ostream &
+  write(std::ostream &os, const T &key) {
+    mp::write(os, key);
+    return os;
+  }
+};
+
+template <typename T>
+struct MessagePackIO : public _MessagePackIO<T, std::is_integral<T>::value || std::is_floating_point<T>::value> { };
+
 
 template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-inline
-std::istream & operator >> (std::istream &is, CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
-   if (!is) return is ;
-   std::string s ;
-   getline(is, s) ;
-   // match name
-   const unsigned &size = score_map.name.size();
-   if ( s.substr(0, size)!=score_map.name ) THROW("hashmap_score_packed.h: the expected score map " << score_map.name << " is not matched.");
-   is >> static_cast< CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> > &>(score_map) ;
-   return is ;
+inline std::istream &
+operator >>(std::istream &is, CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
+  if (!is)
+    return is ;
+
+  // Match name.
+  const std::string name = mp::read_str(is);
+  if (name != score_map.name)
+    THROW("hashmap_score_packed.h: the expected score map " << score_map.name << " is not matched.");
+
+  // Read in the size of the map.
+  K key;
+  const uint32_t npairs = mp::read_map_size(is);
+  for (uint32_t i = 0; i != npairs; ++i) {
+    MessagePackIO<K>::read(is, key);
+    MessagePackIO<CPackedScore<SCORE_TYPE, PACKED_SIZE>>::read(is, score_map[key]);
+  }
+
+  return is;
 }
 
-template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-inline
-std::ostream & operator << (std::ostream &os, CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
-   assert(os);
-   if (score_map.count)
-      os << score_map.name << ' ' << score_map.count << std::endl ;
-   else
-      os << score_map.name << std::endl ;
 
-   typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-   const iterator end = score_map.end();
-   for (iterator it = score_map.begin(); it != end; ++it) {
+template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
+inline std::ostream &
+operator <<(std::ostream &os, const CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
+  assert(os);
+
+  // Write out the name of the table.
+  mp::write_str(os, score_map.name);
+
+  typedef typename CHashMap<K, CPackedScore<SCORE_TYPE, PACKED_SIZE>>::const_iterator iterator;
+  const iterator end = score_map.end();
+
+  // Count how many items are in the hashtable, and write that out.
+  uint32_t npairs = 0;
+  for (iterator it = score_map.begin(); it != end; ++it) {
 #ifndef NO_NEG_FEATURE
-      if ( !it.second().empty() ) 
-#endif // do not write zero scores if allow negative scores
-         os << it.first() << "\t:\t" << it.second() << std::endl ;
-   }
-   os << std::endl ;
-   return os ;
+    // Do not write zero scores if allow negative scores.
+    if (!it.second().empty()) {
+#endif
+      ++npairs;
+#ifndef NO_NEG_FEATURE
+    }
+#endif
+  }
+  mp::write_map_size(os, npairs);
+
+  // Output each key/value pair.
+  for (iterator it = score_map.begin(); it != end; ++it) {
+#ifndef NO_NEG_FEATURE
+    // Do not write zero scores if allow negative scores.
+    if (!it.second().empty()) {
+#endif
+      MessagePackIO<K>::write(os, it.first());
+      MessagePackIO<CPackedScore<SCORE_TYPE, PACKED_SIZE>>::write(os, it.second());
+#ifndef NO_NEG_FEATURE
+    }
+#endif
+  }
+
+  return os ;
 }
 
 #endif

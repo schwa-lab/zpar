@@ -19,77 +19,75 @@
  *  
  *==============================================================*/
 
-#include <cstdlib>                              // define NULL
-#include <utility>                              // define std::pair
+#include <algorithm>
 #include <cassert>                              // assert
-#include <ctime>                                // clock(); CLK_TCK
-#include <vector>
-#include <string>
+#include <cmath>
+#include <cstdlib>                              // define NULL
 #include <cstring>
+#include <ctime>                                // clock(); CLK_TCK
+#include <exception>
+#include <fstream>
+#include <iostream>
 #include <map>
 #include <set>
-#include <stack>
-#include <iostream>
-#include <fstream>
 #include <sstream>
-#include <exception>
-#include <algorithm>
-#include <cmath>
+#include <stack>
+#include <string>
 #include <tuple>
+#include <type_traits>
+#include <utility>                              // define std::pair
+#include <vector>
 
-//using namespace std;
+#include <schwa/msgpack.h>
+
+namespace mp = ::schwa::msgpack;
 
 /* stream operators for tuple */
-
 template <typename T1, typename T2>
-std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2> &tuple) {
-  os << std::get<0>(tuple) << " , " << std::get<1>(tuple);
+inline std::ostream &
+operator <<(std::ostream &os, const std::tuple<T1, T2> &tuple) {
+  mp::write_array_size(os, 2);
+  os << std::get<0>(tuple);
+  os << std::get<1>(tuple);
   return os;
 }
 
 template <typename T1, typename T2, typename T3>
-std::ostream &operator<<(std::ostream &os, const std::tuple<T1, T2, T3> &tuple) {
-  os << std::get<0>(tuple) << " , " << std::get<1>(tuple) << " , " << std::get<2>(tuple);
+inline std::ostream &
+operator <<(std::ostream &os, const std::tuple<T1, T2, T3> &tuple) {
+  mp::write_array_size(os, 3);
+  os << std::get<0>(tuple);
+  os << std::get<1>(tuple);
+  os << std::get<2>(tuple);
   return os;
 }
 
 template <typename T1, typename T2>
-std::istream &operator>>(std::istream &is, std::tuple<T1, T2> &tuple) {
-  char c;
-  T1 tmp1;
-  is >> tmp1;
-  std::get<0>(tuple) = tmp1;
-  is >> c;
-  assert(c == ',');
-  T2 tmp2;
-  is >> tmp2;
-  std::get<1>(tuple) = tmp2;
+inline std::istream &
+operator >>(std::istream &is, std::tuple<T1, T2> &tuple) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
+  is >> std::get<0>(tuple);
+  is >> std::get<1>(tuple);
   return is;
 }
 
 template <typename T1, typename T2, typename T3>
-std::istream &operator>>(std::istream &is, std::tuple<T1, T2, T3> &tuple) {
-  char c;
-  T1 tmp1;
-  is >> tmp1;
-  std::get<0>(tuple) = tmp1;
-  is >> c;
-  assert(c == ',');
-  T2 tmp2;
-  is >> tmp2;
-  std::get<1>(tuple) = tmp2;
-  is >> c;
-  assert(c == ',');
-  T3 tmp3;
-  is >> tmp3;
-  std::get<2>(tuple) = tmp3;
+inline std::istream &
+operator >>(std::istream &is, std::tuple<T1, T2, T3> &tuple) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 3); (void)nitems;
+  is >> std::get<0>(tuple);
+  is >> std::get<1>(tuple);
+  is >> std::get<2>(tuple);
   return is;
 }
+
 
 /*===============================================================
  *
  * debugging utilities
- *  
+ *
  *==============================================================*/
 
 // throw

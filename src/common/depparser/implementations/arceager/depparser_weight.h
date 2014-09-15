@@ -107,7 +107,6 @@
   left(m_mapN1f)right
 
 namespace TARGET_LANGUAGE {
-
 namespace depparser {
 
 /*===============================================================
@@ -263,8 +262,8 @@ public:
 
 
 template <typename SCORE_TYPE>
-CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain)
-  : CWeightBase(sInputPath, sOutputPath, bTrain),
+CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain) :
+    CWeightBase(sInputPath, sOutputPath, bTrain),
     m_mapSTw("StackWord", DEP_TABLE_SIZE),
     m_mapSTt("StackTag", DEP_TABLE_SIZE),
     m_mapSTwt("StackWordTag", DEP_TABLE_SIZE),
@@ -378,61 +377,49 @@ CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &s
 template <typename SCORE_TYPE>
 void
 CWeight<SCORE_TYPE>::loadScores() {
-   std::ifstream file ;
-   std::string s;
-   file.open(m_sInputPath.c_str()) ;
-
-   if (!file.is_open()) {
-      //std::cout << "No scores loaded." << std::endl;
-      return;
-   }
+  std::ifstream in(m_sInputPath, std::ios_base::binary);
+  if (!in.is_open()) {
+    //std::cout << "No scores loaded." << std::endl;
+    return;
+  }
 
 #ifdef LABELED
-   getline(file, s);
-   ASSERT(s=="Dependency labels:", "Dependency labels not found in model file") ;
-   getline(file, s);
-   std::istringstream iss(s);
-   CDependencyLabel label;
-   while(iss >> label);
-   getline(file, s);
-   ASSERT(s=="", "No empty line after the dependency labels") ;
+  // Read in each of the dependency labels.
+  CDependencyLabel label;
+  const uint32_t nlabels = mp::read_array_size(in);
+  for (uint32_t i = 0; i != nlabels; ++i)
+    in >> label;
 #endif
-   iterate_templates(file >>,;);
 
-   getline(file, s);
-   if (s=="Rules=1") {
-      setRules(true);
-   }
-   else {
-      ASSERT(s=="Rules=0", "Rules flag not found from the model file");
-      setRules(false);
-   }
+  // Read in each of the feature tables.
+  iterate_templates( in >> , ; );
 
-   file.close() ;
+  // Read in whether or not rules were used.
+  setRules(mp::read_bool(in));
+
+  in.close() ;
 }
 
 
 template <typename SCORE_TYPE>
 void
 CWeight<SCORE_TYPE>::saveScores() {
-   //std::cout<<"Saving scores..." << std::endl;
-   std::ofstream file ;
-   file.open(m_sOutputPath.c_str()) ;
+  std::ofstream out(m_sOutputPath, std::ios_base::binary);
 
 #ifdef LABELED
-   file << "Dependency labels:" << std::endl;
-   for (unsigned label=CDependencyLabel::FIRST; label<CDependencyLabel::COUNT; ++label)
-      file << CDependencyLabel(label) << ' ';
-   file << std::endl << std::endl;
+  // Write each of the dependency labels.
+  mp::write_array_size(out, CDependencyLabel::COUNT - CDependencyLabel::FIRST);
+  for (unsigned label = CDependencyLabel::FIRST; label != CDependencyLabel::COUNT; ++label)
+    out << CDependencyLabel(label);
 #endif
-   iterate_templates(file<<,;)
-#ifdef DEBUG
-   iterate_templates(,.trace(););
-#endif
-   if (m_bRules) file << "Rules=1" << std::endl;
-   else file << "Rules=0" << std::endl;
 
-   file.close();
+  // Write out each of the feature tables.
+  iterate_templates( out << , ; )
+
+  // Write out whether or not rules were used.
+  mp::write_bool(out, m_bRules);
+
+  out.close();
 }
 
 

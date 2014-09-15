@@ -103,19 +103,18 @@ public:
    }
 }; 
 
-//===============================================================
 
-inline std::istream & operator >> (std::istream &is, CGenericTag &tag) {
-   std::string s;
-   is >> s;
-   tag.load(s);
-   return is;
+//===============================================================
+inline std::istream &
+operator >>(std::istream &is, CGenericTag &tag) {
+  tag.load(mp::read_str(is));
+  return is;
 }
 
-inline std::ostream & operator << (std::ostream &os, const CGenericTag &tag) {
-   os << tag.str() ;
-   return os;
+inline std::ostream &
+operator <<(std::ostream &os, const CGenericTag &tag) {
+  mp::write_str(os, tag.str());
+  return os;
 }
 
 #endif
-

@@ -67,28 +67,29 @@ public:
       this->word = (word) ;
       tag = tt ;
    }
+
+   template <typename A, char B>
+   friend std::istream &operator >>(std::istream &, CTaggedWord<A, B> &tw);
+   template <typename A, char B>
+   friend std::ostream &operator <<(std::ostream &, const CTaggedWord<A, B> &tw);
 };
    
 //===============================================================
 
 template <typename CTag, char sTagSep>
-std::istream & operator >> (std::istream &is, CTaggedWord<CTag, sTagSep> &tw) {
-   std::string s;
-   is >> s;
-   int middle;
-   middle = s.rfind(sTagSep, s.size()-1);
-   assert(middle>=0);
-   assert(middle<static_cast<int>(s.size())-1);
-   tw.load(CWord(s.substr(0,middle)), CTag(s.substr(middle+1)));
-   return is ;
+inline std::istream &
+operator >>(std::istream &is, CTaggedWord<CTag, sTagSep> &tw) {
+  is >> tw.word;
+  is >> tw.tag;
+  return is;
 }
 
 template <typename CTag, char sTagSep>
-std::ostream & operator << (std::ostream &os, const CTaggedWord<CTag, sTagSep> &tw) {
-   os << tw.word.str() ;
-   os << sTagSep ;
-   os << tw.tag.str() ; 
-   return os ;
+inline std::ostream &
+operator <<(std::ostream &os, const CTaggedWord<CTag, sTagSep> &tw) {
+  os << tw.word;
+  os << tw.tag;
+  return os;
 }
 
 

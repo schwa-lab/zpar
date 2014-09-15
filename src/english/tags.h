@@ -25,17 +25,16 @@ const char TAG_SEPARATOR = '/';
 inline unsigned long hash(const english::CTag &tag) { return tag.code();}
 
 //===============================================================
-
-inline std::istream & operator >> (std::istream &is, english::CTag &tag) {
-   std::string s;
-   is >> s;
-   tag.load(s);
-   return is;
+inline std::istream &
+operator >>(std::istream &is, english::CTag &tag) {
+  tag.load(mp::read_str(is));
+  return is;
 }
 
-inline std::ostream & operator << (std::ostream &os, const english::CTag &tag) {
-   os << tag.str() ;
-   return os;
+inline std::ostream &
+operator <<(std::ostream &os, const english::CTag &tag) {
+  mp::write_str(os, tag.str());
+  return os;
 }
 
 //===============================================================
@@ -43,4 +42,3 @@ inline std::ostream & operator << (std::ostream &os, const english::CTag &tag) {
 #include "pos/penn_morph.h"
 
 #endif
-

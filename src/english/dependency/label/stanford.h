@@ -184,17 +184,19 @@ public:
 };
 
 
-inline std::istream & operator >> (std::istream &is, CDependencyLabel &label) {
-   std::string s;
-   is >> s;
-   label.load(s);
-   return is;
+inline std::istream &
+operator >>(std::istream &is, CDependencyLabel &label) {
+  label.load(mp::read_str(is));
+  return is;
 }
 
-inline std::ostream & operator << (std::ostream &os, const CDependencyLabel &label) {
-   os << label.str() ;
-   return os;
+
+inline std::ostream &
+operator <<(std::ostream &os, const CDependencyLabel &label) {
+  mp::write_str(os, label.str());
+  return os;
 }
+
 }
 
 #endif

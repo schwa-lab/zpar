@@ -52,32 +52,26 @@ public:
    const CScore<SCORE_TYPE> & operator [](const unsigned &index) const { return scores[index]; }
 };
 
-template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-std::istream & operator >> (std::istream &is, CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
-   assert(PACKED_SIZE>0);
-   std::string s;
-   is >> s;
-   ASSERT(s=="[", "hashmap_score_packed.h: not well formatted CPackedScore");
-   is >> score[0];
-   for (unsigned index=1; index<PACKED_SIZE; ++index) {
-      is >> s;
-      ASSERT(s==",", "hashmap_score_packed.h: not well formatted CPackedScore");
-      is >> score[index];
-   }
-   is >> s;
-   ASSERT(s=="]", "hashmap_score_packed.h: not well formatted CPackedScore");
-   return is;
-}
 
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-std::ostream & operator << (std::ostream &os, CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
-   assert(PACKED_SIZE>0);
-   os << " [ ";
-   os << score[0];
-   for (unsigned index=1; index<PACKED_SIZE; ++index)
-      os << " , " << score[index];
-   os << " ] ";
-   return os;
+inline std::istream &
+operator >>(std::istream &is, CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
+  assert(PACKED_SIZE > 0);
+  const uint32_t nitems = mp::read_array_size(is);
+  for (unsigned i = 0; i != nitems; ++i)
+    is >> score[i];
+  return is;
+}
+
+
+template <typename SCORE_TYPE, unsigned PACKED_SIZE>
+inline std::ostream &
+operator <<(std::ostream &os, const CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
+  assert(PACKED_SIZE > 0);
+  mp::write_array_size(os, PACKED_SIZE);
+  for (unsigned i = 0; i != PACKED_SIZE; ++i)
+    os << score[i];
+  return os;
 }
 
 

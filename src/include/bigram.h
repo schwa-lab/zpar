@@ -104,21 +104,20 @@ inline unsigned long int hash(const CBigram<CUnigram> &w) { return w.hash(); }
 //===============================================================
 
 template <class CUnigram>
-std::istream & operator >> (std::istream &is, CBigram<CUnigram> &bigram) {
-   char c ;
-   CUnigram unigram1; 
-   CUnigram unigram2;
-   is >> unigram1 >> c >> unigram2 ;
-   bigram.allocate(unigram1, unigram2) ;
-   assert( c == ',' ) ;
-   return is ;
+inline std::istream &
+operator >>(std::istream &is, CBigram<CUnigram> &bigram) {
+  CUnigram first, second;
+  is >> first >> second;
+  bigram.allocate(first, second);
+  return is;
 }
 
 template <class CUnigram>
-std::ostream & operator << (std::ostream &os, const CBigram<CUnigram> &bigram) {
-   os << *(bigram.first()) << " , " << *(bigram.second()) ;
-   return os ;
+inline std::ostream &
+operator <<(std::ostream &os, const CBigram<CUnigram> &bigram) {
+  os << *(bigram.first());
+  os << *(bigram.second());
+  return os;
 }
 
 #endif
-

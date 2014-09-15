@@ -66,20 +66,18 @@ public:
    void clear() { m_nHash=EMPTY; }
 }; 
 
-//===============================================================
 
-inline std::istream & operator >> (std::istream &is, CLemma &w) {
-   std::string s ;
-   is >> s ;
-   assert( s[0]=='[' && s[s.size()-1] == ']') ; // [] avoids empty
-   w = s.substr(1,s.size()-2) ;
-   return is ;
+//===============================================================
+inline std::istream &
+operator >>(std::istream &is, CLemma &l) {
+  l.load(mp::read_str(is));
+  return is ;
 }
 
-inline std::ostream & operator << (std::ostream &os, const CLemma &w) {
-   os << '[' << w.str() << ']' ;
-   return os ;
+inline std::ostream &
+operator <<(std::ostream &os, const CLemma &l) {
+  mp::write_str(os, l.str());
+  return os ;
 }
 
 #endif
-
