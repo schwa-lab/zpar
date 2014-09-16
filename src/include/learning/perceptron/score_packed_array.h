@@ -43,6 +43,7 @@ public:
          if (!scores[index].zero()) return false;
       return true;
    }
+   inline void clear() { }
    void add(CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &o, const int &which) const {
       for (unsigned index=0; index<PACKED_SIZE; ++index)
          o[index] += scores[index].score(which);

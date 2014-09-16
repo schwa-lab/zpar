@@ -119,6 +119,9 @@ public:
    {
       assert(m_zero.empty());
    }
+   virtual ~CPackedScoreMap(void) {
+     clear();
+   }
 
 #ifdef NO_NEG_FEATURE
    inline void setPositiveFeature(const CPackedScoreMap &positive) {
