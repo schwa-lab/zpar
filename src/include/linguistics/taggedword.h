@@ -76,6 +76,8 @@ public:
 template <typename CTag, char sTagSep>
 inline std::istream &
 operator >>(std::istream &is, CTaggedWord<CTag, sTagSep> &tw) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
   is >> tw.word;
   is >> tw.tag;
   return is;
@@ -84,6 +86,7 @@ operator >>(std::istream &is, CTaggedWord<CTag, sTagSep> &tw) {
 template <typename CTag, char sTagSep>
 inline std::ostream &
 operator <<(std::ostream &os, const CTaggedWord<CTag, sTagSep> &tw) {
+  mp::write_array_size(os, 2);
   os << tw.word;
   os << tw.tag;
   return os;
