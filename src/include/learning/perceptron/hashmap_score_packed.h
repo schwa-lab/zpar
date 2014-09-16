@@ -236,6 +236,22 @@ public:
       }
    }
 
+   void combineAdd(const CPackedScoreMap &other) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::const_iterator iterator;
+      const iterator end = other.end();
+      for (iterator it = other.begin(); it != end; ++it) {
+         (*this)[it.first()].combineAdd(it.second());
+      }
+   }
+
+   void combineDiv(const unsigned int n) {
+      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
+      const iterator end = this->end();
+      for (iterator it = this->begin(); it != end; ++it) {
+         it.second().combineDiv(n);
+      }
+   }
+
 #ifdef DEBUG
    void trace() {
       std::cout << name << ": ";

@@ -76,6 +76,17 @@ public:
       current += static_cast<SCORE_TYPE>(mu * other.current);
       total += static_cast<SCORE_TYPE>(mu * other.total);
    }
+
+   void combineAdd(const CScore &other) {
+      current += other.current;
+      total += other.total;
+   }
+
+   void combineDiv(const unsigned int n) {
+      current /= n;
+      total /= n;
+   }
+
    //void updateCurrent(SCORE_TYPE added, int round=0) {if (round>=lastupdate){updateAverage(round);total+=added;lastupdate=round;}current+=added; }
 };
 

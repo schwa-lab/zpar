@@ -109,6 +109,22 @@ public:
     }
   }
 
+  void combineAdd(const CPackedScore &other) {
+    typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
+    const iterator end = other.scores.end();
+    for (iterator it = other.scores.begin(); it != end; ++it) {
+      scores[it.first()].combineAdd(it.second());
+    }
+  }
+
+  void combineDiv(const unsigned int n) {
+    typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::iterator iterator;
+    const iterator end = scores.end();
+    for (iterator it = scores.begin(); it != end; ++it) {
+      it.second().combineDiv(n);
+    }
+  }
+
   void subtractCurrent(CPackedScore &s, const int &round) {
     typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::iterator iterator;
     const iterator end = scores.end();

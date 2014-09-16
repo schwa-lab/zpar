@@ -256,6 +256,8 @@ public:
   virtual void saveScores() override;
 
   void addWeighted(float mu, const CWeight &other);
+  void combineAdd(const CWeight &other);
+  void combineDiv(unsigned int n);
   void computeAverageFeatureWeights(int round);
   void debugUsage(void) const;
 };
@@ -516,10 +518,109 @@ CWeight<SCORE_TYPE>::addWeighted(const float mu, const CWeight<SCORE_TYPE> &othe
 
 template <typename SCORE_TYPE>
 void
+CWeight<SCORE_TYPE>::combineAdd(const CWeight<SCORE_TYPE> &other) {
+  m_mapSTw.combineAdd(other.m_mapSTw);
+  m_mapSTt.combineAdd(other.m_mapSTt);
+  m_mapSTwt.combineAdd(other.m_mapSTwt);
+  m_mapN0w.combineAdd(other.m_mapN0w);
+  m_mapN0t.combineAdd(other.m_mapN0t);
+  m_mapN0wt.combineAdd(other.m_mapN0wt);
+  m_mapN1w.combineAdd(other.m_mapN1w);
+  m_mapN1t.combineAdd(other.m_mapN1t);
+  m_mapN1wt.combineAdd(other.m_mapN1wt);
+  m_mapN2w.combineAdd(other.m_mapN2w);
+  m_mapN2t.combineAdd(other.m_mapN2t);
+  m_mapN2wt.combineAdd(other.m_mapN2wt);
+  m_mapSTHw.combineAdd(other.m_mapSTHw);
+  m_mapSTHt.combineAdd(other.m_mapSTHt);
+  m_mapSTi.combineAdd(other.m_mapSTi);
+  m_mapSTHHw.combineAdd(other.m_mapSTHHw);
+  m_mapSTHHt.combineAdd(other.m_mapSTHHt);
+  m_mapSTHi.combineAdd(other.m_mapSTHi);
+  m_mapSTLDw.combineAdd(other.m_mapSTLDw);
+  m_mapSTLDt.combineAdd(other.m_mapSTLDt);
+  m_mapSTLDi.combineAdd(other.m_mapSTLDi);
+  m_mapSTRDw.combineAdd(other.m_mapSTRDw);
+  m_mapSTRDt.combineAdd(other.m_mapSTRDt);
+  m_mapSTRDi.combineAdd(other.m_mapSTRDi);
+  m_mapN0LDw.combineAdd(other.m_mapN0LDw);
+  m_mapN0LDt.combineAdd(other.m_mapN0LDt);
+  m_mapN0LDi.combineAdd(other.m_mapN0LDi);
+  m_mapSTL2Dw.combineAdd(other.m_mapSTL2Dw);
+  m_mapSTL2Dt.combineAdd(other.m_mapSTL2Dt);
+  m_mapSTL2Di.combineAdd(other.m_mapSTL2Di);
+  m_mapSTR2Dw.combineAdd(other.m_mapSTR2Dw);
+  m_mapSTR2Dt.combineAdd(other.m_mapSTR2Dt);
+  m_mapSTR2Di.combineAdd(other.m_mapSTR2Di);
+  m_mapN0L2Dw.combineAdd(other.m_mapN0L2Dw);
+  m_mapN0L2Dt.combineAdd(other.m_mapN0L2Dt);
+  m_mapN0L2Di.combineAdd(other.m_mapN0L2Di);
+  m_mapHTw.combineAdd(other.m_mapHTw);
+  m_mapHTt.combineAdd(other.m_mapHTt);
+  m_mapHTwt.combineAdd(other.m_mapHTwt);
+  m_mapSTwtN0wt.combineAdd(other.m_mapSTwtN0wt);
+  m_mapSTwtN0w.combineAdd(other.m_mapSTwtN0w);
+  m_mapSTwN0wt.combineAdd(other.m_mapSTwN0wt);
+  m_mapSTtN0wt.combineAdd(other.m_mapSTtN0wt);
+  m_mapSTwtN0t.combineAdd(other.m_mapSTwtN0t);
+  m_mapSTwN0w.combineAdd(other.m_mapSTwN0w);
+  m_mapSTtN0t.combineAdd(other.m_mapSTtN0t);
+  m_mapN0tN1t.combineAdd(other.m_mapN0tN1t);
+  m_mapN0tN1tN2t.combineAdd(other.m_mapN0tN1tN2t);
+  m_mapSTtN0tN1t.combineAdd(other.m_mapSTtN0tN1t);
+  m_mapSTtN0tN0LDt.combineAdd(other.m_mapSTtN0tN0LDt);
+  m_mapN0tN0LDtN0L2Dt.combineAdd(other.m_mapN0tN0LDtN0L2Dt);
+  m_mapSTHtSTtN0t.combineAdd(other.m_mapSTHtSTtN0t);
+  m_mapHTtHT2tN0t.combineAdd(other.m_mapHTtHT2tN0t);
+  m_mapSTHHtSTHtSTt.combineAdd(other.m_mapSTHHtSTHtSTt);
+  m_mapSTtSTLDtN0t.combineAdd(other.m_mapSTtSTLDtN0t);
+  m_mapSTtSTLDtSTL2Dt.combineAdd(other.m_mapSTtSTLDtSTL2Dt);
+  m_mapSTtSTRDtN0t.combineAdd(other.m_mapSTtSTRDtN0t);
+  m_mapSTtSTRDtSTR2Dt.combineAdd(other.m_mapSTtSTRDtSTR2Dt);
+  m_mapSTwd.combineAdd(other.m_mapSTwd);
+  m_mapSTtd.combineAdd(other.m_mapSTtd);
+  m_mapN0wd.combineAdd(other.m_mapN0wd);
+  m_mapN0td.combineAdd(other.m_mapN0td);
+  m_mapSTwN0wd.combineAdd(other.m_mapSTwN0wd);
+  m_mapSTtN0td.combineAdd(other.m_mapSTtN0td);
+  m_mapSTwra.combineAdd(other.m_mapSTwra);
+  m_mapSTtra.combineAdd(other.m_mapSTtra);
+  m_mapSTwla.combineAdd(other.m_mapSTwla);
+  m_mapSTtla.combineAdd(other.m_mapSTtla);
+  m_mapN0wla.combineAdd(other.m_mapN0wla);
+  m_mapN0tla.combineAdd(other.m_mapN0tla);
+  m_mapSTwrp.combineAdd(other.m_mapSTwrp);
+  m_mapSTtrp.combineAdd(other.m_mapSTtrp);
+  m_mapSTwlp.combineAdd(other.m_mapSTwlp);
+  m_mapSTtlp.combineAdd(other.m_mapSTtlp);
+  m_mapN0wlp.combineAdd(other.m_mapN0wlp);
+  m_mapN0tlp.combineAdd(other.m_mapN0tlp);
+  m_mapSTl.combineAdd(other.m_mapSTl);
+  m_mapSTc.combineAdd(other.m_mapSTc);
+  m_mapSTf.combineAdd(other.m_mapSTf);
+  m_mapN0l.combineAdd(other.m_mapN0l);
+  m_mapN0c.combineAdd(other.m_mapN0c);
+  m_mapN0f.combineAdd(other.m_mapN0f);
+  m_mapN1l.combineAdd(other.m_mapN1l);
+  m_mapN1c.combineAdd(other.m_mapN1c);
+  m_mapN1f.combineAdd(other.m_mapN1f);
+}
+
+
+template <typename SCORE_TYPE>
+void
+CWeight<SCORE_TYPE>::combineDiv(const unsigned int n) {
+   iterate_templates(,.combineDiv(n);) ;
+}
+
+
+template <typename SCORE_TYPE>
+void
 CWeight<SCORE_TYPE>::computeAverageFeatureWeights(int round) {
    //std::cout<<"Computing averaged (total) feature vector..." << std::endl;
    iterate_templates(,.computeAverage(round);) ;
 }
+
 
 template <typename SCORE_TYPE>
 void

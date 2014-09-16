@@ -48,7 +48,22 @@ public:
       for (unsigned index=0; index<PACKED_SIZE; ++index)
          o[index] += scores[index].score(which);
    }
-public:
+
+  void addWeighted(const float mu, const CPackedScore &other) {
+    for (size_t i = 0; i != PACKED_SIZE; ++i)
+      scores[i].addWeighted(mu, other.scores[i]);
+  }
+
+  void combineAdd(const CPackedScore &other) {
+    for (size_t i = 0; i != PACKED_SIZE; ++i)
+      scores[i].combineAdd(other.scores[i]);
+  }
+
+  void combineDiv(const unsigned int n) {
+    for (size_t i = 0; i != PACKED_SIZE; ++i)
+      scores[i].combineDiv(n);
+  }
+
    CScore<SCORE_TYPE> & operator [](const unsigned &index) { return scores[index]; }
    const CScore<SCORE_TYPE> & operator [](const unsigned &index) const { return scores[index]; }
 };
