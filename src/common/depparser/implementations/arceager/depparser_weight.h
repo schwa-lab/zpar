@@ -117,7 +117,7 @@ namespace depparser {
 template <typename SCORE_TYPE>
 class CWeight : public CWeightBase {
 public:
-  static constexpr const unsigned DEP_TABLE_SIZE = 1000121;  // This should be a prime number.
+  static constexpr const unsigned DEP_TABLE_SIZE = 15139;  // This should be a prime number.
 
   typedef CPackedScoreMap<CWord, SCORE_TYPE, action::MAX> CWordMap;
   typedef CPackedScoreMap<CTag, SCORE_TYPE, action::MAX> CTagMap;
