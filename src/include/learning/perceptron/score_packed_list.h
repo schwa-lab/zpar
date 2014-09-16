@@ -23,65 +23,6 @@ template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScoreType;
 
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-class CPackedScore;
-template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-inline
-std::istream & operator >> (std::istream &is, CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
-  assert(PACKED_SIZE>0);
-  score.clear();
-  assert(score.empty());
-  if (!is) return is ;
-  std::string s ;
-  unsigned key;
-//  static CScore<SCORE_TYPE> value;
-  is >> s;
-  ASSERT(s=="{"||s=="{}", "The packed score does not start with {");
-  if (s=="{}")
-    return is;
-  while (true) {
-    is >> key;
-    is >> s;
-//std::cout<<(s)<<endl;std::cout.flush();
-    ASSERT(s==":", "The packed score does not have : after key: "<<key);
-    is >> score.scores[key];
-//    is >> value;
-//    score.scores[key] = value;
-    is >> s;
-    ASSERT(s==","||s=="}", "The packed score does not have a , or } after value: "<<score.scores[key]);
-    if (s=="}")
-      return is;
-  }
-  THROW("score_packed_list.h: the program should not have reached here.");
-  return is ;
-}
-
-template <typename SCORE_TYPE, unsigned PACKED_SIZE>
-std::ostream & operator << (std::ostream &os, const CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
-  typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
-  assert(PACKED_SIZE>0);
-  os << "{";
-  bool bBegin=true;
-  const iterator end = score.scores.end();
-  for (iterator it = score.scores.begin(); it != end; ++it) {
-#ifndef NO_NEG_FEATURE
-    if (!it.second().zero()) {
-#endif // do not print zero scores when allow negative feature
-      if (bBegin)
-        os << ' ';
-      else
-        os << " , ";
-      bBegin=false;
-      os << it.first() << " : " << it.second();
-#ifndef NO_NEG_FEATURE
-    }
-#endif // but have to when disallow because features are static
-  }
-  if (!bBegin) os << ' ';
-  os << "}";
-  return os;
-}
-
-template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScore {
 protected:
   CLinkedList< unsigned, CScore<SCORE_TYPE> > scores;
@@ -209,12 +150,60 @@ public:
 
   inline CScore<SCORE_TYPE> & operator [](const unsigned &index) { return scores[index]; }
   inline const CScore<SCORE_TYPE> & find(const unsigned &index) const { return scores.find(index,CScore<SCORE_TYPE>()); }
-  friend std::istream & operator >> <> (std::istream &is, CPackedScore &score);
-  friend std::ostream & operator << <> (std::ostream &os, const CPackedScore &score);
+
+  template <typename T0, unsigned T1>
+  friend std::istream &operator >>(std::istream &is, CPackedScore<T0, T1> &score);
+  template <typename T0, unsigned T1>
+  friend std::ostream &operator <<(std::ostream &os, const CPackedScore<T0, T1> &score);
 
   static inline void freePoolMemory() { // call after all instances clean!
     CLinkedList< unsigned, CScore<SCORE_TYPE> >::freePoolMemory();
   }
 };
+
+
+template <typename SCORE_TYPE, unsigned PACKED_SIZE>
+inline std::istream &
+operator >>(std::istream &is, CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
+  const uint32_t nitems = mp::read_map_size(is);
+  for (uint32_t n = 0; n != nitems; ++n) {
+    uint32_t key = mp::read_uint(is);
+    is >> score[key];
+  }
+  return is;
+}
+
+
+template <typename SCORE_TYPE, unsigned PACKED_SIZE>
+inline std::ostream &
+operator <<(std::ostream &os, const CPackedScore<SCORE_TYPE, PACKED_SIZE> &score) {
+  typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
+  const iterator end = score.scores.end();
+
+  uint32_t nitems = 0;
+  for (iterator it = score.scores.begin(); it != end; ++it) {
+#ifndef NO_NEG_FEATURE
+    if (!it.second().zero()) {
+#endif
+      ++nitems;
+#ifndef NO_NEG_FEATURE
+    }
+#endif
+  }
+
+  mp::write_map_size(os, nitems);
+  for (iterator it = score.scores.begin(); it != end; ++it) {
+#ifndef NO_NEG_FEATURE
+    if (!it.second().zero()) {
+#endif
+      mp::write_uint(os, it.first());
+      os << it.second();
+#ifndef NO_NEG_FEATURE
+    }
+#endif
+  }
+
+  return os;
+}
 
 #endif
