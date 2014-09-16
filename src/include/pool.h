@@ -51,7 +51,6 @@ protected:
    void newblock() {
       CMemoryPoolEntry<T> *iter = current;
       current = new CMemoryPoolEntry<T>(blocksize);
-      assert(current!=0);
       current->prev = iter;
       nItem = 0;
       blocksize<<=1;
