@@ -8,9 +8,6 @@
 #include "learning/perceptron/hashmap_score_packed.h"
 
 #include "bigram.h"
-#include "tuple2.h"
-#include "tuple3.h"
-#include "tuple4.h"
 
 #include "linguistics/lemma.h"
 
@@ -18,9 +15,6 @@
 #include "charcat.h"
 #endif
 
-typedef CBigram< CTaggedWord<TARGET_LANGUAGE::CTag, TARGET_LANGUAGE::TAG_SEPARATOR> > CTwoTaggedWords; 
-
-
-
+typedef CBigram< CTaggedWord<TARGET_LANGUAGE::CTag, TARGET_LANGUAGE::TAG_SEPARATOR> > CTwoTaggedWords;
 
 #endif
