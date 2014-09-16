@@ -20,8 +20,6 @@ const CTaggedWord<CTag, TAG_SEPARATOR> g_emptyTaggedWord;
 const CTag g_noneTag = CTag::NONE;
 
 #define cast_weights static_cast<CWeight<SCORE_TYPE> *>(m_weights)
-#define refer_or_allocate_tuple2(x, o1, o2) { if (amount == 0) x.refer(o1, o2); else x.allocate(o1, o2); }
-#define refer_or_allocate_tuple3(x, o1, o2, o3) { if (amount == 0) x.refer(o1, o2, o3); else x.allocate(o1, o2, o3); }
 #define _conll_or_empty(x) (x == "_" ? "" : x)
 
 /*===============================================================
@@ -120,12 +118,12 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    const CSetOfTags<CDependencyLabel> &n0_ltagset = n0_index==-1?CSetOfTags<CDependencyLabel>():item->lefttagset(n0_index);
 
    if ( amount == 0 ) {
-      st_word_tag_n0_word_tag.refer( &st_word_tag, &n0_word_tag );
-      st_word_n0_word.refer( &st_word, &n0_word );
+      st_word_tag_n0_word_tag.assign( st_word_tag, n0_word_tag );
+      st_word_n0_word.assign( st_word, n0_word );
    }
    else {
-      st_word_tag_n0_word_tag.allocate( st_word_tag, n0_word_tag );
-      st_word_n0_word.allocate( st_word, n0_word );
+      st_word_tag_n0_word_tag.assign( st_word_tag, n0_word_tag );
+      st_word_n0_word.assign( st_word, n0_word );
    }
 
    // single
