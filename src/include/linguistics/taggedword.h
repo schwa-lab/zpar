@@ -30,11 +30,9 @@ class CTaggedWord {
 public:
    static const char sSeparator = sTagSep;
 
-public:
    CWord word;
    CTag tag;
 
-public:
    CTaggedWord() {}
 //   CTaggedWord(const std::string &s, const CTag t) : word(s), tag(t) { }
    CTaggedWord(const std::string &s, const std::string &t) : word(s), tag(t) { }
@@ -42,30 +40,29 @@ public:
    CTaggedWord(const CTaggedWord &w) : word(w.word), tag(w.tag) { }
    ~CTaggedWord() {}
 
-public:
-   inline bool operator == (const CTaggedWord &w) const { 
-      return word == w.word && tag == w.tag ; 
-   }
-   inline bool operator != (const CTaggedWord &w) const { 
-      return !(*this == w); 
-   }
    // the ordering of words are defined:
    // when the hash are not equal, order is defined by hash
    // when the hash are equal, order is defined by char-value
-   inline bool operator < (const CTaggedWord &w) const { 
-      return word == w.word ? tag < w.tag : word < w.word ; 
-   }
+   inline bool operator < (const CTaggedWord &w) const { return word == w.word ? tag < w.tag : word < w.word ; }
+   inline bool operator == (const CTaggedWord &w) const { return word == w.word && tag == w.tag ; }
+   inline bool operator != (const CTaggedWord &w) const { return !(*this == w); }
+
    inline bool empty() { return word.empty() && tag.empty(); }
    inline void clear() { word.clear(); tag.clear(); }
    inline unsigned long hash() const { return (word.code()<<CTag::SIZE)|tag.code(); }
-   // assign value
-   inline void operator = (const CTaggedWord &tw) {
-      word = tw.word;
-      tag = tw.tag;
-   }
-   inline void load(const CWord &word, const CTag &tt=CTag::NONE) {
+
+   inline void
+   load(const CWord &word, const CTag &tt=CTag::NONE) {
       this->word = (word) ;
       tag = tt ;
+   }
+
+   // assign value
+   inline CTaggedWord &
+   operator =(const CTaggedWord &tw) {
+      word = tw.word;
+      tag = tw.tag;
+      return *this;
    }
 
    template <typename A, char B>
