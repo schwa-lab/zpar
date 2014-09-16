@@ -157,11 +157,11 @@ def main(args):
                         local_correct_label[t[LABEL_INDEX]] += 1
                     else:
                         local_incorrect_larcs += 1
-                        local_incorrect_label[t[LABEL_INDEX]] += 1
+                        local_incorrect_label[(t[LABEL_INDEX], g[LABEL_INDEX])] += 1
                 else:
                     local_incorrect_uarcs += 1
                     local_incorrect_larcs += 1
-                    local_incorrect_label[t[LABEL_INDEX]] += 1
+                    local_incorrect_label[(t[LABEL_INDEX], g[LABEL_INDEX])] += 1
 
         if local_correct_uarcs > current_correct_uarcs:
             current_correct_uarcs = local_correct_uarcs
@@ -220,9 +220,9 @@ def main(args):
     print("Unique parses per sentence: {:.2f} ({} / {})".format(total_unique_parses / float(total_sentences), total_unique_parses, total_sentences))
 
     if args.label_errors:
-      print("\nTotal label errors")
-      for label, val in sorted(incorrect_label.items(), reverse=True, key=itemgetter(1)):
-        print("{}: {}".format(label, val))
+      print("\nLabel confusion: test -> gold")
+      for (test_label, gold_label), val in sorted(incorrect_label.items(), reverse=True, key=itemgetter(1)):
+        print("{} -> {}: {}".format(test_label, gold_label, val))
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description="Runs an evaluation over nbest dependency parse output")
