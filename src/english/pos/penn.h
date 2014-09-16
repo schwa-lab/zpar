@@ -108,7 +108,7 @@ public:
    CTag(PENN_TAG_CONSTANTS t) : m_code(t) { }
    CTag(int t) : m_code(t) { }
    CTag(const std::string &s) { load(s); }
-   virtual ~CTag() {}
+   ~CTag() {}
 
 public:
    unsigned long code() const { return m_code; }
