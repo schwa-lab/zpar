@@ -67,7 +67,8 @@ public:
 
    inline xxhash::XXH_errorcode
    xxhash64(void *state) const {
-      return xxhash::XXH64_update(state, &m_nHash, sizeof(decltype(m_nHash)));
+      const std::string &s = str();
+      return xxhash::XXH64_update(state, s.c_str(), s.size());
    }
 }; 
 

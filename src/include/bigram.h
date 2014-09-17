@@ -94,7 +94,14 @@ public:
 
    inline xxhash::XXH_errorcode
    xxhash64(void *state) const {
-      return xxhash::XXH64_update(state, &m_nHash, sizeof(decltype(m_nHash)));
+      if (m_unigram1 == nullptr) {
+         xxhash::XXH64_update(state, m_unigram1, sizeof(decltype(m_unigram1)));
+      }
+      else {
+         schwa::Hasher64<CUnigram>()(*m_unigram1, state);
+         schwa::Hasher64<CUnigram>()(*m_unigram2, state);
+      }
+      return xxhash::XXH_OK;
    }
 
 protected:
