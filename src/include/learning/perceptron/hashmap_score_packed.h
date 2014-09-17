@@ -119,9 +119,7 @@ public:
    {
       assert(m_zero.empty());
    }
-   virtual ~CPackedScoreMap(void) {
-     clear();
-   }
+   virtual ~CPackedScoreMap(void) { }
 
 #ifdef NO_NEG_FEATURE
    inline void setPositiveFeature(const CPackedScoreMap &positive) {
@@ -176,7 +174,7 @@ public:
 //      }
 //   }
 
-   void clear() {
+   virtual void clear() {
       // first clear each ste of packed scores so that the memory will be freed
       typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
       const iterator end = this->end();
