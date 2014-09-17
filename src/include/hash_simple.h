@@ -14,7 +14,7 @@
 
 #include "pool.h"
 
-static const unsigned long POOL_BLOCK_SIZE=(1<<16);
+static const unsigned long POOL_BLOCK_SIZE=(1<<10);
 
 /*===============================================================
  *
@@ -113,37 +113,33 @@ public:
       inline const V &second() { return m_entry->m_value; }
    };
 
-
 protected:
    const unsigned long int m_nTableSize;
    CEntry **const m_buckets;
+   CEntry *m_free;
+   CMemoryPool<CEntry> m_pool;
 
 public:
-   explicit CHashMap(unsigned long TABLE_SIZE) : m_nTableSize(TABLE_SIZE), m_buckets(new CEntry*[m_nTableSize]) { 
-      memset(m_buckets, 0, m_nTableSize*sizeof(CEntry*));
+   explicit CHashMap(unsigned long TABLE_SIZE) : m_nTableSize(TABLE_SIZE), m_buckets(new CEntry*[m_nTableSize]), m_free(0), m_pool(POOL_BLOCK_SIZE) {
+     std::memset(m_buckets, 0, m_nTableSize*sizeof(CEntry*));
    }
-   virtual ~CHashMap() { 
-      clear();
+   virtual ~CHashMap() {
       delete [] m_buckets;
    }
 
 protected:
-   CEntry *&getEntry(const K &key) { return m_buckets[hash(key)%m_nTableSize]; }
-   CEntry * const &getEntry(const K &key) const { return m_buckets[hash(key)%m_nTableSize]; }
-
-   static CMemoryPool<CEntry> &getPool() { thread_local static CMemoryPool<CEntry> pool(POOL_BLOCK_SIZE); return pool; }
-   static CEntry* &getFreeMemory() { thread_local static CEntry* c_free = 0; return c_free; }
+   inline CEntry *&getEntry(const K &key) { return m_buckets[hash(key)%m_nTableSize]; }
+   inline CEntry * const &getEntry(const K &key) const { return m_buckets[hash(key)%m_nTableSize]; }
 
    CEntry *allocate() {
-      CEntry* &c_freed = getFreeMemory();
-      if (c_freed) {
-         CEntry *retval = c_freed;
-         c_freed = c_freed->m_next;
+      if (m_free) {
+         CEntry *retval = m_free;
+         m_free = m_free->m_next;
          retval->m_next = 0;
          return retval;
       }
       else {
-         return getPool().allocate();
+         return m_pool.allocate();
       }
    }
 
@@ -229,8 +225,9 @@ public:
       }
       return false;
    }
-   void clear() {
-      thread_local static V value;
+
+   virtual void clear() {
+      static const V value = V();
       CEntry * tail = 0;
       for (unsigned i = 0; i < m_nTableSize; ++i) {
          if (m_buckets[i]) {
@@ -240,9 +237,8 @@ public:
                tail = tail->m_next;
             }
             tail->m_value = value;
-            CEntry* &c_freed = getFreeMemory();
-            tail->m_next = c_freed;
-            c_freed = m_buckets[i];
+            tail->m_next = m_free;
+            m_free = m_buckets[i];
             m_buckets[i]=0;
          }
       }
@@ -311,13 +307,6 @@ public:
       std::cout << "done" << std::endl;
    }
 #endif
-
-//public:
-//   static void freePoolMemory() { // call after all instances clean!
-//      getPool().reset();
-//      getFreeMemory() = 0;
-//   }
-
 };
 
 
