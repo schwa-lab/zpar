@@ -39,6 +39,7 @@
 
 #include <schwa/hashtable.h>
 
+namespace mp = ::schwa::msgpack;
 namespace xxhash = ::schwa::third_party::xxhash;
 
 //using namespace std;
