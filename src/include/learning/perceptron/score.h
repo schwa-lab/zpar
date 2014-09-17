@@ -90,7 +90,7 @@ operator >> (std::istream &is, CScore<SCORE_TYPE> &score);
 
 template <>
 inline std::istream &
-operator >>(std::istream &is, CScore<int> &score) {
+operator >>(std::istream &is, CScore<int32_t> &score) {
   const uint32_t nitems = mp::read_array_size(is);
   assert(nitems == 2); (void)nitems;
   score[0] = mp::read_int(is);
@@ -113,8 +113,8 @@ inline std::istream &
 operator >>(std::istream &is, CScore<float> &score) {
   const uint32_t nitems = mp::read_array_size(is);
   assert(nitems == 2); (void)nitems;
-  score[0] = mp::read_int(is);
-  score[1] = mp::read_int(is);
+  score[0] = mp::read_float(is);
+  score[1] = mp::read_float(is);
   return is;
 }
 
@@ -125,7 +125,7 @@ operator <<(std::ostream &os, const CScore<SCORE_TYPE> &score);
 
 template <>
 inline std::ostream &
-operator <<(std::ostream &os, const CScore<int> &score) {
+operator <<(std::ostream &os, const CScore<int32_t> &score) {
   mp::write_array_size(os, 2);
   mp::write_int(os, score[0]);
   mp::write_int(os, score[1]);
@@ -145,8 +145,8 @@ template <>
 inline std::ostream &
 operator <<(std::ostream &os, const CScore<float> &score) {
   mp::write_array_size(os, 2);
-  mp::write_int(os, static_cast<int32_t>(score[0]));
-  mp::write_int(os, static_cast<int32_t>(score[1]));
+  mp::write_float(os, score[0]);
+  mp::write_float(os, score[1]);
   return os;
 }
 
