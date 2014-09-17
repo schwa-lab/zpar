@@ -8,13 +8,7 @@
  * Computing Laboratory, Oxford. 2007.8                 *
  *                                          *
  ****************************************************************/
-#include <algorithm>
-#include <cstdio>
-#include <numeric>
-#include <sstream>
 #include <thread>
-
-#include <time.h>
 
 #include "definitions.h"
 #include "depparser.h"
@@ -63,23 +57,57 @@ static void
 combine_partial_models(const std::string &sModelPath, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
   // Compute the total number of errors.
   const unsigned int nerrors_total = std::accumulate(nerrors.begin(), nerrors.end(), 0);
+  std::cout << "errors=" << nerrors_total << std::flush;
 
   // Remove the model file before constructing the weights object over it so that the weights are zero to start off with.
+  const std::string temp_model_path_0 = temp_model_path(sModelPath, 0);
   std::remove(sModelPath.c_str());
-  depparser::CWeight<float> summed(sModelPath, true);
 
-  for (unsigned int t = 0; t != nthreads; ++t) {
-    // Compute the percentage of errors that this partial model caused.
-    const float mu = nerrors[t] / static_cast<float>(nerrors_total);
-    std::cout << "Thread " << t << " had " << nerrors[t] << "/" << nerrors_total << " errors (" << (100 * mu) << ")" << std::endl;
+  // If we only have one thread, don't do anything complex.
+  if (nthreads > 1) {
+    // Function for combining two sets of weights together.
+    const auto &fn = [&](const unsigned int t, const unsigned int delta) {
+      // Add weights `b` into weights `a`.
+      const std::string path_a = temp_model_path(sModelPath, t);
+      const std::string path_b = temp_model_path(sModelPath, t + delta);
+      depparser::CWeight<long> a(path_a, true);
+      depparser::CWeight<long> b(path_b, true);
+      a.combineAdd(b);
+      a.saveScores();
 
-    // Load the partial model.
-    depparser::CWeight<float> partial(temp_model_path(sModelPath, t), true);
-    summed.addWeighted(mu, partial);
+      // Remove weights `b`.
+      std::remove(path_b.c_str());
+      std::cout << "." << std::flush;
+    };
+
+    // Add the weights in parallel.
+    for (unsigned int delta = 1; ; delta *= 2) {
+      std::cout << " | " << std::flush;
+
+      // Fire up the appropriate threads and wait for them to finish.
+      std::vector<std::thread> threads;
+      for (unsigned int t = 0; t != nthreads; ++t)
+        if (t % (2*delta) == 0 && t + delta < nthreads)
+          threads.push_back(std::thread(fn, t, delta));
+      for (auto &thread : threads)
+        thread.join();
+
+      // Have we combined all of the weights?
+      if (delta >= nthreads)
+        break;
+    }
+    std::cout << " > " << std::flush;
+
+    // Divive through the resultant summed weights by the number of processes (the last step in the averaging).
+    depparser::CWeight<long> summed(temp_model_path_0, true);
+    summed.combineDiv(nthreads);
+    summed.saveScores();
+    std::cout << "<" << std::flush;
   }
 
-  // Dump out the accumulated weights.
-  summed.saveScores();
+  // Rename the 0th partial weights file to the main model file.
+  std::rename(temp_model_path_0.c_str(), sModelPath.c_str());
+  std::cout << std::endl;
 }
 
 
@@ -141,7 +169,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
     shard_sentences(all_sentences, sharded_sentences, nthreads);
 
     // Run this iteration over the sharded sentences.
-    std::cout << "[Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();
+    std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();
     std::vector<std::thread> threads;
     for (unsigned int t = 0; t != nthreads; ++t)
       threads.push_back(std::thread(fn, t));
@@ -149,10 +177,10 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
       threads[t].join();
 
     // Combine the partial models together.
-    std::cout << "[Iteration " << iteration << "] Combining partial models." << std::endl;
+    std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Combining partial models." << std::endl;
     combine_partial_models(sModelPath, nerrors, nthreads);
 
-    std::cout << "[Iteration " << iteration << "] Completed." << std::endl;
+    std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Completed." << std::endl;
   }
 
   // Free up memory.
@@ -209,27 +237,23 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Training started" << std::endl;
 
-    struct timespec time_start, time_end;
-    const clock_t clock_start = clock();
-#ifdef __linux__
-    clock_gettime(CLOCK_MONOTONIC, &time_start);
-#endif
+    // Start training, capturing beginning and end wall clock and processor times.
+    const time_t time_start = std::time(nullptr);
+    const clock_t clock_start = std::clock();
     auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, niterations, nthreads);
-    const clock_t clock_end = clock();
-#ifdef __linux__
-    clock_gettime(CLOCK_MONOTONIC, &time_end);
-#endif
+    const clock_t clock_end = std::clock();
+    const time_t time_end = std::time(nullptr);
 
+    // Output the total elapsed time.
     const double clock_elapsed = static_cast<double>(clock_end - clock_start)/CLOCKS_PER_SEC;
-    const double time_elapsed = (time_end.tv_sec - time_start.tv_sec) + (time_end.tv_nsec - time_start.tv_nsec)/1000000000.0;
-
+    const double time_elapsed = time_end - time_start;
     std::cout << "Training has finished successfully. Total time taken: cpu=" << clock_elapsed << " wall=" << time_elapsed << std::endl;
 
     return 0;
-  } catch (const std::string &e) {
+  }
+  catch (const std::string &e) {
     std::cerr << std::endl << "Error: " << e << std::endl;
     return 1;
   }
-
 }
 

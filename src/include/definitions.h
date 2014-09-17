@@ -18,24 +18,25 @@
  * The things that should be included 
  *  
  *==============================================================*/
-
 #include <algorithm>
-#include <cassert>                              // assert
+#include <cassert>
 #include <cmath>
-#include <cstdlib>                              // define NULL
+#include <cstdlib>
+#include <cstdio>
 #include <cstring>
-#include <ctime>                                // clock(); CLK_TCK
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <numeric>
 #include <set>
 #include <sstream>
 #include <stack>
 #include <string>
 #include <tuple>
 #include <type_traits>
-#include <utility>                              // define std::pair
+#include <utility>
 #include <vector>
 
 #include <schwa/msgpack.h>
