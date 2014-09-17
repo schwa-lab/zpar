@@ -72,11 +72,6 @@ public:
      total += current;
    }
 
-   void addWeighted(const float mu, const CScore &other) {
-      current += static_cast<SCORE_TYPE>(mu * other.current);
-      total += static_cast<SCORE_TYPE>(mu * other.total);
-   }
-
    void combineAdd(const CScore &other) {
       current += other.current;
       total += other.total;
@@ -86,8 +81,6 @@ public:
       current /= n;
       total /= n;
    }
-
-   //void updateCurrent(SCORE_TYPE added, int round=0) {if (round>=lastupdate){updateAverage(round);total+=added;lastupdate=round;}current+=added; }
 };
 
 
@@ -107,7 +100,7 @@ operator >>(std::istream &is, CScore<int> &score) {
 
 template <>
 inline std::istream &
-operator >>(std::istream &is, CScore<long> &score) {
+operator >>(std::istream &is, CScore<int64_t> &score) {
   const uint32_t nitems = mp::read_array_size(is);
   assert(nitems == 2); (void)nitems;
   score[0] = mp::read_int(is);
@@ -141,7 +134,7 @@ operator <<(std::ostream &os, const CScore<int> &score) {
 
 template <>
 inline std::ostream &
-operator <<(std::ostream &os, const CScore<long> &score) {
+operator <<(std::ostream &os, const CScore<int64_t> &score) {
   mp::write_array_size(os, 2);
   mp::write_int(os, score[0]);
   mp::write_int(os, score[1]);

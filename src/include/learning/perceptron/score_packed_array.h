@@ -49,11 +49,6 @@ public:
          o[index] += scores[index].score(which);
    }
 
-  void addWeighted(const float mu, const CPackedScore &other) {
-    for (size_t i = 0; i != PACKED_SIZE; ++i)
-      scores[i].addWeighted(mu, other.scores[i]);
-  }
-
   void combineAdd(const CPackedScore &other) {
     for (size_t i = 0; i != PACKED_SIZE; ++i)
       scores[i].combineAdd(other.scores[i]);

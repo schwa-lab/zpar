@@ -101,14 +101,6 @@ public:
     }
   }
 
-  void addWeighted(const float mu, const CPackedScore &other) {
-    typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
-    const iterator end = other.scores.end();
-    for (iterator it = other.scores.begin(); it != end; ++it) {
-      scores[it.first()].addWeighted(mu, it.second());
-    }
-  }
-
   void combineAdd(const CPackedScore &other) {
     typedef typename CLinkedList< unsigned, CScore<SCORE_TYPE> >::const_iterator iterator;
     const iterator end = other.scores.end();
