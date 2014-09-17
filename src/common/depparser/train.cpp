@@ -70,8 +70,8 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
       // Add weights `b` into weights `a`.
       const std::string path_a = temp_model_path(sModelPath, t);
       const std::string path_b = temp_model_path(sModelPath, t + delta);
-      depparser::CWeight<long> a(path_a, true);
-      depparser::CWeight<long> b(path_b, true);
+      depparser::CWeight<int64_t> a(path_a, true);
+      depparser::CWeight<int64_t> b(path_b, true);
       a.combineAdd(b);
       a.saveScores();
 
@@ -99,7 +99,7 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
     std::cout << " > " << std::flush;
 
     // Divive through the resultant summed weights by the number of processes (the last step in the averaging).
-    depparser::CWeight<long> summed(temp_model_path_0, true);
+    depparser::CWeight<int64_t> summed(temp_model_path_0, true);
     summed.combineDiv(nthreads);
     summed.saveScores();
     std::cout << "<" << std::flush;
