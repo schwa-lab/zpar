@@ -117,7 +117,19 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
  *
  *===============================================================*/
 static void
-auto_train(const std::string &sInputPath, const std::string &sModelPath, const bool bRules, const bool bExtract, const std::string &sMetaPath, const unsigned int niterations, const unsigned int nthreads) {
+auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfigurations &configurations, const unsigned int niterations, const unsigned int nthreads) {
+  bool bCoNLL = configurations.getConfiguration("c").empty() ? false : true;
+  std::string sSuperPath = configurations.getConfiguration("p");
+  bool bRules = configurations.getConfiguration("r").empty() ? false : true;
+  bool bExtract = false;
+#ifdef SUPPORT_FEATURE_EXTRACTION
+  bExtract = configurations.getConfiguration("f").empty() ? false : true;
+#endif
+  std::string sMetaPath;
+#ifdef SUPPORT_META_FEATURE_DEFINITION
+  sMetaPath = configurations.getConfiguration("t");
+#endif
+
   // Read in the input.
   std::cout << "Reading in the training data..." << std::flush;
   std::vector<CDependencyParse *> all_sentences;
@@ -131,7 +143,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, const b
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t) {
     // Construct the parser.
-    CDepParser parser(sModelPath, temp_model_path(sModelPath, t), true, false);
+    CDepParser parser(sModelPath, temp_model_path(sModelPath, t), true, bCoNLL);
     parser.setRules(bRules);
 #ifdef SUPPORT_META_FEATURE_DEFINITION
     if (!sMetaPath.empty())
@@ -199,6 +211,8 @@ int main(int argc, char* argv[]) {
   try {
     COptions options(argc, argv);
     CConfigurations configurations;
+    configurations.defineConfiguration("c", "", "process CoNLL format", "");
+    configurations.defineConfiguration("p", "path", "supertags", "");
     configurations.defineConfiguration("r", "", "use rules", "");
 #ifdef SUPPORT_FEATURE_EXTRACTION
     configurations.defineConfiguration("f", "", "extract features only: weights will be counts", "");
@@ -225,22 +239,12 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    bool bRules = configurations.getConfiguration("r").empty() ? false : true;
-    bool bExtract = false;
-#ifdef SUPPORT_FEATURE_EXTRACTION
-    bExtract = configurations.getConfiguration("f").empty() ? false : true;
-#endif
-  std::string sMetaPath;
-#ifdef SUPPORT_META_FEATURE_DEFINITION
-    sMetaPath = configurations.getConfiguration("t");
-#endif
-
     std::cout << "Training started" << std::endl;
 
     // Start training, capturing beginning and end wall clock and processor times.
     const time_t time_start = std::time(nullptr);
     const clock_t clock_start = std::clock();
-    auto_train(options.args[1], options.args[2], bRules, bExtract, sMetaPath, niterations, nthreads);
+    auto_train(options.args[1], options.args[2], configurations, niterations, nthreads);
     const clock_t clock_end = std::clock();
     const time_t time_end = std::time(nullptr);
 

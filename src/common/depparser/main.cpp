@@ -24,7 +24,14 @@ using namespace TARGET_LANGUAGE;
  *
  *==============================================================*/
 
-void process(const std::string sInputFile, const std::string sOutputFile, const std::string sFeatureFile, unsigned long nBest, const bool bScores, const std::string &sSuperPath, bool bCoNLL, const std::string &sMetaPath) {
+void process(const std::string sInputFile, const std::string sOutputFile, const std::string sFeatureFile, CConfigurations &configurations, unsigned long nBest) {
+   bool bScores = configurations.getConfiguration("s").empty() ? false : true;
+   bool bCoNLL = configurations.getConfiguration("c").empty() ? false : true;
+   std::string sSuperPath = configurations.getConfiguration("p");
+   std::string sMetaPath;
+#ifdef SUPPORT_META_FEATURE_DEFINITION
+   sMetaPath = configurations.getConfiguration("t");
+#endif
 
    std::cout << "Parsing started" << std::endl;
 
@@ -183,24 +190,17 @@ int main(int argc, char* argv[]) {
          return 1;
       }
       configurations.loadConfigurations(options.opts);
-   
+
       unsigned long nBest = 1;
       if (!fromString(nBest, configurations.getConfiguration("n"))) {
          std::cout << "The N best specification must be an integer." << std::endl;
          return 1;
       }
-      bool bScores = configurations.getConfiguration("s").empty() ? false : true;
-      bool bCoNLL = configurations.getConfiguration("c").empty() ? false : true;
-      std::string sSuperPath = configurations.getConfiguration("p");
-      std::string sMetaPath;
-#ifdef SUPPORT_META_FEATURE_DEFINITION
-      sMetaPath = configurations.getConfiguration("t");
-#endif
-   
+
 //      if (bCoNLL)
 //         process_conll(options.args[1], options.args[2], options.args[3], nBest, bScores, sSuperPath);
 //      else
-      process(options.args[1], options.args[2], options.args[3], nBest, bScores, sSuperPath, bCoNLL, sMetaPath);
+      process(options.args[1], options.args[2], options.args[3], configurations, nBest);
       return 0;
    } catch (const std::string &e) {
       std::cerr << "Error: " << e << std::endl;
