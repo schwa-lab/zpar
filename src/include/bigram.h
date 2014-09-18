@@ -66,6 +66,8 @@ inline unsigned long int hash(const CBigram<CUnigram> &w) { return w.hash(); }
 template <class CUnigram>
 inline std::istream &
 operator >>(std::istream &is, CBigram<CUnigram> &bigram) {
+  const uint32_t nitems = mp::read_array_size(is);
+  assert(nitems == 2); (void)nitems;
   CUnigram first, second;
   is >> first >> second;
   bigram.assign(first, second);
@@ -75,6 +77,7 @@ operator >>(std::istream &is, CBigram<CUnigram> &bigram) {
 template <class CUnigram>
 inline std::ostream &
 operator <<(std::ostream &os, const CBigram<CUnigram> &bigram) {
+  mp::write_array_size(os, 2);
   os << bigram.first();
   os << bigram.second();
   return os;
