@@ -11,53 +11,38 @@
 #define _HASHMAP_SCORE_PACKED_H
 
 #include "hash.h"
-#include "hash_small.h"
+#include "pool.h"
 #include "score.h"
-
-/*===============================================================
- *
- * CPackedScore - packed score definition
- *
- *==============================================================*/
-
-#include "score_packed_list.h"
-//#include "score_packed_hash.h"
-//#include "score_packed_array.h"
 
 /*===============================================================
  *
  * CPackedScoreType - packed score type definition
  *
  *==============================================================*/
-
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScoreType {
-protected:
-   SCORE_TYPE scores[PACKED_SIZE];
+private:
+  SCORE_TYPE scores[PACKED_SIZE];
+
 public:
-   void reset() {
-      memset(scores, 0, sizeof(SCORE_TYPE)*PACKED_SIZE);
-//      for (unsigned index=0; index<PACKED_SIZE; ++index)
-//         scores[index]=0;
-   }
-   bool empty() const {
-      for (unsigned index=0; index<PACKED_SIZE; ++index)
-         if (scores[index]!=0) return false;
-      return true;
-   }
-public:
-   SCORE_TYPE &operator [](const unsigned &index) {
-      assert(index<PACKED_SIZE);
-      return scores[index];
-   }
-   const SCORE_TYPE &operator [](const unsigned &index) const {
-      assert(index<PACKED_SIZE);
-      return scores[index];
-   }
-   void operator +=(const CPackedScoreType &i) {
-      for (unsigned index=0; index<PACKED_SIZE; ++index)
-         scores[index]+=i.scores[index];
-   }
+  inline void reset() { std::memset(scores, 0, sizeof(SCORE_TYPE)*PACKED_SIZE); }
+
+  bool
+  empty() const {
+    for (unsigned index=0; index<PACKED_SIZE; ++index)
+      if (scores[index] != 0)
+        return false;
+    return true;
+  }
+
+  inline SCORE_TYPE &operator [](const unsigned int index) { return scores[index]; }
+  inline const SCORE_TYPE &operator [](const unsigned int index) const { return scores[index]; }
+
+  void
+  operator +=(const CPackedScoreType &i) {
+    for (unsigned index=0; index<PACKED_SIZE; ++index)
+      scores[index] += i.scores[index];
+  }
 };
 
 
@@ -92,184 +77,37 @@ operator <<(std::ostream &os, const CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &s
 }
 
 
+#include "score_packed_array.h"
+//#include "score_packed_hash.h"
+#include "score_packed_list.h"
+
+
 /*===============================================================
  *
  * CPackedScoreMap - map to packed score definition
  *
  *==============================================================*/
-
-template <typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-class CPackedScoreMap : public CHashMap< K , CPackedScore<SCORE_TYPE, PACKED_SIZE> > {
-protected:
-   const CPackedScore<SCORE_TYPE, PACKED_SIZE> m_zero ;
-
-#ifdef NO_NEG_FEATURE
-protected:
-   const CPackedScoreMap *m_positive;
-#endif
-
-public:
-   const std::string name ;
-   unsigned count ;
-
-   CPackedScoreMap(std::string input_name, int TABLE_SIZE) : CHashMap<K,CPackedScore<SCORE_TYPE, PACKED_SIZE> >(TABLE_SIZE) , name(input_name) , count(0)
-#ifdef NO_NEG_FEATURE
-, m_positive(this)
-#endif
-   {
-      assert(m_zero.empty());
-   }
-   virtual ~CPackedScoreMap(void) { }
-
-#ifdef NO_NEG_FEATURE
-   inline void setPositiveFeature(const CPackedScoreMap &positive) {
-      m_positive = &positive;
-   }
-
-   inline void addPositiveFeature(const K &key, const unsigned &index) {
-      (*this)[key][index];
-   }
-#endif // define features
-
-   inline void getScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE>&o, const K &key , const int &which ) {
-      this->find( key , m_zero ).add( o , which );
-   }
-
-   inline void updateScore( const K &key , const unsigned &index , const SCORE_TYPE &amount , const int &round ) {
-#ifdef NO_NEG_FEATURE
-      if (m_positive->element(key) && (*m_positive)[key].element(index))
-#endif // update can only happen with defined features
-      (*this)[ key ].updateCurrent( index , amount , round );
-   }
-
-   template <typename T>
-   inline void
-   getOrUpdateScore( CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &out , const T &key_ , const unsigned &index , const int &which , const SCORE_TYPE &amount=0 , const int &round=0 ) {
-      const unsigned long key = hash(key_);
-#ifdef NO_NEG_FEATURE
-      if ( round == -1 ) {
-         addPositiveFeature( key, index );
-         return;
-      }
-#endif
-      if ( amount == 0 ) {
-         this->find(key, m_zero).add(out, which) ;
-      }
-      else {
-         assert( round > 0 );
-         updateScore( key , index , amount , round ) ;
-      }
-   }
-
-   void computeAverage(unsigned long int round) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         it.second().updateAverage(round) ;
-      }
-   }
-
-//   void clearScores() {
-//      typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator it = this->begin();
-//      while (it != this->end()) {
-//         it.second().reset() ;
-//         ++ it;
-//      }
-//   }
-
-   virtual void clear() {
-      // first clear each ste of packed scores so that the memory will be freed
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         it.second().clear() ;
-      }
-      // second clear hash
-      CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::clear();
-   }
-
-   void addCurrent(CPackedScoreMap &mp, const int &round) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         (*this)[it.first()].addCurrent(it.second(), round);
-      }
-   }
-   void subtractCurrent(CPackedScoreMap &mp, const int &round) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         (*this)[it.first()].subtractCurrent(it.second(), round);
-      }
-   }
-   void scaleCurrent(const SCORE_TYPE &scale, const int &round) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         it.second().scaleCurrent(scale, round);
-      }
-   }
-   SCORE_TYPE squareNorm() {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      SCORE_TYPE retval = 0;
-      for (iterator it = this->begin(); it != end; ++it) {
-         retval += it.second().squareNorm();
-      }
-      return retval;
-   }
-
-   SCORE_TYPE dotProduct(CPackedScoreMap &mp) {
-      SCORE_TYPE retval = 0;
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         retval += it.second().dotProduct(mp.find(it.first(), m_zero));
-      }
-      return retval;
-   }
-
-   void combineAdd(const CPackedScoreMap &other) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::const_iterator iterator;
-      const iterator end = other.end();
-      for (iterator it = other.begin(); it != end; ++it) {
-         (*this)[it.first()].combineAdd(it.second());
-      }
-   }
-
-   void combineDiv(const unsigned int n) {
-      typedef typename CHashMap< K, CPackedScore<SCORE_TYPE, PACKED_SIZE> >::iterator iterator;
-      const iterator end = this->end();
-      for (iterator it = this->begin(); it != end; ++it) {
-         it.second().combineDiv(n);
-      }
-   }
-
-#ifdef DEBUG
-   void trace() {
-      std::cout << name << ": ";
-      CHashMap< K , CPackedScore<SCORE_TYPE, PACKED_SIZE> >::trace();
-   }
-#endif
-};
-
-
-//===============================================================
 template <typename T, bool IS_INTEGRAL_OR_FLOAT>
-struct _MessagePackIO {
+struct __MessagePackIO {
   static inline std::istream &
   read(std::istream &is, T &key) {
-    return is >> key;
+    return key.deserialise(is);
+  }
+
+  template <typename CEntry>
+  static inline std::istream &
+  read(std::istream &is, T &key, CMemoryPool<CEntry> &pool, CEntry **free) {
+    return key.deserialise(is, pool, free);
   }
 
   static inline std::ostream &
   write(std::ostream &os, const T &key) {
-    return os << key;
+    return key.serialise(os);
   }
 };
 
 template <typename T>
-struct _MessagePackIO<T, true> {
+struct __MessagePackIO<T, true> {
   static inline std::istream &
   read(std::istream &is, T &key) {
     mp::read(is, key);
@@ -284,71 +122,243 @@ struct _MessagePackIO<T, true> {
 };
 
 template <typename T>
-struct MessagePackIO : public _MessagePackIO<T, std::is_integral<T>::value || std::is_floating_point<T>::value> { };
+struct _MessagePackIO : public __MessagePackIO<T, std::is_integral<T>::value || std::is_floating_point<T>::value> { };
 
 
-template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-inline std::istream &
-operator >>(std::istream &is, CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
-  if (!is)
-    return is ;
+template <typename POOL_ITEM_TYPE, typename CPackedScore>
+struct __CPackedScoreMapPoolMixin {
+protected:
+  using ScoreType = typename CPackedScore::ScoreType;
 
-  // Match name.
-  const std::string name = mp::read_str(is);
-  if (name != score_map.name)
-    THROW("hashmap_score_packed.h: the expected score map " << score_map.name << " is not matched.");
+  CMemoryPool<POOL_ITEM_TYPE> _pool;
+  POOL_ITEM_TYPE *_free;
 
-  // Read in the size of the map.
-  K key;
-  const uint32_t npairs = mp::read_map_size(is);
-  for (uint32_t i = 0; i != npairs; ++i) {
-    MessagePackIO<K>::read(is, key);
-    MessagePackIO<CPackedScore<SCORE_TYPE, PACKED_SIZE>>::read(is, score_map[key]);
+  __CPackedScoreMapPoolMixin(void) : _pool(CPackedScore::POOL_BLOCK_SIZE), _free(nullptr) { }
+
+  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &other, const int &round) { item.addCurrent(other, round, _pool, &_free); }
+  inline void _itemClear(CPackedScore &item) { item.clear(&_free); }
+  inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other, _pool, &_free); }
+  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType &added, const int &round) { item.updateCurrent(index, added, round, _pool, &_free); }
+
+  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item, _pool, &_free); }
+};
+
+template <typename CPackedScore>
+struct __CPackedScoreMapPoolMixin<void, CPackedScore> {
+protected:
+  using ScoreType = typename CPackedScore::ScoreType;
+
+  __CPackedScoreMapPoolMixin(void) { }
+
+  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &s, const int &round) { item.addCurrent(s, round); }
+  inline void _itemClear(CPackedScore &item) { item.clear(); }
+  inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other); }
+  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType &added, const int &round) { item.updateCurrent(index, added, round); }
+
+  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item); }
+};
+
+template <typename CPackedScore>
+struct _CPackedScoreMapPoolMixin : public __CPackedScoreMapPoolMixin<typename CPackedScore::PoolItemType, CPackedScore> { };
+
+
+template <typename K, typename CPackedScore>
+class CPackedScoreMap : public CHashMap<K , CPackedScore>, protected _CPackedScoreMapPoolMixin<CPackedScore> {
+public:
+  using ScoreType = typename CPackedScore::ScoreType;
+  static constexpr const size_t PACKED_SIZE = CPackedScore::PACKED_SIZE;
+
+protected:
+  const CPackedScore m_zero;
+#ifdef NO_NEG_FEATURE
+  const CPackedScoreMap *m_positive;
+#endif
+
+public:
+  const std::string name ;
+  unsigned count ;
+
+  CPackedScoreMap(std::string input_name, int TABLE_SIZE) :
+      CHashMap<K, CPackedScore>(TABLE_SIZE),
+      m_zero(),
+      name(input_name),
+      count(0)
+#ifdef NO_NEG_FEATURE
+     , m_positive(this)
+#endif
+      {
+    assert(m_zero.empty());
+  }
+  virtual ~CPackedScoreMap(void) { }
+
+
+  void
+  addCurrent(CPackedScoreMap &mp, const int &round) {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      this->_itemAddCurrent((*this)[it.first()], it.second(), round);
   }
 
-  return is;
-}
+#ifdef NO_NEG_FEATURE
+  inline void
+  addPositiveFeature(const K &key, const unsigned &index) {
+    (*this)[key][index];
+  }
+#endif // define features
 
+  virtual void
+  clear() override {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      this->_itemClear(it.second());
+    CHashMap<K, CPackedScore>::clear();
+  }
 
-template<typename K, typename SCORE_TYPE, unsigned PACKED_SIZE>
-inline std::ostream &
-operator <<(std::ostream &os, const CPackedScoreMap<K, SCORE_TYPE, PACKED_SIZE> &score_map) {
-  assert(os);
+  void
+  combineAdd(const CPackedScoreMap &other) {
+    const auto end = other.end();
+    for (auto it = other.begin(); it != end; ++it)
+      this->_itemCombineAdd((*this)[it.first()], it.second());
+  }
 
-  // Write out the name of the table.
-  mp::write_str(os, score_map.name);
+  void
+  combineDiv(const unsigned int n) {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      it.second().combineDiv(n);
+  }
 
-  typedef typename CHashMap<K, CPackedScore<SCORE_TYPE, PACKED_SIZE>>::const_iterator iterator;
-  const iterator end = score_map.end();
+  void
+  computeAverage(unsigned long int round) {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      it.second().updateAverage(round) ;
+  }
 
-  // Count how many items are in the hashtable, and write that out.
-  uint32_t npairs = 0;
-  for (iterator it = score_map.begin(); it != end; ++it) {
-#ifndef NO_NEG_FEATURE
-    // Do not write zero scores if allow negative scores.
-    if (!it.second().empty()) {
-#endif
-      ++npairs;
-#ifndef NO_NEG_FEATURE
+  ScoreType
+  dotProduct(CPackedScoreMap &mp) {
+    ScoreType retval = 0;
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      retval += it.second().dotProduct(mp.find(it.first(), m_zero));
+    return retval;
+  }
+
+  template <typename T>
+  inline void
+  getOrUpdateScore(CPackedScoreType<ScoreType, PACKED_SIZE> &out , const T &key_ , const unsigned &index , const int &which , const ScoreType &amount=0 , const int &round=0 ) {
+    const unsigned long key = hash(key_);
+#ifdef NO_NEG_FEATURE
+    if ( round == -1 ) {
+      addPositiveFeature( key, index );
+      return;
     }
 #endif
-  }
-  mp::write_map_size(os, npairs);
-
-  // Output each key/value pair.
-  for (iterator it = score_map.begin(); it != end; ++it) {
-#ifndef NO_NEG_FEATURE
-    // Do not write zero scores if allow negative scores.
-    if (!it.second().empty()) {
-#endif
-      MessagePackIO<K>::write(os, it.first());
-      MessagePackIO<CPackedScore<SCORE_TYPE, PACKED_SIZE>>::write(os, it.second());
-#ifndef NO_NEG_FEATURE
+    if ( amount == 0 ) {
+      this->find(key, m_zero).add(out, which) ;
     }
-#endif
+    else {
+      assert( round > 0 );
+      updateScore( key , index , amount , round ) ;
+    }
   }
 
-  return os ;
-}
+  inline void
+  getScore(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const K &key, const int &which) {
+    this->find( key , m_zero ).add( o , which );
+  }
+
+  void
+  scaleCurrent(const ScoreType &scale, const int &round) {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      it.second().scaleCurrent(scale, round);
+  }
+
+#ifdef NO_NEG_FEATURE
+  inline void
+  setPositiveFeature(const CPackedScoreMap &positive) {
+    m_positive = &positive;
+  }
+#endif // define features
+
+  ScoreType
+  squareNorm() {
+    const auto end = this->end();
+    ScoreType retval = 0;
+    for (auto it = this->begin(); it != end; ++it)
+      retval += it.second().squareNorm();
+    return retval;
+  }
+
+  void
+  subtractCurrent(CPackedScoreMap &mp, const int &round) {
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it)
+      this->itemSubtractCurrent((*this)[it.first()], it.second(), round);
+  }
+
+  inline void
+  updateScore( const K &key , const unsigned &index , const ScoreType &amount , const int &round ) {
+#ifdef NO_NEG_FEATURE
+    if (m_positive->element(key) && (*m_positive)[key].element(index))
+#endif // update can only happen with defined features
+      this->_itemUpdateCurrent((*this)[ key ], index, amount, round);
+  }
+
+
+  std::istream &
+  deserialise(std::istream &is) {
+    if (!is)
+      return is ;
+
+    // Match name.
+    const std::string name = mp::read_str(is);
+    if (name != this->name)
+      THROW("hashmap_score_packed.h: the expected score map " << this->name << " is not matched.");
+
+    // Read in the size of the map.
+    K key;
+    const uint32_t npairs = mp::read_map_size(is);
+    for (uint32_t i = 0; i != npairs; ++i) {
+      _MessagePackIO<K>::read(is, key);
+      this->_itemDeserialise(is, (*this)[key]);
+    }
+
+    return is;
+  }
+
+  std::ostream &
+  serialise(std::ostream &os) const {
+    assert(os);
+
+    // Write out the name of the table.
+    mp::write_str(os, this->name);
+
+    // Count how many items are in the hashtable, and write that out.
+    uint32_t npairs = 0;
+    const auto end = this->end();
+    for (auto it = this->begin(); it != end; ++it) {
+#ifndef NO_NEG_FEATURE
+      // Do not write zero scores if allow negative scores.
+      if (it.second().empty()) continue;
+#endif
+        ++npairs;
+    }
+    mp::write_map_size(os, npairs);
+
+    // Output each key/value pair.
+    for (auto it = this->begin(); it != end; ++it) {
+#ifndef NO_NEG_FEATURE
+      // Do not write zero scores if allow negative scores.
+      if (it.second().empty()) continue;
+#endif
+        _MessagePackIO<K>::write(os, it.first());
+        _MessagePackIO<CPackedScore>::write(os, it.second());
+    }
+
+    return os ;
+  }
+};
 
 #endif

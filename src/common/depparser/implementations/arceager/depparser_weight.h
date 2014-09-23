@@ -119,133 +119,114 @@ class CWeight : public CWeightBase {
 public:
   static constexpr const unsigned DEP_TABLE_SIZE = 15139;  // This should be a prime number.
 
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CIntMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet2Map;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet3Map;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet4Map;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordTagMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordTagTagMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordWordTagMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTaggedWordMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTwoWordsMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTwoTaggedWordsMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordIntMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagIntMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagTagIntMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordWordIntMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CLemmaMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
-  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
+  using DenseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreArray<SCORE_TYPE, action::MAX>>;
+  using SparseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreList<SCORE_TYPE, action::MAX>>;
 
-  CWordMap m_mapSTw;
-  CTagMap m_mapSTt;
-  CTaggedWordMap m_mapSTwt;
+  SparseFeatureMap m_mapSTw;
+  DenseFeatureMap m_mapSTt;
+  SparseFeatureMap m_mapSTwt;
 
-  CWordMap m_mapN0w;
-  CTagMap m_mapN0t;
-  CTaggedWordMap m_mapN0wt;
+  SparseFeatureMap m_mapN0w;
+  SparseFeatureMap m_mapN0t;
+  SparseFeatureMap m_mapN0wt;
 
-  CWordMap m_mapN1w;
-  CTagMap m_mapN1t;
-  CTaggedWordMap m_mapN1wt;
+  SparseFeatureMap m_mapN1w;
+  SparseFeatureMap m_mapN1t;
+  SparseFeatureMap m_mapN1wt;
 
-  CWordMap m_mapN2w;
-  CTagMap m_mapN2t;
-  CTaggedWordMap m_mapN2wt;
+  SparseFeatureMap m_mapN2w;
+  SparseFeatureMap m_mapN2t;
+  SparseFeatureMap m_mapN2wt;
 
-  CWordMap m_mapSTHw;
-  CTagMap m_mapSTHt;
-  CIntMap m_mapSTi;
+  SparseFeatureMap m_mapSTHw;
+  SparseFeatureMap m_mapSTHt;
+  SparseFeatureMap m_mapSTi;
 
-  CWordMap m_mapSTHHw;
-  CTagMap m_mapSTHHt;
-  CIntMap m_mapSTHi;
+  SparseFeatureMap m_mapSTHHw;
+  SparseFeatureMap m_mapSTHHt;
+  SparseFeatureMap m_mapSTHi;
 
-  CWordMap m_mapSTLDw;
-  CTagMap m_mapSTLDt;
-  CIntMap m_mapSTLDi;
+  SparseFeatureMap m_mapSTLDw;
+  SparseFeatureMap m_mapSTLDt;
+  SparseFeatureMap m_mapSTLDi;
 
-  CWordMap m_mapSTRDw;
-  CTagMap m_mapSTRDt;
-  CIntMap m_mapSTRDi;
+  SparseFeatureMap m_mapSTRDw;
+  SparseFeatureMap m_mapSTRDt;
+  SparseFeatureMap m_mapSTRDi;
 
-  CWordMap m_mapN0LDw;
-  CTagMap m_mapN0LDt;
-  CIntMap m_mapN0LDi;
+  SparseFeatureMap m_mapN0LDw;
+  SparseFeatureMap m_mapN0LDt;
+  SparseFeatureMap m_mapN0LDi;
 
-  CWordMap m_mapSTL2Dw;
-  CTagMap m_mapSTL2Dt;
-  CIntMap m_mapSTL2Di;
+  SparseFeatureMap m_mapSTL2Dw;
+  SparseFeatureMap m_mapSTL2Dt;
+  SparseFeatureMap m_mapSTL2Di;
 
-  CWordMap m_mapSTR2Dw;
-  CTagMap m_mapSTR2Dt;
-  CIntMap m_mapSTR2Di;
+  SparseFeatureMap m_mapSTR2Dw;
+  SparseFeatureMap m_mapSTR2Dt;
+  SparseFeatureMap m_mapSTR2Di;
 
-  CWordMap m_mapN0L2Dw;
-  CTagMap m_mapN0L2Dt;
-  CIntMap m_mapN0L2Di;
+  SparseFeatureMap m_mapN0L2Dw;
+  SparseFeatureMap m_mapN0L2Dt;
+  SparseFeatureMap m_mapN0L2Di;
 
-  CWordMap m_mapHTw;
-  CTagMap m_mapHTt;
-  CTaggedWordMap m_mapHTwt;
+  SparseFeatureMap m_mapHTw;
+  SparseFeatureMap m_mapHTt;
+  SparseFeatureMap m_mapHTwt;
 
-  CTwoTaggedWordsMap m_mapSTwtN0wt;
-  CWordWordTagMap m_mapSTwtN0w;
-  CWordWordTagMap m_mapSTwN0wt;
-  CWordTagTagMap m_mapSTtN0wt;
-  CWordTagTagMap m_mapSTwtN0t;
-  CTwoWordsMap m_mapSTwN0w;
-  CTagSet2Map m_mapSTtN0t;
+  SparseFeatureMap m_mapSTwtN0wt;
+  SparseFeatureMap m_mapSTwtN0w;
+  SparseFeatureMap m_mapSTwN0wt;
+  SparseFeatureMap m_mapSTtN0wt;
+  SparseFeatureMap m_mapSTwtN0t;
+  SparseFeatureMap m_mapSTwN0w;
+  SparseFeatureMap m_mapSTtN0t;
 
-  CTagSet2Map m_mapN0tN1t;
-  CTagSet3Map m_mapN0tN1tN2t;
-  CTagSet3Map m_mapSTtN0tN1t;
-  CTagSet3Map m_mapSTtN0tN0LDt;
-  CTagSet3Map m_mapN0tN0LDtN0L2Dt;
-  CTagSet3Map m_mapSTHtSTtN0t;
-  CTagSet3Map m_mapHTtHT2tN0t;
-  CTagSet3Map m_mapSTHHtSTHtSTt;
-  CTagSet3Map m_mapSTtSTLDtN0t;
-  CTagSet3Map m_mapSTtSTLDtSTL2Dt;
-  CTagSet3Map m_mapSTtSTRDtN0t;
-  CTagSet3Map m_mapSTtSTRDtSTR2Dt;
+  SparseFeatureMap m_mapN0tN1t;
+  SparseFeatureMap m_mapN0tN1tN2t;
+  SparseFeatureMap m_mapSTtN0tN1t;
+  SparseFeatureMap m_mapSTtN0tN0LDt;
+  SparseFeatureMap m_mapN0tN0LDtN0L2Dt;
+  SparseFeatureMap m_mapSTHtSTtN0t;
+  SparseFeatureMap m_mapHTtHT2tN0t;
+  SparseFeatureMap m_mapSTHHtSTHtSTt;
+  SparseFeatureMap m_mapSTtSTLDtN0t;
+  SparseFeatureMap m_mapSTtSTLDtSTL2Dt;
+  SparseFeatureMap m_mapSTtSTRDtN0t;
+  SparseFeatureMap m_mapSTtSTRDtSTR2Dt;
 
-  CWordIntMap m_mapSTwd;
-  CTagIntMap m_mapSTtd;
-  CWordIntMap m_mapN0wd;
-  CTagIntMap m_mapN0td;
-  CWordWordIntMap m_mapSTwN0wd;
-  CTagTagIntMap m_mapSTtN0td;
+  SparseFeatureMap m_mapSTwd;
+  SparseFeatureMap m_mapSTtd;
+  SparseFeatureMap m_mapN0wd;
+  SparseFeatureMap m_mapN0td;
+  SparseFeatureMap m_mapSTwN0wd;
+  SparseFeatureMap m_mapSTtN0td;
 
-  CWordIntMap m_mapSTwra;
-  CTagIntMap m_mapSTtra;
-  CWordIntMap m_mapSTwla;
-  CTagIntMap m_mapSTtla;
-  CWordIntMap m_mapN0wla;
-  CTagIntMap m_mapN0tla;
+  SparseFeatureMap m_mapSTwra;
+  SparseFeatureMap m_mapSTtra;
+  SparseFeatureMap m_mapSTwla;
+  SparseFeatureMap m_mapSTtla;
+  SparseFeatureMap m_mapN0wla;
+  SparseFeatureMap m_mapN0tla;
 
-  CWordSetOfLabelsMap m_mapSTwrp;
-  CTagSetOfLabelsMap m_mapSTtrp;
-  CWordSetOfLabelsMap m_mapSTwlp;
-  CTagSetOfLabelsMap m_mapSTtlp;
-  CWordSetOfLabelsMap m_mapN0wlp;
-  CTagSetOfLabelsMap m_mapN0tlp;
+  SparseFeatureMap m_mapSTwrp;
+  SparseFeatureMap m_mapSTtrp;
+  SparseFeatureMap m_mapSTwlp;
+  SparseFeatureMap m_mapSTtlp;
+  SparseFeatureMap m_mapN0wlp;
+  SparseFeatureMap m_mapN0tlp;
 
-  CLemmaMap m_mapSTl;
-  CCoNLLCPOSMap m_mapSTc;
-  CCoNLLFeatsMap m_mapSTf;
+  SparseFeatureMap m_mapSTl;
+  SparseFeatureMap m_mapSTc;
+  SparseFeatureMap m_mapSTf;
 
-  CLemmaMap m_mapN0l;
-  CCoNLLCPOSMap m_mapN0c;
-  CCoNLLFeatsMap m_mapN0f;
+  SparseFeatureMap m_mapN0l;
+  SparseFeatureMap m_mapN0c;
+  SparseFeatureMap m_mapN0f;
 
-  CLemmaMap m_mapN1l;
-  CCoNLLCPOSMap m_mapN1c;
-  CCoNLLFeatsMap m_mapN1f;
+  SparseFeatureMap m_mapN1l;
+  SparseFeatureMap m_mapN1c;
+  SparseFeatureMap m_mapN1f;
 
 public:
   CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
@@ -393,7 +374,7 @@ CWeight<SCORE_TYPE>::loadScores() {
 #endif
 
   // Read in each of the feature tables.
-  iterate_templates( in >> , ; );
+  iterate_templates( , .deserialise(in); );
 
   // Read in whether or not rules were used.
   setRules(mp::read_bool(in));
@@ -415,7 +396,7 @@ CWeight<SCORE_TYPE>::saveScores() {
 #endif
 
   // Write out each of the feature tables.
-  iterate_templates( out << , ; )
+  iterate_templates( , .serialise(out); )
 
   // Write out whether or not rules were used.
   mp::write_bool(out, m_bRules);
@@ -529,99 +510,7 @@ CWeight<SCORE_TYPE>::computeAverageFeatureWeights(int round) {
    iterate_templates(,.computeAverage(round);) ;
 }
 
-
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::debugUsage() const {
-  std::cout << "m_mapSTw "; m_mapSTw.debugUsage();
-  std::cout << "m_mapSTt "; m_mapSTt.debugUsage();
-  std::cout << "m_mapSTwt "; m_mapSTwt.debugUsage();
-  std::cout << "m_mapN0w "; m_mapN0w.debugUsage();
-  std::cout << "m_mapN0t "; m_mapN0t.debugUsage();
-  std::cout << "m_mapN0wt "; m_mapN0wt.debugUsage();
-  std::cout << "m_mapN1w "; m_mapN1w.debugUsage();
-  std::cout << "m_mapN1t "; m_mapN1t.debugUsage();
-  std::cout << "m_mapN1wt "; m_mapN1wt.debugUsage();
-  std::cout << "m_mapN2w "; m_mapN2w.debugUsage();
-  std::cout << "m_mapN2t "; m_mapN2t.debugUsage();
-  std::cout << "m_mapN2wt "; m_mapN2wt.debugUsage();
-  std::cout << "m_mapSTHw "; m_mapSTHw.debugUsage();
-  std::cout << "m_mapSTHt "; m_mapSTHt.debugUsage();
-  std::cout << "m_mapSTi "; m_mapSTi.debugUsage();
-  std::cout << "m_mapSTHHw "; m_mapSTHHw.debugUsage();
-  std::cout << "m_mapSTHHt "; m_mapSTHHt.debugUsage();
-  std::cout << "m_mapSTHi "; m_mapSTHi.debugUsage();
-  std::cout << "m_mapSTLDw "; m_mapSTLDw.debugUsage();
-  std::cout << "m_mapSTLDt "; m_mapSTLDt.debugUsage();
-  std::cout << "m_mapSTLDi "; m_mapSTLDi.debugUsage();
-  std::cout << "m_mapSTRDw "; m_mapSTRDw.debugUsage();
-  std::cout << "m_mapSTRDt "; m_mapSTRDt.debugUsage();
-  std::cout << "m_mapSTRDi "; m_mapSTRDi.debugUsage();
-  std::cout << "m_mapN0LDw "; m_mapN0LDw.debugUsage();
-  std::cout << "m_mapN0LDt "; m_mapN0LDt.debugUsage();
-  std::cout << "m_mapN0LDi "; m_mapN0LDi.debugUsage();
-  std::cout << "m_mapSTL2Dw "; m_mapSTL2Dw.debugUsage();
-  std::cout << "m_mapSTL2Dt "; m_mapSTL2Dt.debugUsage();
-  std::cout << "m_mapSTL2Di "; m_mapSTL2Di.debugUsage();
-  std::cout << "m_mapSTR2Dw "; m_mapSTR2Dw.debugUsage();
-  std::cout << "m_mapSTR2Dt "; m_mapSTR2Dt.debugUsage();
-  std::cout << "m_mapSTR2Di "; m_mapSTR2Di.debugUsage();
-  std::cout << "m_mapN0L2Dw "; m_mapN0L2Dw.debugUsage();
-  std::cout << "m_mapN0L2Dt "; m_mapN0L2Dt.debugUsage();
-  std::cout << "m_mapN0L2Di "; m_mapN0L2Di.debugUsage();
-  std::cout << "m_mapHTw "; m_mapHTw.debugUsage();
-  std::cout << "m_mapHTt "; m_mapHTt.debugUsage();
-  std::cout << "m_mapHTwt "; m_mapHTwt.debugUsage();
-  std::cout << "m_mapSTwtN0wt "; m_mapSTwtN0wt.debugUsage();
-  std::cout << "m_mapSTwtN0w "; m_mapSTwtN0w.debugUsage();
-  std::cout << "m_mapSTwN0wt "; m_mapSTwN0wt.debugUsage();
-  std::cout << "m_mapSTtN0wt "; m_mapSTtN0wt.debugUsage();
-  std::cout << "m_mapSTwtN0t "; m_mapSTwtN0t.debugUsage();
-  std::cout << "m_mapSTwN0w "; m_mapSTwN0w.debugUsage();
-  std::cout << "m_mapSTtN0t "; m_mapSTtN0t.debugUsage();
-  std::cout << "m_mapN0tN1t "; m_mapN0tN1t.debugUsage();
-  std::cout << "m_mapN0tN1tN2t "; m_mapN0tN1tN2t.debugUsage();
-  std::cout << "m_mapSTtN0tN1t "; m_mapSTtN0tN1t.debugUsage();
-  std::cout << "m_mapSTtN0tN0LDt "; m_mapSTtN0tN0LDt.debugUsage();
-  std::cout << "m_mapN0tN0LDtN0L2Dt "; m_mapN0tN0LDtN0L2Dt.debugUsage();
-  std::cout << "m_mapSTHtSTtN0t "; m_mapSTHtSTtN0t.debugUsage();
-  std::cout << "m_mapHTtHT2tN0t "; m_mapHTtHT2tN0t.debugUsage();
-  std::cout << "m_mapSTHHtSTHtSTt "; m_mapSTHHtSTHtSTt.debugUsage();
-  std::cout << "m_mapSTtSTLDtN0t "; m_mapSTtSTLDtN0t.debugUsage();
-  std::cout << "m_mapSTtSTLDtSTL2Dt "; m_mapSTtSTLDtSTL2Dt.debugUsage();
-  std::cout << "m_mapSTtSTRDtN0t "; m_mapSTtSTRDtN0t.debugUsage();
-  std::cout << "m_mapSTtSTRDtSTR2Dt "; m_mapSTtSTRDtSTR2Dt.debugUsage();
-  std::cout << "m_mapSTwd "; m_mapSTwd.debugUsage();
-  std::cout << "m_mapSTtd "; m_mapSTtd.debugUsage();
-  std::cout << "m_mapN0wd "; m_mapN0wd.debugUsage();
-  std::cout << "m_mapN0td "; m_mapN0td.debugUsage();
-  std::cout << "m_mapSTwN0wd "; m_mapSTwN0wd.debugUsage();
-  std::cout << "m_mapSTtN0td "; m_mapSTtN0td.debugUsage();
-  std::cout << "m_mapSTwra "; m_mapSTwra.debugUsage();
-  std::cout << "m_mapSTtra "; m_mapSTtra.debugUsage();
-  std::cout << "m_mapSTwla "; m_mapSTwla.debugUsage();
-  std::cout << "m_mapSTtla "; m_mapSTtla.debugUsage();
-  std::cout << "m_mapN0wla "; m_mapN0wla.debugUsage();
-  std::cout << "m_mapN0tla "; m_mapN0tla.debugUsage();
-  std::cout << "m_mapSTwrp "; m_mapSTwrp.debugUsage();
-  std::cout << "m_mapSTtrp "; m_mapSTtrp.debugUsage();
-  std::cout << "m_mapSTwlp "; m_mapSTwlp.debugUsage();
-  std::cout << "m_mapSTtlp "; m_mapSTtlp.debugUsage();
-  std::cout << "m_mapN0wlp "; m_mapN0wlp.debugUsage();
-  std::cout << "m_mapN0tlp "; m_mapN0tlp.debugUsage();
-  std::cout << "m_mapSTl "; m_mapSTl.debugUsage();
-  std::cout << "m_mapSTc "; m_mapSTc.debugUsage();
-  std::cout << "m_mapSTf "; m_mapSTf.debugUsage();
-  std::cout << "m_mapN0l "; m_mapN0l.debugUsage();
-  std::cout << "m_mapN0c "; m_mapN0c.debugUsage();
-  std::cout << "m_mapN0f "; m_mapN0f.debugUsage();
-  std::cout << "m_mapN1l "; m_mapN1l.debugUsage();
-  std::cout << "m_mapN1c "; m_mapN1c.debugUsage();
-  std::cout << "m_mapN1f "; m_mapN1f.debugUsage();
-}
-
-
-}
-}
+}  // namespace depparser
+}  // namespace TARGET_LANGUAGE
 
 #endif
