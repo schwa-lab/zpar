@@ -20,40 +20,42 @@
 
 class CLemma {
 protected:
-   unsigned long m_nHash;
-
-protected:
-   // static method assigns tokenizer as global dictionary of words
-   CStringTokenizer &getTokenizer() const { thread_local static CStringTokenizer tokenizer; return tokenizer; }
+  unsigned long m_nEmpty;
+  unsigned long m_nHash;
 
 public:
-   enum {NONE=0, EMPTY=1};
+  CLemma() : m_nEmpty(0), m_nHash(0) { }
+  CLemma(const std::string &s, CStringTokenizer &tokenizer) : m_nEmpty(tokenizer.lookup("")), m_nHash(tokenizer.lookup(s)) { }
+  CLemma(const CLemma &w) : m_nEmpty(w.m_nEmpty), m_nHash(w.m_nHash) { }
+  CLemma(const CLemma &&w) : m_nEmpty(w.m_nEmpty), m_nHash(w.m_nHash) { }
 
 public:
-   CLemma() { clear(); }
-   CLemma(const std::string &s, bool bModify=true) : m_nHash(bModify ?  getTokenizer().lookup(s) : getTokenizer().find(s, NONE)) { }
-   CLemma(const CLemma &w) : m_nHash(w.m_nHash) { }
-   CLemma(const unsigned long &n) : m_nHash(n) { }
-   virtual ~CLemma() {}
+  inline unsigned long code() const { return m_nHash; }
+  inline bool empty() const { return m_nHash == m_nEmpty; }
+  inline unsigned long hash() const { return m_nHash; }
+  inline const std::string &str(CStringTokenizer &tokenizer) const { return tokenizer.key(m_nHash); }
 
-public:
-   inline unsigned long hash() const { return m_nHash; }
-   unsigned long code() const { return m_nHash; }
-   bool operator == (const CLemma &w) const { return m_nHash == w.m_nHash; }
-   bool operator != (const CLemma &w) const { return m_nHash != w.m_nHash; }
-   bool operator < (const CLemma &w) const { return m_nHash < w.m_nHash; }
-   void operator = (const CLemma &w) { m_nHash =  w.m_nHash; }
-   void copy(const CLemma &w) { m_nHash = w.m_nHash; }
-   void setString(const std::string &s) { m_nHash = getTokenizer().find(s, NONE); }
-   // do not use str() for unknown lemmas!!
-   const std::string &str() const { return getTokenizer().key(m_nHash); }
-   void load(const std::string &s) { m_nHash = getTokenizer().lookup(s); }
-   bool empty() { return m_nHash==EMPTY; }
-   bool none() { return m_nHash==NONE; }
-   void clear() { m_nHash=EMPTY; }
-}; 
+  inline bool operator ==(const CLemma &w) const { return m_nHash == w.m_nHash; }
+  inline bool operator !=(const CLemma &w) const { return m_nHash != w.m_nHash; }
+  inline bool operator <(const CLemma &w) const { return m_nHash < w.m_nHash; }
+
+  inline CLemma &
+  operator =(const CLemma &w) {
+    m_nEmpty = w.m_nEmpty;
+    m_nHash = w.m_nHash;
+    return *this;
+  }
+
+  inline void clear() { m_nHash = m_nEmpty; }
+  inline void
+  load(const std::string &s, CStringTokenizer &tokenizer) {
+    m_nEmpty = tokenizer.lookup("");
+    m_nHash = tokenizer.lookup(s);
+  }
+};
 
 
+#if 0
 //===============================================================
 inline std::istream &
 operator >>(std::istream &is, CLemma &l) {
@@ -66,5 +68,6 @@ operator <<(std::ostream &os, const CLemma &l) {
   mp::write_str(os, l.str());
   return os ;
 }
+#endif
 
 #endif

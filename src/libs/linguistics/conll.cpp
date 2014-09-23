@@ -1,6 +1,6 @@
 #include "linguistics/conll.h"
 
-void readCoNLLFeats(std::vector<CCoNLLFeats> &outout, const std::string &input) {
+void readCoNLLFeats(std::vector<CGenericTag> &outout, CStringTokenizer &tokenizer, const std::string &input) {
    std::istringstream iss(input);
    outout.clear();
    std::string line;
@@ -8,7 +8,7 @@ void readCoNLLFeats(std::vector<CCoNLLFeats> &outout, const std::string &input) 
    if (line=="_")
       return;
    while (iss && !line.empty()) {
-      outout.push_back(CCoNLLFeats(line));
+      outout.push_back(CGenericTag(line, tokenizer));
       getline(iss, line, '|');
    }
 }

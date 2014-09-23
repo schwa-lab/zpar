@@ -15,9 +15,7 @@
 using namespace TARGET_LANGUAGE;
 using namespace TARGET_LANGUAGE::depparser;
 
-const CWord g_emptyWord("");
 const CTaggedWord<CTag, TAG_SEPARATOR> g_emptyTaggedWord;
-const CTag g_noneTag = CTag::NONE;
 
 #define cast_weights static_cast<CWeight<SCORE_TYPE> *>(m_weights)
 #define _conll_or_empty(x) (x == "_" ? "" : x)
@@ -27,6 +25,21 @@ const CTag g_noneTag = CTag::NONE;
  * CDepParser - the depparser for TARGET_LANGUAGE 
  *
  *==============================================================*/
+
+CDepParser::CDepParser(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool bCoNLL) : CDepParserBase(bTrain, bCoNLL) {
+  m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
+  m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
+  m_weights = new depparser::CWeight<depparser::SCORE_TYPE>(sInputPath, sOutputPath, bTrain );
+  m_nTrainingRound = 0;
+  m_nTotalErrors = 0;
+  m_nScoreIndex = bTrain ? CScore<depparser::SCORE_TYPE>::eNonAverage : CScore<depparser::SCORE_TYPE>::eAverage;
+}
+
+CDepParser::~CDepParser() {
+  delete m_Agenda;
+  delete m_Beam;
+  delete m_weights;
+}
 
 /*---------------------------------------------------------------
  * 
@@ -318,21 +331,21 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
    if (m_bCoNLL) {
       if (st_index!=-1) {
          if (!m_lCacheCoNLLLemma[st_index].empty()) cast_weights->m_mapSTl.getOrUpdateScore( retval, m_lCacheCoNLLLemma[st_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[st_index] != CCoNLLCPOS()) cast_weights->m_mapSTc.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[st_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[st_index] != CGenericTag()) cast_weights->m_mapSTc.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[st_index], action, m_nScoreIndex, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[st_index].size(); ++i)
             cast_weights->m_mapSTf.getOrUpdateScore( retval, m_lCacheCoNLLFeats[st_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (st_index!=-1)
 
       if (n0_index!=-1) {
          if (!m_lCacheCoNLLLemma[n0_index].empty()) cast_weights->m_mapN0l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n0_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n0_index] != CCoNLLCPOS()) cast_weights->m_mapN0c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n0_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n0_index] != CGenericTag()) cast_weights->m_mapN0c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n0_index], action, m_nScoreIndex, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[n0_index].size(); ++i)
             cast_weights->m_mapN0f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n0_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (n0_index!=-1)
 
       if (n1_index!=-1) {
          if (!m_lCacheCoNLLLemma[n1_index].empty()) cast_weights->m_mapN1l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n1_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n1_index] != CCoNLLCPOS()) cast_weights->m_mapN1c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n1_index], action, m_nScoreIndex, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n1_index] != CGenericTag()) cast_weights->m_mapN1c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n1_index], action, m_nScoreIndex, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[n1_index].size(); ++i)
             cast_weights->m_mapN1f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n1_index][i], action, m_nScoreIndex, amount, round) ;
       } // if (n1_index!=-1)
@@ -539,7 +552,7 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
    bContradictsRules = false;
    m_lCache.clear();
    for ( index=0; index<length; ++index ) {
-      m_lCache.push_back( CTaggedWord<CTag, TAG_SEPARATOR>(sentence[index].first , sentence[index].second) );
+      m_lCache.push_back( CTaggedWord<CTag, TAG_SEPARATOR>(sentence[index].first, m_wordTokenizer, sentence[index].second) );
       // filter std::cout training examples with rules
       if (bTrain && m_weights->rules()) {
          // the root
@@ -806,7 +819,7 @@ void CDepParser::extract_features(const CDependencyParse &input) {
    m_lCacheLabel.clear();
 #endif
    for (int i=0; i<input.size(); ++i) {
-      m_lCache.push_back(CTaggedWord<CTag, TAG_SEPARATOR>(input[i].word, input[i].tag));
+      m_lCache.push_back(CTaggedWord<CTag, TAG_SEPARATOR>(input[i].word, m_wordTokenizer, input[i].tag));
 #ifdef LABELED
    m_lCacheLabel.push_back(CDependencyLabel(input[i].label));
 #endif
@@ -843,11 +856,11 @@ void CDepParser::initCoNLLCache( const CCoNLLInputOrOutput &sentence ) {
    m_lCacheCoNLLCPOS.resize(sentence.size());
    m_lCacheCoNLLFeats.resize(sentence.size());
    for (unsigned i=0; i<sentence.size(); ++i) {
-      m_lCacheCoNLLLemma[i].load(_conll_or_empty(sentence.at(i).lemma));
-      m_lCacheCoNLLCPOS[i].load(_conll_or_empty(sentence.at(i).ctag));
+      m_lCacheCoNLLLemma[i].load(_conll_or_empty(sentence.at(i).lemma), m_lemmaTokenizer);
+      m_lCacheCoNLLCPOS[i].load(_conll_or_empty(sentence.at(i).ctag), m_conllcposTokenizer);
       m_lCacheCoNLLFeats[i].clear();
       if (sentence.at(i).feats != "_")
-         readCoNLLFeats(m_lCacheCoNLLFeats[i], sentence.at(i).feats);
+         readCoNLLFeats(m_lCacheCoNLLFeats[i], m_conllfeatsTokenizer, sentence.at(i).feats);
    }
 }
 

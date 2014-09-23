@@ -277,38 +277,7 @@ inline std::ostream & operator << (std::ostream &os, const CCoNLLOutput &sent) {
    return os ;
 }
 
-/*==============================================================
- *
- * CCoNLLCPOS
- *
- *==============================================================*/
 
-class CCoNLLCPOS : public CGenericTag {
-public:
-   CCoNLLCPOS() : CGenericTag() {}
-   CCoNLLCPOS(const std::string &s) {load(s);}
-   CCoNLLCPOS(const unsigned long &i) : CGenericTag(i) {}
-   CCoNLLCPOS(const CCoNLLCPOS &c) : CGenericTag(c) {}
-public:
-   CStringTokenizer &getTagset() const { thread_local static CStringTokenizer tagset; return tagset; }
-};
-
-/*==============================================================
- *
- * CCoNLLFeats
- *
- *==============================================================*/
-
-class CCoNLLFeats : public CGenericTag {
-public:
-   CCoNLLFeats() : CGenericTag() {}
-   CCoNLLFeats(const std::string &s) {load(s);}
-   CCoNLLFeats(const unsigned long &i) : CGenericTag(i) {}
-   CCoNLLFeats(const CCoNLLFeats &c) : CGenericTag(c) {}
-public:
-   CStringTokenizer &getTagset() const { thread_local static CStringTokenizer tagset; return tagset; }
-};
-
-void readCoNLLFeats(std::vector<CCoNLLFeats> &output, const std::string &input);
+void readCoNLLFeats(std::vector<CGenericTag> &output, CStringTokenizer &tokenizer, const std::string &input);
 
 #endif

@@ -14,92 +14,52 @@
 
 /*===============================================================
  *
- * definitions about tag 
+ * definitions about tag
  *
- * Each tag is associated with a tagset. 
- * This is different from the concept of POS tags, which are 
+ * Each tag is associated with a tagset.
+ * This is different from the concept of POS tags, which are
  * assocaited with a universal set. When a program runs, the
- * set of POS tag for each language is fixed. 
- * For a generic tag, de to its generic purpose, there can 
+ * set of POS tag for each language is fixed.
+ * For a generic tag, de to its generic purpose, there can
  * be differnt sets of tags coexistance. An example is CoNLL CTag/CFeats.
  *
  *==============================================================*/
 
 class CGenericTag {
-public:
-   enum {NONE = 0};
-   enum {FIRST = 1};
-
-protected:
-   unsigned long m_code;
+private:
+  unsigned long m_nEmpty;
+  unsigned long m_nHash;
 
 public:
-   CGenericTag() : m_code(NONE) { }
-   CGenericTag(const std::string &s) { load(s); }
-   CGenericTag(const CGenericTag &t) : m_code(t.m_code) { }
-   CGenericTag(const unsigned long &u) : m_code(u) { }
-   virtual ~CGenericTag() {}
+  CGenericTag() : m_nEmpty(0), m_nHash(0) { }
+  CGenericTag(const std::string &s, CStringTokenizer &tokenizer) : m_nEmpty(tokenizer.lookup("")), m_nHash(tokenizer.lookup(s)) { }
+  CGenericTag(const CGenericTag &t) : m_nEmpty(t.m_nEmpty), m_nHash(t.m_nHash) { }
+  CGenericTag(const CGenericTag &&t) : m_nEmpty(t.m_nEmpty), m_nHash(t.m_nHash) { }
 
-public:
-   virtual CStringTokenizer &getTagset() const = 0;
+  inline CGenericTag &
+  operator =(const CGenericTag &w) {
+    m_nEmpty = w.m_nEmpty;
+    m_nHash = w.m_nHash;
+    return *this;
+  }
 
-public:
-   const unsigned long &code() const { 
-      return m_code; 
-   }
-   inline unsigned long hash() const { return m_code; }
-   void copy(const CGenericTag &t) { 
-      m_code = t.m_code; 
-   }
-   void operator = (const CGenericTag &w) { 
-      m_code = w.m_code; 
-   }
-   bool operator == (const CGenericTag &w) const { 
-      return m_code == w.m_code; 
-   }
-   bool operator != (const CGenericTag &w) const { 
-      return ! ((*this)==w) ; 
-   }
-   bool operator < (const CGenericTag &w) const { 
-      return m_code < w.m_code; 
-   }
-   bool operator > (const CGenericTag &w) const { 
-      return m_code > w.m_code; 
-   }
-   bool operator <= (const CGenericTag &w) const { 
-      return m_code <= w.m_code; 
-   }
-   bool operator >= (const CGenericTag &w) const { 
-      return m_code >= w.m_code; 
-   }
+  inline unsigned long code() const { return m_nHash; }
+  inline unsigned long hash() const { return m_nHash; }
+  inline const std::string &str(CStringTokenizer &tokenizer) const { return tokenizer.key(m_nHash); }
 
-   void load(const std::string &s) {
-      if (s.empty()) 
-         m_code = NONE; // empty are equal to NONE
-      else
-         m_code=getTagset().lookup(s); 
-   }
-   const std::string &str() const { 
-      return getTagset().key(m_code); 
-   }
+  inline bool operator ==(const CGenericTag &w) const { return m_nHash == w.m_nHash; }
+  inline bool operator !=(const CGenericTag &w) const { return m_nHash != w.m_nHash; }
+  inline bool operator <(const CGenericTag &w) const { return m_nHash < w.m_nHash; }
+  inline bool operator >(const CGenericTag &w) const { return m_nHash > w.m_nHash; }
+  inline bool operator <=(const CGenericTag &w) const { return m_nHash <= w.m_nHash; }
+  inline bool operator >=(const CGenericTag &w) const { return m_nHash >= w.m_nHash; }
 
-   void clear() { 
-      m_code=NONE; 
-   }
-}; 
-
-
-//===============================================================
-inline std::istream &
-operator >>(std::istream &is, CGenericTag &tag) {
-  tag.load(mp::read_str(is));
-  return is;
-}
-
-inline std::ostream &
-operator <<(std::ostream &os, const CGenericTag &tag) {
-  mp::write_str(os, tag.str());
-  return os;
-}
+  inline void clear() { m_nHash = m_nEmpty; }
+  inline void
+  load(const std::string &s, CStringTokenizer &tokenizer) {
+    m_nEmpty = tokenizer.lookup("");
+    m_nHash = tokenizer.lookup(s);
+  }
+};
 
 #endif
