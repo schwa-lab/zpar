@@ -175,18 +175,23 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   // Run each iteration of the perceptron learning.
   for (unsigned int iteration = 1; iteration <= niterations; ++iteration) {
     // Shuffle the sentence order between each iteration.
-    std::random_shuffle(all_sentences.begin(), all_sentences.end());
+    const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(all_sentences.begin(), all_sentences.end(), std::default_random_engine(seed));
 
     // Partition the sentences into shards.
     shard_sentences(all_sentences, sharded_sentences, nthreads);
 
     // Run this iteration over the sharded sentences.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();
-    std::vector<std::thread> threads;
-    for (unsigned int t = 0; t != nthreads; ++t)
-      threads.push_back(std::thread(fn, t));
-    for (unsigned int t = 0; t != nthreads; ++t)
-      threads[t].join();
+    if (nthreads == 1)
+      fn(0);
+    else {
+      std::vector<std::thread> threads;
+      for (unsigned int t = 0; t != nthreads; ++t)
+        threads.push_back(std::thread(fn, t));
+      for (unsigned int t = 0; t != nthreads; ++t)
+        threads[t].join();
+    }
 
     // Combine the partial models together.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Combining partial models." << std::endl;

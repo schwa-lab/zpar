@@ -20,6 +20,7 @@
  *==============================================================*/
 #include <algorithm>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 #include <cstdlib>
 #include <cstdio>
@@ -31,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <random>
 #include <set>
 #include <sstream>
 #include <stack>
