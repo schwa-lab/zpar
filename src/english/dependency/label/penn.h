@@ -81,7 +81,7 @@ public:
 
 public:
 
-   const unsigned long &hash() const { return m_code; }
+   const unsigned long hash() const { return m_code; }
    bool operator == (const CDependencyLabel &l) const { return m_code == l.m_code; }
    bool operator != (const CDependencyLabel &l) const { return m_code != l.m_code; }
    bool operator < (const CDependencyLabel &l) const { return m_code < l.m_code; }

@@ -37,7 +37,7 @@ private:
    }
 
 public:
-   virtual const unsigned long &hash() const { return m_nHash; }
+   inline unsigned long hash() const { return m_nHash; }
    virtual bool operator == (const CTagSet &set) const { 
       return m_nHash == set.m_nHash; 
    }
@@ -82,11 +82,6 @@ public:
    template <typename T0, unsigned long T1>
    friend std::ostream &operator <<(std::ostream &, const CTagSet<T0, T1> &c);
 };
-
-//===============================================================
-
-template<typename CTag, unsigned long SIZE>
-inline const unsigned long &hash(const CTagSet<CTag, SIZE> &set) {return set.hash();}
 
 //===============================================================
 

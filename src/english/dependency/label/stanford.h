@@ -161,7 +161,7 @@ public:
 
 public:
    inline const unsigned long &code() const { return m_code; }
-   inline const unsigned long &hash() const { return m_code; }
+   inline unsigned long hash() const { return m_code; }
    inline const std::string &str() const { return STANFORD_DEP_STRINGS[m_code]; }
 
    inline bool operator == (const CDependencyLabel &l) const { return m_code == l.m_code; }

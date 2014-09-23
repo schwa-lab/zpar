@@ -49,7 +49,7 @@ public:
 
    inline bool empty() { return word.empty() && tag.empty(); }
    inline void clear() { word.clear(); tag.clear(); }
-   inline unsigned long hash() const { return (word.code()<<CTag::SIZE)|tag.code(); }
+   inline unsigned long hash() const { return word.hash() + 31*tag.hash(); }
 
    inline void
    load(const CWord &word, const CTag &tt=CTag::NONE) {

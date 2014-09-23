@@ -30,7 +30,7 @@ public:
    CBigram(const CBigram &o) : m_nHash(o.m_nHash), m_unigram1(o.m_unigram1), m_unigram2(o.m_unigram2) { }
    CBigram(const CBigram &&o) : m_nHash(o.m_nHash), m_unigram1(o.m_unigram1), m_unigram2(o.m_unigram2) { }
 
-   inline unsigned long int hash() const { return m_nHash; }
+   inline unsigned long hash() const { return m_nHash; }
    const CUnigram &first() const { return m_unigram1; };
    const CUnigram &second() const { return m_unigram2; }
 

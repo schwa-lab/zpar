@@ -23,17 +23,6 @@
 #include "tokenizer.h"
 #include "bigram.h"
 
-/*===============================================================
- *
- * the tokenizer
- *
- *==============================================================*/
-
-class CStringTokenizer : public CTokenizer<std::string, 65537> {
-public: 
-  CStringTokenizer() : CTokenizer<std::string, 65537>(1/*reserve for the other unknown */) {lookup("");} 
-};
-
 //const unsigned long g_tokenForUnknownString = 0;
 //const unsigned long g_tokenForEmptyString = 1;
 

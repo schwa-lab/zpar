@@ -14,19 +14,6 @@
 
 /*===============================================================
  *
- * the tagset
- *
- *==============================================================*/
-
-class CGenericTagset : public CTokenizer<std::string, 251> {
-   public: 
-      CGenericTagset() : CTokenizer<std::string, 251>(0) {
-         lookup("-NONE-");
-      } 
-};
-
-/*===============================================================
- *
  * definitions about tag 
  *
  * Each tag is associated with a tagset. 
@@ -54,15 +41,13 @@ public:
    virtual ~CGenericTag() {}
 
 public:
-   virtual CGenericTagset &getTagset() const = 0;
+   virtual CStringTokenizer &getTagset() const = 0;
 
 public:
    const unsigned long &code() const { 
       return m_code; 
    }
-   const unsigned long &hash() const {
-      return m_code; 
-   }
+   inline unsigned long hash() const { return m_code; }
    void copy(const CGenericTag &t) { 
       m_code = t.m_code; 
    }

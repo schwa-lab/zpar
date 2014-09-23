@@ -106,7 +106,7 @@ protected:
 public:
    CTag() : m_code(NONE) {}
    CTag(PENN_TAG_CONSTANTS t) : m_code(t) { }
-   CTag(int t) : m_code(t) { }
+   CTag(unsigned long t) : m_code(t) { }
    CTag(const std::string &s) { load(s); }
    ~CTag() {}
 
@@ -117,11 +117,11 @@ public:
    std::string str() const { assert(m_code<PENN_TAG_COUNT) ; return PENN_TAG_STRINGS[m_code]; }
    void load(const std::string &s) {
       m_code = PENN_TAG_NONE ;
-      for (int i=1; i<PENN_TAG_COUNT; ++i)
+      for (unsigned long i=1; i<PENN_TAG_COUNT; ++i)
          if (PENN_TAG_STRINGS[i] == s)
             m_code = i;
    }
-   void load(const unsigned &i) {
+   void load(const unsigned long i) {
       m_code = i;
    }
    bool closed() const { return PENN_TAG_CLOSED[m_code]; }

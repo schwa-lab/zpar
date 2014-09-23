@@ -21,10 +21,6 @@ const char TAG_SEPARATOR = '/';
 } // namespace english
 
 //===============================================================
-
-inline unsigned long hash(const english::CTag &tag) { return tag.code();}
-
-//===============================================================
 inline std::istream &
 operator >>(std::istream &is, english::CTag &tag) {
   tag.load(mp::read_str(is));

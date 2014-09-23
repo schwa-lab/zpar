@@ -25,7 +25,7 @@
 // the word class, which includes hash
 class CWord {
 protected:
-   unsigned long int m_nHash;
+   unsigned long m_nHash;
    std::string m_sString;
 
 public:
@@ -35,7 +35,7 @@ public:
    ~CWord() {}
 
 public:
-   inline unsigned long int hash() const { return m_nHash; }
+   inline unsigned long hash() const { return m_nHash; }
    inline const std::string &str() const { return m_sString; }
    inline bool empty() { return m_sString.empty() ; }
    inline bool unknown() { return false; }
@@ -49,18 +49,14 @@ public:
    inline void operator = (const std::string &s) { setString(s); }
 
    void setString(const std::string &s) {
-     m_nHash = 0;
      m_sString = s;
-     for (const char c : s)
-       m_nHash = m_nHash*37 + c;
+     m_nHash = hash(s);
    };
 
    meow
 }
 
 #include "word_common.h"
-
-inline unsigned long int hash(const CWord &w) {return w.hash();}
 
 #endif
 

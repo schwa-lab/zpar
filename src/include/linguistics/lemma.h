@@ -19,19 +19,6 @@
  *==============================================================*/
 
 class CLemma {
-
-private:
-   /*===============================================================
-    *
-    * the tokenizer
-    *
-    *==============================================================*/
-   
-   class CStringTokenizer : public CTokenizer<std::string, 65537> {
-      public: 
-         CStringTokenizer() : CTokenizer<std::string, 65537>(1/*reserve for the other unknown */) {lookup("");} 
-   };
-   
 protected:
    unsigned long m_nHash;
 
@@ -50,7 +37,7 @@ public:
    virtual ~CLemma() {}
 
 public:
-   unsigned long hash() const { return m_nHash; }
+   inline unsigned long hash() const { return m_nHash; }
    unsigned long code() const { return m_nHash; }
    bool operator == (const CLemma &w) const { return m_nHash == w.m_nHash; }
    bool operator != (const CLemma &w) const { return m_nHash != w.m_nHash; }
@@ -59,7 +46,7 @@ public:
    void copy(const CLemma &w) { m_nHash = w.m_nHash; }
    void setString(const std::string &s) { m_nHash = getTokenizer().find(s, NONE); }
    // do not use str() for unknown lemmas!!
-   const std::string &str() const { ASSERT(m_nHash<getTokenizer().count(), "lemma.h: str() called for an unknown lemma"); return getTokenizer().key(m_nHash); }
+   const std::string &str() const { return getTokenizer().key(m_nHash); }
    void load(const std::string &s) { m_nHash = getTokenizer().lookup(s); }
    bool empty() { return m_nHash==EMPTY; }
    bool none() { return m_nHash==NONE; }

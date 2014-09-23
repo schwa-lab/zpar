@@ -22,31 +22,43 @@
  *
  *==============================================================*/
 
-template <typename K, unsigned TOKENIZER_SIZE>
+template <typename K>
 class CTokenizer {
-   protected:
-      CHashMap<K, unsigned long> m_mapTokens;
-      std::vector<K> m_vecKeys;
-      unsigned long m_nWaterMark;
-      unsigned long m_nStartingToken;
+protected:
+  std::hash<K> _hasher;
+  std::unordered_map<unsigned long, std::string> _tokens;
 
-   public:
-      explicit CTokenizer(unsigned nTokenStartsFrom=0) : m_mapTokens(TOKENIZER_SIZE), m_nWaterMark(nTokenStartsFrom), m_nStartingToken(nTokenStartsFrom) {}
-      ~CTokenizer() {}
+public:
+  CTokenizer() { }
 
-      unsigned long lookup(const K &key) {
-         unsigned long retval; 
-         bool bNew = m_mapTokens.findorinsert(key, m_nWaterMark, retval); 
-         if (bNew) { 
-            ++m_nWaterMark; 
-            assert(m_nWaterMark!=0); // there is no overflow on the number of tokens!
-            m_vecKeys.push_back(key);
-         }
-         return retval;
-      }
-      unsigned long find(const K &key, const unsigned long &val) const {return m_mapTokens.find(key, val);}
-      const K &key(const unsigned long &token) const {assert( token < m_vecKeys.size()+m_nStartingToken ); return m_vecKeys[token-m_nStartingToken];}
-      const unsigned long &count() const {return m_nWaterMark;}
+  inline unsigned long
+  find(const K &key, const unsigned long default_val) const {
+    const auto &it = _tokens.find(_hasher(key));
+    return it == _tokens.end() ? default_val : it->first;
+  }
+
+  inline const K &
+  key(const unsigned long hash) const {
+    const auto &it = _tokens.find(hash);
+    if (it == _tokens.end()) {
+      std::ostringstream ss;
+      ss << "Unknown key 0x" << std::hex << hash << " passed to CTokenizer.key()";
+      throw std::runtime_error(ss.str());
+    }
+    return it->second;
+  }
+
+  unsigned long
+  lookup(const K &key) {
+    const unsigned long hash = _hasher(key);
+    const auto &it = _tokens.find(hash);
+    if (it == _tokens.end())
+      _tokens.emplace(hash, key);
+    return hash;
+  }
 };
+
+
+using CStringTokenizer = CTokenizer<std::string>;
 
 #endif
