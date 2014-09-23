@@ -119,27 +119,27 @@ class CWeight : public CWeightBase {
 public:
   static constexpr const unsigned DEP_TABLE_SIZE = 15139;  // This should be a prime number.
 
-  typedef CPackedScoreMap<CWord, SCORE_TYPE, action::MAX> CWordMap;
-  typedef CPackedScoreMap<CTag, SCORE_TYPE, action::MAX> CTagMap;
-  typedef CPackedScoreMap<int, SCORE_TYPE, action::MAX> CIntMap;
-  typedef CPackedScoreMap<CTagSet<CTag, 2>,  SCORE_TYPE, action::MAX> CTagSet2Map;
-  typedef CPackedScoreMap<CTagSet<CTag, 3>, SCORE_TYPE, action::MAX> CTagSet3Map;
-  typedef CPackedScoreMap<CTagSet<CTag, 4>, SCORE_TYPE, action::MAX> CTagSet4Map;
-  typedef CPackedScoreMap<std::tuple<CWord, CTag>, SCORE_TYPE, action::MAX> CWordTagMap;
-  typedef CPackedScoreMap<std::tuple<CWord, CTag, CTag>, SCORE_TYPE, action::MAX> CWordTagTagMap;
-  typedef CPackedScoreMap<std::tuple<CWord, CWord, CTag>, SCORE_TYPE, action::MAX> CWordWordTagMap;
-  typedef CPackedScoreMap<CTaggedWord<CTag, TAG_SEPARATOR>, SCORE_TYPE, action::MAX> CTaggedWordMap;
-  typedef CPackedScoreMap<CTwoWords, SCORE_TYPE, action::MAX> CTwoWordsMap;
-  typedef CPackedScoreMap<CTwoTaggedWords, SCORE_TYPE, action::MAX> CTwoTaggedWordsMap;
-  typedef CPackedScoreMap<std::tuple<CWord, int>, SCORE_TYPE, action::MAX> CWordIntMap;
-  typedef CPackedScoreMap<std::tuple<CTag, int>, SCORE_TYPE, action::MAX> CTagIntMap;
-  typedef CPackedScoreMap<std::tuple<CTag, CTag, int>, SCORE_TYPE, action::MAX> CTagTagIntMap;
-  typedef CPackedScoreMap<std::tuple<CWord, CWord, int>, SCORE_TYPE, action::MAX> CWordWordIntMap;
-  typedef CPackedScoreMap<std::tuple<CWord, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
-  typedef CPackedScoreMap<std::tuple<CTag, CSetOfTags<CDependencyLabel>>, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
-  typedef CPackedScoreMap<CLemma, SCORE_TYPE, action::MAX> CLemmaMap;
-  typedef CPackedScoreMap<CCoNLLCPOS, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
-  typedef CPackedScoreMap<CCoNLLFeats, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CIntMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet2Map;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet3Map;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSet4Map;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordTagMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordTagTagMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordWordTagMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTaggedWordMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTwoWordsMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTwoTaggedWordsMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordIntMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagIntMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagTagIntMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordWordIntMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CWordSetOfLabelsMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CTagSetOfLabelsMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CLemmaMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CCoNLLCPOSMap;
+  typedef CPackedScoreMap<unsigned long, SCORE_TYPE, action::MAX> CCoNLLFeatsMap;
 
   CWordMap m_mapSTw;
   CTagMap m_mapSTt;
