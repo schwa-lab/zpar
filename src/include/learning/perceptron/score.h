@@ -17,12 +17,11 @@
  * CScore - score definition
  *
  *==============================================================*/
+enum ScoreAverage { SCORE_NON_AVERAGE=0, SCORE_AVERAGE=1 };
+
 
 template <typename SCORE_TYPE>
 class CScore {
-public:
-  enum SCORE_AVERAGE { eNonAverage=0 , eAverage=1 } ;
-
 protected:
   SCORE_TYPE current;
   SCORE_TYPE total;
@@ -37,10 +36,10 @@ public:
   inline bool empty() const { return current == 0 && total == 0 && lastupdate == 0; }
   inline bool zero() const { return current == 0 && total == 0; }
 
-  inline SCORE_TYPE &operator [] (const int n) { return (n == eNonAverage) ? current : total; }
-  inline const SCORE_TYPE &operator [] (const int n) const { return (n == eNonAverage) ? current : total; }
+  inline SCORE_TYPE &operator [] (const ScoreAverage n) { return n == SCORE_NON_AVERAGE ? current : total; }
+  inline const SCORE_TYPE &operator [] (const ScoreAverage n) const { return n == SCORE_NON_AVERAGE ? current : total; }
 
-  inline const SCORE_TYPE score(const int n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
+  inline const SCORE_TYPE score(const ScoreAverage n=SCORE_NON_AVERAGE) const { return n == SCORE_NON_AVERAGE ? current : total; }
 
   inline void
   combineAdd(const CScore &other) {

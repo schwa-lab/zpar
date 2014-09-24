@@ -73,7 +73,7 @@ private:
    int m_nTrainingRound;
    unsigned int m_nTotalErrors;
    //bool m_bScoreModified;
-   int m_nScoreIndex;
+   const ScoreAverage m_eScoreAverage;
 
 public:
    CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL=false);
@@ -94,6 +94,7 @@ public:
    void updateScores(const CDependencyParse &parse, const CDependencyParse &correct, int round=0);
 
    inline unsigned int getTotalTrainingErrors(void) const { return m_nTotalErrors; }
+   inline unsigned int getTrainingRound(void) const { return m_nTrainingRound; }
 
 private:
    enum SCORE_UPDATE {eAdd=0, eSubtract};
@@ -103,7 +104,7 @@ private:
 
    void work( const bool bTrain, const CTwoStringVector &sentence , CDependencyParse *retval, const CDependencyParse &correct, int nBest, depparser::SCORE_TYPE *scores ) ;
 
-   void getOrUpdateStackScore( const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval, const unsigned &action, depparser::SCORE_TYPE amount=0, int round=0 );
+   void getOrUpdateStackScore( const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval, const unsigned &action, depparser::SCORE_TYPE amount, int round);
 
    // update the built-in weight std::vector for this feature object specifically
    void updateScoresForStates( const depparser::CStateItem *outout , const depparser::CStateItem *correct , depparser::SCORE_TYPE amount_add , depparser::SCORE_TYPE amount_subtract ) ;

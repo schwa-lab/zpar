@@ -250,7 +250,7 @@ public:
 
   template <typename T>
   inline void
-  getOrUpdateScore(CPackedScoreType<ScoreType, PACKED_SIZE> &out, const T &key_ , const unsigned index, const int which, const ScoreType amount=0, const int round=0) {
+  getOrUpdateScore(CPackedScoreType<ScoreType, PACKED_SIZE> &out, const T &key_ , const unsigned index, const ScoreAverage which, const ScoreType amount=0, const int round=0) {
     const unsigned long key = hash(key_);
 #ifdef NO_NEG_FEATURE
     if ( round == -1 ) {
@@ -268,7 +268,7 @@ public:
   }
 
   inline void
-  getScore(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const K &key, const int which) {
+  getScore(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const K &key, const ScoreAverage which) {
     this->find(key, m_zero).add(o , which);
   }
 

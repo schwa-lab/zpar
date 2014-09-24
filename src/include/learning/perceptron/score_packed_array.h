@@ -25,7 +25,7 @@ public:
   CPackedScoreArray() { }
 
   void
-  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int which) const {
+  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const ScoreAverage which) const {
     for (size_t index = 0; index != PACKED_SIZE; ++index)
       o[index] += scores[index].score(which);
   }

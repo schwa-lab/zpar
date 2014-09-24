@@ -26,22 +26,26 @@ const CTaggedWord<CTag, TAG_SEPARATOR> g_emptyTaggedWord;
  *
  *==============================================================*/
 
-CDepParser::CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL) : CDepParserBase(bTrain, bCoNLL) {
+CDepParser::CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL) :
+    CDepParserBase(bTrain, bCoNLL),
+    m_eScoreAverage(bTrain ? SCORE_NON_AVERAGE : SCORE_AVERAGE)
+  {
   m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
   m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
   m_weights = new depparser::CWeight<depparser::SCORE_TYPE>(sInputPath, sInputPath, bTrain);
   m_nTrainingRound = 0;
   m_nTotalErrors = 0;
-  m_nScoreIndex = bTrain ? CScore<depparser::SCORE_TYPE>::eNonAverage : CScore<depparser::SCORE_TYPE>::eAverage;
 }
 
-CDepParser::CDepParser(depparser::CWeight<depparser::SCORE_TYPE> *weights, bool bCoNLL) : CDepParserBase(true, bCoNLL) {
+CDepParser::CDepParser(depparser::CWeight<depparser::SCORE_TYPE> *weights, bool bCoNLL) :
+    CDepParserBase(true, bCoNLL),
+    m_eScoreAverage(SCORE_NON_AVERAGE)
+  {
   m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
   m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
   m_weights = weights;
   m_nTrainingRound = 0;
   m_nTotalErrors = 0;
-  m_nScoreIndex = m_bTrain ? CScore<depparser::SCORE_TYPE>::eNonAverage : CScore<depparser::SCORE_TYPE>::eAverage;
 }
 
 CDepParser::~CDepParser() {
@@ -150,213 +154,213 @@ inline void CDepParser::getOrUpdateStackScore( const CStateItem *item, CPackedSc
 
    // single
    if (st_index != -1) {
-      cast_weights->m_mapSTw.getOrUpdateScore( retval, st_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTt.getOrUpdateScore( retval, st_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTwt.getOrUpdateScore( retval, st_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTw.getOrUpdateScore( retval, st_word, action, m_eScoreAverage, amount, round) ;
+      cast_weights->m_mapSTt.getOrUpdateScore( retval, st_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTwt.getOrUpdateScore( retval, st_word_tag, action, m_eScoreAverage, amount, round) ;
    }
 
    if (n0_index != -1) {
-      cast_weights->m_mapN0w.getOrUpdateScore( retval, n0_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0t.getOrUpdateScore( retval, n0_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0wt.getOrUpdateScore( retval, n0_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN0w.getOrUpdateScore( retval, n0_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0t.getOrUpdateScore( retval, n0_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0wt.getOrUpdateScore( retval, n0_word_tag, action, m_eScoreAverage, amount, round) ;
    }
 
    if (n1_index != -1) {
-      cast_weights->m_mapN1w.getOrUpdateScore( retval, n1_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN1t.getOrUpdateScore( retval, n1_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN1wt.getOrUpdateScore( retval, n1_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN1w.getOrUpdateScore( retval, n1_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN1t.getOrUpdateScore( retval, n1_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN1wt.getOrUpdateScore( retval, n1_word_tag, action, m_eScoreAverage, amount, round) ;
    }
 
    if (n2_index != -1) {
-      cast_weights->m_mapN2w.getOrUpdateScore( retval, n2_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN2t.getOrUpdateScore( retval, n2_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN2wt.getOrUpdateScore( retval, n2_word_tag, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN2w.getOrUpdateScore( retval, n2_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN2t.getOrUpdateScore( retval, n2_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN2wt.getOrUpdateScore( retval, n2_word_tag, action, m_eScoreAverage, amount, round) ;
    }
 
    if (sth_index != -1) {
-      cast_weights->m_mapSTHw.getOrUpdateScore( retval, sth_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTHt.getOrUpdateScore( retval, sth_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTi.getOrUpdateScore( retval, st_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTHw.getOrUpdateScore( retval, sth_word, action, m_eScoreAverage, amount, round) ;
+      cast_weights->m_mapSTHt.getOrUpdateScore( retval, sth_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTi.getOrUpdateScore( retval, st_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (sthh_index != -1) {
-      cast_weights->m_mapSTHHw.getOrUpdateScore( retval, sthh_word, action, m_nScoreIndex, amount, round) ;
-      cast_weights->m_mapSTHHt.getOrUpdateScore( retval, sthh_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTHi.getOrUpdateScore( retval, sth_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTHHw.getOrUpdateScore( retval, sthh_word, action, m_eScoreAverage, amount, round) ;
+      cast_weights->m_mapSTHHt.getOrUpdateScore( retval, sthh_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTHi.getOrUpdateScore( retval, sth_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (stld_index != -1) {
-      cast_weights->m_mapSTLDw.getOrUpdateScore( retval, stld_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTLDt.getOrUpdateScore( retval, stld_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTLDi.getOrUpdateScore( retval, stld_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTLDw.getOrUpdateScore( retval, stld_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTLDt.getOrUpdateScore( retval, stld_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTLDi.getOrUpdateScore( retval, stld_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (strd_index != -1) {
-      cast_weights->m_mapSTRDw.getOrUpdateScore( retval, strd_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTRDt.getOrUpdateScore( retval, strd_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTRDi.getOrUpdateScore( retval, strd_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTRDw.getOrUpdateScore( retval, strd_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTRDt.getOrUpdateScore( retval, strd_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTRDi.getOrUpdateScore( retval, strd_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (n0ld_index != -1) {
-      cast_weights->m_mapN0LDw.getOrUpdateScore( retval, n0ld_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0LDt.getOrUpdateScore( retval, n0ld_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0LDi.getOrUpdateScore( retval, n0ld_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN0LDw.getOrUpdateScore( retval, n0ld_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0LDt.getOrUpdateScore( retval, n0ld_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0LDi.getOrUpdateScore( retval, n0ld_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (stl2d_index != -1) {
-      cast_weights->m_mapSTL2Dw.getOrUpdateScore( retval, stl2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTL2Dt.getOrUpdateScore( retval, stl2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTL2Di.getOrUpdateScore( retval, stl2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTL2Dw.getOrUpdateScore( retval, stl2d_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTL2Dt.getOrUpdateScore( retval, stl2d_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTL2Di.getOrUpdateScore( retval, stl2d_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (str2d_index != -1) {
-      cast_weights->m_mapSTR2Dw.getOrUpdateScore( retval, str2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTR2Dt.getOrUpdateScore( retval, str2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTR2Di.getOrUpdateScore( retval, str2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTR2Dw.getOrUpdateScore( retval, str2d_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTR2Dt.getOrUpdateScore( retval, str2d_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTR2Di.getOrUpdateScore( retval, str2d_label, action, m_eScoreAverage, amount, round) ;
    }
 
    if (n0l2d_index != -1) {
-      cast_weights->m_mapN0L2Dw.getOrUpdateScore( retval, n0l2d_word, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0L2Dt.getOrUpdateScore( retval, n0l2d_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapN0L2Di.getOrUpdateScore( retval, n0l2d_label, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN0L2Dw.getOrUpdateScore( retval, n0l2d_word, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0L2Dt.getOrUpdateScore( retval, n0l2d_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapN0L2Di.getOrUpdateScore( retval, n0l2d_label, action, m_eScoreAverage, amount, round) ;
    }
 
    // s0 and n0
    if (st_index != -1) {
-      cast_weights->m_mapSTwtN0wt.getOrUpdateScore( retval, st_word_tag_n0_word_tag, action, m_nScoreIndex, amount, round ); 
+      cast_weights->m_mapSTwtN0wt.getOrUpdateScore( retval, st_word_tag_n0_word_tag, action, m_eScoreAverage, amount, round ); 
       std::get<0>(word_word_tag) = st_word;
       std::get<1>(word_word_tag) = n0_word;
       std::get<2>(word_word_tag) = st_tag;
-      cast_weights->m_mapSTwtN0w.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTwtN0w.getOrUpdateScore( retval, word_word_tag, action, m_eScoreAverage, amount, round ) ; 
       std::get<0>(word_word_tag) = st_word;
       std::get<1>(word_word_tag) = n0_word;
       std::get<2>(word_word_tag) = n0_tag;
-      cast_weights->m_mapSTwN0wt.getOrUpdateScore( retval, word_word_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTwN0wt.getOrUpdateScore( retval, word_word_tag, action, m_eScoreAverage, amount, round ) ; 
       std::get<0>(word_tag_tag) = st_word;
       std::get<1>(word_tag_tag) = st_tag;
       std::get<2>(word_tag_tag) = n0_tag;
-      cast_weights->m_mapSTwtN0t.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTwtN0t.getOrUpdateScore( retval, word_tag_tag, action, m_eScoreAverage, amount, round ) ; 
       std::get<0>(word_tag_tag) = n0_word;
       std::get<1>(word_tag_tag) = st_tag;
       std::get<2>(word_tag_tag) = n0_tag;
-      cast_weights->m_mapSTtN0wt.getOrUpdateScore( retval, word_tag_tag, action, m_nScoreIndex, amount, round ) ;
-      cast_weights->m_mapSTwN0w.getOrUpdateScore( retval, st_word_n0_word, action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTtN0wt.getOrUpdateScore( retval, word_tag_tag, action, m_eScoreAverage, amount, round ) ;
+      cast_weights->m_mapSTwN0w.getOrUpdateScore( retval, st_word_n0_word, action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(st_tag,n0_tag)), action, m_eScoreAverage, amount, round ) ; 
    }
 
    if (st_index != -1 && n0_index != -1) {
-      cast_weights->m_mapN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapN0tN1tN2t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n1_tag,n2_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n1_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtN0tN0LDt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n0ld_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapN0tN0LDtN0L2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n0ld_tag,n0l2d_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 2>(encodeTags(n0_tag,n1_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapN0tN1tN2t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n1_tag,n2_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtN0tN1t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n1_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtN0tN0LDt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,n0_tag,n0ld_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapN0tN0LDtN0L2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(n0_tag,n0ld_tag,n0l2d_tag)), action, m_eScoreAverage, amount, round ) ; 
    }
    if (st_index!=-1) {
-      cast_weights->m_mapSTHtSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sth_tag,st_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTHHtSTHtSTt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sthh_tag, sth_tag,st_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTLDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTLDtSTL2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,stl2d_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTRDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,n0_tag)), action, m_nScoreIndex, amount, round ) ; 
-      cast_weights->m_mapSTtSTRDtSTR2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,str2d_tag)), action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTHtSTtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sth_tag,st_tag,n0_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTHHtSTHtSTt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(sthh_tag, sth_tag,st_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtSTLDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,n0_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtSTLDtSTL2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,stld_tag,stl2d_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtSTRDtN0t.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,n0_tag)), action, m_eScoreAverage, amount, round ) ; 
+      cast_weights->m_mapSTtSTRDtSTR2Dt.getOrUpdateScore( retval, CTagSet<CTag, 3>(encodeTags(st_tag,strd_tag,str2d_tag)), action, m_eScoreAverage, amount, round ) ; 
    }
 
    // distance
    if (st_index!=-1 && n0_index!=-1) {
       std::get<0>(word_int) = st_word;
       std::get<1>(word_int) = st_n0_dist;
-      cast_weights->m_mapSTwd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTwd.getOrUpdateScore( retval, word_int, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_int) = st_tag;
       std::get<1>(tag_int) = st_n0_dist;
-      cast_weights->m_mapSTtd.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapSTtd.getOrUpdateScore( retval, tag_int, action, m_eScoreAverage, amount, round ) ;
       std::get<0>(word_int) = n0_word;
       std::get<1>(word_int) = st_n0_dist;
-      cast_weights->m_mapN0wd.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapN0wd.getOrUpdateScore( retval, word_int, action, m_eScoreAverage, amount, round ) ;
       std::get<0>(tag_int) = n0_tag;
       std::get<1>(tag_int) = st_n0_dist;
-      cast_weights->m_mapN0td.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapN0td.getOrUpdateScore( retval, tag_int, action, m_eScoreAverage, amount, round ) ;
       std::get<0>(word_word_int) = st_word;
       std::get<1>(word_word_int) = n0_word;
       std::get<2>(word_word_int) = st_n0_dist;
-      cast_weights->m_mapSTwN0wd.getOrUpdateScore( retval, word_word_int, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTwN0wd.getOrUpdateScore( retval, word_word_int, action, m_eScoreAverage, amount, round ) ; 
       std::get<0>(tag_tag_int) = st_tag;
       std::get<1>(tag_tag_int) = n0_tag;
       std::get<2>(tag_tag_int) = st_n0_dist;
-      cast_weights->m_mapSTtN0td.getOrUpdateScore( retval, tag_tag_int, action, m_nScoreIndex, amount, round ) ; 
+      cast_weights->m_mapSTtN0td.getOrUpdateScore( retval, tag_tag_int, action, m_eScoreAverage, amount, round ) ; 
    }
 
    // st arity
    if (st_index != -1) {
       std::get<0>(word_int) = st_word;
       std::get<1>(word_int) = st_rarity;
-      cast_weights->m_mapSTwra.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTwra.getOrUpdateScore( retval, word_int, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_int) = st_tag;
       std::get<1>(tag_int) = st_rarity;
-      cast_weights->m_mapSTtra.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapSTtra.getOrUpdateScore( retval, tag_int, action, m_eScoreAverage, amount, round ) ;
       std::get<0>(word_int) = st_word;
       std::get<1>(word_int) = st_larity;
-      cast_weights->m_mapSTwla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTwla.getOrUpdateScore( retval, word_int, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_int) = st_tag;
       std::get<1>(tag_int) = st_larity;
-      cast_weights->m_mapSTtla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapSTtla.getOrUpdateScore( retval, tag_int, action, m_eScoreAverage, amount, round ) ;
    }
 
    // n0 arity
    if (n0_index!=-1) {
       std::get<0>(word_int) = n0_word;
       std::get<1>(word_int) = n0_larity;
-      cast_weights->m_mapN0wla.getOrUpdateScore( retval, word_int, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN0wla.getOrUpdateScore( retval, word_int, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_int) = n0_tag;
       std::get<1>(tag_int) = n0_larity;
-      cast_weights->m_mapN0tla.getOrUpdateScore( retval, tag_int, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapN0tla.getOrUpdateScore( retval, tag_int, action, m_eScoreAverage, amount, round ) ;
    }
 
    // st labelset
    if (st_index != -1){
       std::get<0>(word_tagset) = st_word;
       std::get<1>(word_tagset) = st_rtagset;
-      cast_weights->m_mapSTwrp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTwrp.getOrUpdateScore( retval, word_tagset, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_tagset) = st_tag;
       std::get<1>(tag_tagset) = st_rtagset;
-      cast_weights->m_mapSTtrp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapSTtrp.getOrUpdateScore( retval, tag_tagset, action, m_eScoreAverage, amount, round ) ;
 
       std::get<0>(word_tagset) = st_word;
       std::get<1>(word_tagset) = st_ltagset;
-      cast_weights->m_mapSTwlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapSTwlp.getOrUpdateScore( retval, word_tagset, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_tagset) = st_tag;
       std::get<1>(tag_tagset) = st_ltagset;
-      cast_weights->m_mapSTtlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapSTtlp.getOrUpdateScore( retval, tag_tagset, action, m_eScoreAverage, amount, round ) ;
    }
 
    // n0 labelset
    if (n0_index != -1){
       std::get<0>(word_tagset) = n0_word;
       std::get<1>(word_tagset) = n0_ltagset;
-      cast_weights->m_mapN0wlp.getOrUpdateScore( retval, word_tagset, action, m_nScoreIndex, amount, round) ;
+      cast_weights->m_mapN0wlp.getOrUpdateScore( retval, word_tagset, action, m_eScoreAverage, amount, round) ;
       std::get<0>(tag_tagset) = n0_tag;
       std::get<1>(tag_tagset) = n0_ltagset;
-      cast_weights->m_mapN0tlp.getOrUpdateScore( retval, tag_tagset, action, m_nScoreIndex, amount, round ) ;
+      cast_weights->m_mapN0tlp.getOrUpdateScore( retval, tag_tagset, action, m_eScoreAverage, amount, round ) ;
    }
 
    if (m_bCoNLL) {
       if (st_index!=-1) {
-         if (!m_lCacheCoNLLLemma[st_index].empty()) cast_weights->m_mapSTl.getOrUpdateScore( retval, m_lCacheCoNLLLemma[st_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[st_index] != CGenericTag()) cast_weights->m_mapSTc.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[st_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[st_index].empty()) cast_weights->m_mapSTl.getOrUpdateScore( retval, m_lCacheCoNLLLemma[st_index], action, m_eScoreAverage, amount, round) ;
+         if (m_lCacheCoNLLCPOS[st_index] != CGenericTag()) cast_weights->m_mapSTc.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[st_index], action, m_eScoreAverage, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[st_index].size(); ++i)
-            cast_weights->m_mapSTf.getOrUpdateScore( retval, m_lCacheCoNLLFeats[st_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->m_mapSTf.getOrUpdateScore( retval, m_lCacheCoNLLFeats[st_index][i], action, m_eScoreAverage, amount, round) ;
       } // if (st_index!=-1)
 
       if (n0_index!=-1) {
-         if (!m_lCacheCoNLLLemma[n0_index].empty()) cast_weights->m_mapN0l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n0_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n0_index] != CGenericTag()) cast_weights->m_mapN0c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n0_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[n0_index].empty()) cast_weights->m_mapN0l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n0_index], action, m_eScoreAverage, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n0_index] != CGenericTag()) cast_weights->m_mapN0c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n0_index], action, m_eScoreAverage, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[n0_index].size(); ++i)
-            cast_weights->m_mapN0f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n0_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->m_mapN0f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n0_index][i], action, m_eScoreAverage, amount, round) ;
       } // if (n0_index!=-1)
 
       if (n1_index!=-1) {
-         if (!m_lCacheCoNLLLemma[n1_index].empty()) cast_weights->m_mapN1l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n1_index], action, m_nScoreIndex, amount, round) ;
-         if (m_lCacheCoNLLCPOS[n1_index] != CGenericTag()) cast_weights->m_mapN1c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n1_index], action, m_nScoreIndex, amount, round) ;
+         if (!m_lCacheCoNLLLemma[n1_index].empty()) cast_weights->m_mapN1l.getOrUpdateScore( retval, m_lCacheCoNLLLemma[n1_index], action, m_eScoreAverage, amount, round) ;
+         if (m_lCacheCoNLLCPOS[n1_index] != CGenericTag()) cast_weights->m_mapN1c.getOrUpdateScore( retval, m_lCacheCoNLLCPOS[n1_index], action, m_eScoreAverage, amount, round) ;
          for (unsigned i=0; i<m_lCacheCoNLLFeats[n1_index].size(); ++i)
-            cast_weights->m_mapN1f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n1_index][i], action, m_nScoreIndex, amount, round) ;
+            cast_weights->m_mapN1f.getOrUpdateScore( retval, m_lCacheCoNLLFeats[n1_index][i], action, m_eScoreAverage, amount, round) ;
       } // if (n1_index!=-1)
    }
 }
@@ -633,7 +637,7 @@ void CDepParser::work( const bool bTrain , const CTwoStringVector &sentence , CD
          // for the state items that already contain all words
          m_Beam->clear();
          packed_scores.reset();
-         getOrUpdateStackScore( pGenerator, packed_scores, action::NO_ACTION );
+         getOrUpdateStackScore(pGenerator, packed_scores, action::NO_ACTION, 0, 0);
          if ( pGenerator->size() == length ) {
             assert( pGenerator->stacksize() != 0 );
             if ( pGenerator->stacksize()>1 ) {

@@ -30,7 +30,7 @@ public:
   CPackedScoreList() { }
 
   void
-  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int which) const {
+  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const ScoreAverage which) const {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       o[it.first()] += it.second().score(which);
