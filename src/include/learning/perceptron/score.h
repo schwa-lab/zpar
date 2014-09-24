@@ -34,15 +34,13 @@ public:
   ~CScore() {};
 
   inline void reset() { current = 0; total = 0; lastupdate = 0; }
-  inline bool empty() const { return current==0 && total==0 && lastupdate==0; }
-  inline bool zero() const { return current==0 && total==0; }
-  inline void operator ++ (int) { current++; }
-  inline void operator -- (int) { current--; }
+  inline bool empty() const { return current == 0 && total == 0 && lastupdate == 0; }
+  inline bool zero() const { return current == 0 && total == 0; }
 
-  inline SCORE_TYPE &operator [] (const int &n) { return (n == eNonAverage) ? current : total; }
-  inline const SCORE_TYPE &operator [] (const int &n) const { return (n == eNonAverage) ? current : total; }
+  inline SCORE_TYPE &operator [] (const int n) { return (n == eNonAverage) ? current : total; }
+  inline const SCORE_TYPE &operator [] (const int n) const { return (n == eNonAverage) ? current : total; }
 
-  inline const SCORE_TYPE score(const int &n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
+  inline const SCORE_TYPE score(const int n=eNonAverage) const { return (n == eNonAverage) ? current : total; }
 
   inline void
   combineAdd(const CScore &other) {
@@ -57,11 +55,11 @@ public:
   }
 
   void
-  scaleCurrent(const SCORE_TYPE &scale, const int &round=0) {
+  scaleCurrent(const SCORE_TYPE scale, const int round) {
     assert(round >= lastupdate);
     if (round > lastupdate) {
       updateAverage(round);
-      lastupdate=round;
+      lastupdate = round;
     }
     total -= current;
     current *= scale;
@@ -69,19 +67,17 @@ public:
   }
 
   inline void
-  updateAverage(const int &round=0) {
+  updateAverage(const int round) {
     if (round > lastupdate)
-      total += current*(round-lastupdate);
-    else if (round < lastupdate)
-      std::cout << "Round is: "<<round<<"<"<<lastupdate<<std::endl;
+      total += current*(round - lastupdate);
   }
 
   inline void
-  updateCurrent(const SCORE_TYPE &added, const int &round=0) {
+  updateCurrent(const SCORE_TYPE added, const int round) {
     assert(round >= lastupdate);
     if (round > lastupdate) {
       updateAverage(round);
-      lastupdate=round;
+      lastupdate = round;
     }
     current += added;
     total += added;

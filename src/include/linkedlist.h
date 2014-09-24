@@ -22,25 +22,24 @@ public:
     CEntry *m_next;
 
   public:
-    CEntry() : m_key(), m_value(), m_next(0) { }
-    explicit CEntry(const K &key) : m_key(key), m_value(), m_next(0) { }
+    CEntry() : m_next(0) { }
+    explicit CEntry(const K &key) : m_key(key),  m_next(0) { }
     CEntry(const K &key, const V &value) : m_key(key), m_value(value), m_next(0) { }
   };
 
 
   class iterator {
   private:
-    CLinkedList<K, V> *m_parent;
     CEntry *m_entry;
 
   public:
-    iterator() { }
-    iterator(CLinkedList<K, V> *parent, CEntry *entry) : m_parent(parent), m_entry(entry) { }
-    iterator(const iterator &it) : m_parent(it.m_parent), m_entry(it.m_entry) { }
+    explicit iterator(CEntry *entry) : m_entry(entry) { }
+    iterator(const iterator &o) : m_entry(o.m_entry) { }
+    iterator(const iterator &&o) : m_entry(o.m_entry) { }
 
-    inline bool operator ==(const iterator &it) const { return m_parent == it.m_parent && m_entry == it.m_entry; }
-    inline bool operator !=(const iterator &it) const { return !((*this)==it); }
-    inline void operator ++() { if (m_entry) { m_entry = m_entry->m_next; } }
+    inline bool operator ==(const iterator &o) const { return m_entry == o.m_entry; }
+    inline bool operator !=(const iterator &o) const { return m_entry != o.m_entry; }
+    inline void operator ++() { m_entry = m_entry == nullptr ? nullptr : m_entry->m_next; }
     inline const K &first() { return m_entry->m_key; }
     inline V &second() { return m_entry->m_value; }
   };
@@ -48,17 +47,16 @@ public:
 
   class const_iterator {
   private:
-    const CLinkedList<K, V> *m_parent;
     const CEntry *m_entry;
 
   public:
-    const_iterator() { }
-    const_iterator(const CLinkedList<K, V> *parent, const CEntry *entry) : m_parent(parent), m_entry(entry) { }
-    const_iterator(const const_iterator &it) : m_parent(it.m_parent), m_entry(it.m_entry) { }
+    explicit const_iterator(const CEntry *entry) : m_entry(entry) { }
+    const_iterator(const const_iterator &o) : m_entry(o.m_entry) { }
+    const_iterator(const const_iterator &&o) : m_entry(o.m_entry) { }
 
-    inline bool operator ==(const const_iterator &it) const { return m_parent == it.m_parent && m_entry == it.m_entry; }
-    inline bool operator !=(const const_iterator &it) const { return !((*this)==it);}
-    inline void operator ++() { if (m_entry) { m_entry=m_entry->m_next; } }
+    inline bool operator ==(const const_iterator &o) const { return m_entry == o.m_entry; }
+    inline bool operator !=(const const_iterator &o) const { return m_entry != o.m_entry; }
+    inline void operator ++() { m_entry = m_entry == nullptr ? nullptr : m_entry->m_next; }
     inline const K &first() { return m_entry->m_key; }
     inline const V &second() { return m_entry->m_value; }
   };
@@ -183,14 +181,14 @@ public:
     m_buckets = 0;
   }
 
-  inline iterator begin() { return iterator(this, m_buckets); }
-  inline iterator end() { return iterator(this, 0); }
-  inline const_iterator begin() const { return const_iterator(this, m_buckets); }
-  inline const_iterator end() const { return const_iterator(this, 0); }
-  inline const_iterator cbegin() const { return const_iterator(this, m_buckets); }
-  inline const_iterator cend() const { return const_iterator(this, 0); }
+  inline iterator begin() { return iterator(m_buckets); }
+  inline iterator end() { return iterator(nullptr); }
+  inline const_iterator begin() const { return const_iterator(m_buckets); }
+  inline const_iterator end() const { return const_iterator(nullptr); }
+  inline const_iterator cbegin() const { return const_iterator(m_buckets); }
+  inline const_iterator cend() const { return const_iterator(nullptr); }
 
-  inline bool empty() const { return m_buckets==0; }
+  inline bool empty() const { return m_buckets == nullptr; }
 };
 
 

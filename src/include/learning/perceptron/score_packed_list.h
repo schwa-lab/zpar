@@ -30,14 +30,14 @@ public:
   CPackedScoreList() { }
 
   void
-  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int &which) const {
+  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int which) const {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       o[it.first()] += it.second().score(which);
   }
 
   void
-  addCurrent(CPackedScoreList &s, const int &round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
+  addCurrent(CPackedScoreList &s, const int round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       scores.get(it.first(), pool, free).updateCurrent(it.second().score(), round);
@@ -89,14 +89,14 @@ public:
   }
 
   void
-  scaleCurrent(ScoreType scale, const int &round) {
+  scaleCurrent(ScoreType scale, const int round) {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       it.second().scaleCurrent(scale, round);
   }
 
   inline const ScoreType
-  score(const unsigned index, const int &n) const {
+  score(const unsigned index, const int n) const {
     return scores.find(index, CScore<ScoreType>()).score(n);
   }
 
@@ -110,21 +110,21 @@ public:
   }
 
   void
-  subtractCurrent(CPackedScoreList &s, const int &round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
+  subtractCurrent(CPackedScoreList &s, const int round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       scores.get(it.first(), pool, free).updateCurrent(-it.second().score(), round);
   }
 
   void
-  updateAverage(const int &round) {
+  updateAverage(const int round) {
     const auto end = scores.end();
     for (auto it = scores.begin(); it != end; ++it)
       it.second().updateAverage(round);
   }
 
   inline void
-  updateCurrent(const unsigned int index, const ScoreType &added, const int &round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
+  updateCurrent(const unsigned int index, const ScoreType added, const int round, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
     scores.get(index, pool, free).updateCurrent(added, round);
   }
 

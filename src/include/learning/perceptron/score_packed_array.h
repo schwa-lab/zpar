@@ -25,7 +25,7 @@ public:
   CPackedScoreArray() { }
 
   void
-  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int &which) const {
+  add(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const int which) const {
     for (size_t index = 0; index != PACKED_SIZE; ++index)
       o[index] += scores[index].score(which);
   }
@@ -53,18 +53,18 @@ public:
   }
 
   inline const ScoreType
-  score(const unsigned int index, const int &n) const {
+  score(const unsigned int index, const int n) const {
     return scores[index].score(n);
   }
 
   void
-  updateAverage(const int &round) {
+  updateAverage(const int round) {
     for (unsigned index = 0; index != PACKED_SIZE; ++index)
       scores[index].updateAverage(round);
   }
 
   inline void
-  updateCurrent(const unsigned int index, const ScoreType &added, const int &round) {
+  updateCurrent(const unsigned int index, const ScoreType added, const int round) {
     scores[index].updateCurrent(added, round);
   }
 

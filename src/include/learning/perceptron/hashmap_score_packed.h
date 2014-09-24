@@ -25,23 +25,27 @@ private:
   SCORE_TYPE scores[PACKED_SIZE];
 
 public:
-  inline void reset() { std::memset(scores, 0, sizeof(SCORE_TYPE)*PACKED_SIZE); }
-
   bool
   empty() const {
-    for (unsigned index=0; index<PACKED_SIZE; ++index)
+    for (size_t index = 0; index != PACKED_SIZE; ++index)
       if (scores[index] != 0)
         return false;
     return true;
   }
 
+  inline void
+  reset() {
+    std::memset(scores, 0, sizeof(SCORE_TYPE)*PACKED_SIZE);
+  }
+
   inline SCORE_TYPE &operator [](const unsigned int index) { return scores[index]; }
   inline const SCORE_TYPE &operator [](const unsigned int index) const { return scores[index]; }
 
-  void
+  inline CPackedScoreType &
   operator +=(const CPackedScoreType &i) {
-    for (unsigned index=0; index<PACKED_SIZE; ++index)
+    for (size_t index = 0; index != PACKED_SIZE; ++index)
       scores[index] += i.scores[index];
+    return *this;
   }
 };
 
@@ -125,20 +129,20 @@ template <typename T>
 struct _MessagePackIO : public __MessagePackIO<T, std::is_integral<T>::value || std::is_floating_point<T>::value> { };
 
 
-template <typename POOL_ITEM_TYPE, typename CPackedScore>
+template <typename PoolItemType, typename CPackedScore>
 struct __CPackedScoreMapPoolMixin {
 protected:
   using ScoreType = typename CPackedScore::ScoreType;
 
-  CMemoryPool<POOL_ITEM_TYPE> _pool;
-  POOL_ITEM_TYPE *_free;
+  CMemoryPool<PoolItemType> _pool;
+  PoolItemType *_free;
 
-  __CPackedScoreMapPoolMixin(void) : _pool(CPackedScore::POOL_BLOCK_SIZE), _free(nullptr) { }
+  __CPackedScoreMapPoolMixin(void) : _pool(1024 * CPackedScore::POOL_BLOCK_SIZE), _free(nullptr) { }
 
-  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &other, const int &round) { item.addCurrent(other, round, _pool, &_free); }
+  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &other, const int round) { item.addCurrent(other, round, _pool, &_free); }
   inline void _itemClear(CPackedScore &item) { item.clear(&_free); }
   inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other, _pool, &_free); }
-  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType &added, const int &round) { item.updateCurrent(index, added, round, _pool, &_free); }
+  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType added, const int round) { item.updateCurrent(index, added, round, _pool, &_free); }
 
   inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item, _pool, &_free); }
 };
@@ -150,10 +154,10 @@ protected:
 
   __CPackedScoreMapPoolMixin(void) { }
 
-  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &s, const int &round) { item.addCurrent(s, round); }
+  inline void _itemAddCurrent(CPackedScore &item, CPackedScore &s, const int round) { item.addCurrent(s, round); }
   inline void _itemClear(CPackedScore &item) { item.clear(); }
   inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other); }
-  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType &added, const int &round) { item.updateCurrent(index, added, round); }
+  inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType added, const int round) { item.updateCurrent(index, added, round); }
 
   inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item); }
 };
@@ -193,7 +197,7 @@ public:
 
 
   void
-  addCurrent(CPackedScoreMap &mp, const int &round) {
+  addCurrent(CPackedScoreMap &mp, const int round) {
     const auto end = this->end();
     for (auto it = this->begin(); it != end; ++it)
       this->_itemAddCurrent((*this)[it.first()], it.second(), round);
@@ -201,12 +205,12 @@ public:
 
 #ifdef NO_NEG_FEATURE
   inline void
-  addPositiveFeature(const K &key, const unsigned &index) {
+  addPositiveFeature(const K &key, const unsigned index) {
     (*this)[key][index];
   }
 #endif // define features
 
-  virtual void
+  void
   clear() override {
     const auto end = this->end();
     for (auto it = this->begin(); it != end; ++it)
@@ -246,7 +250,7 @@ public:
 
   template <typename T>
   inline void
-  getOrUpdateScore(CPackedScoreType<ScoreType, PACKED_SIZE> &out , const T &key_ , const unsigned &index , const int &which , const ScoreType &amount=0 , const int &round=0 ) {
+  getOrUpdateScore(CPackedScoreType<ScoreType, PACKED_SIZE> &out, const T &key_ , const unsigned index, const int which, const ScoreType amount=0, const int round=0) {
     const unsigned long key = hash(key_);
 #ifdef NO_NEG_FEATURE
     if ( round == -1 ) {
@@ -259,17 +263,17 @@ public:
     }
     else {
       assert( round > 0 );
-      updateScore( key , index , amount , round ) ;
+      updateScore(key, index, amount, round) ;
     }
   }
 
   inline void
-  getScore(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const K &key, const int &which) {
-    this->find( key , m_zero ).add( o , which );
+  getScore(CPackedScoreType<ScoreType, PACKED_SIZE> &o, const K &key, const int which) {
+    this->find(key, m_zero).add(o , which);
   }
 
   void
-  scaleCurrent(const ScoreType &scale, const int &round) {
+  scaleCurrent(const ScoreType scale, const int round) {
     const auto end = this->end();
     for (auto it = this->begin(); it != end; ++it)
       it.second().scaleCurrent(scale, round);
@@ -292,14 +296,14 @@ public:
   }
 
   void
-  subtractCurrent(CPackedScoreMap &mp, const int &round) {
+  subtractCurrent(CPackedScoreMap &mp, const int round) {
     const auto end = this->end();
     for (auto it = this->begin(); it != end; ++it)
       this->itemSubtractCurrent((*this)[it.first()], it.second(), round);
   }
 
   inline void
-  updateScore( const K &key , const unsigned &index , const ScoreType &amount , const int &round ) {
+  updateScore(const K &key, const unsigned index, const ScoreType amount, const int round) {
 #ifdef NO_NEG_FEATURE
     if (m_positive->element(key) && (*m_positive)[key].element(index))
 #endif // update can only happen with defined features
