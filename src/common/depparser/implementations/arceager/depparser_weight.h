@@ -127,15 +127,15 @@ public:
   SparseFeatureMap m_mapSTwt;
 
   SparseFeatureMap m_mapN0w;
-  SparseFeatureMap m_mapN0t;
+  DenseFeatureMap m_mapN0t;
   SparseFeatureMap m_mapN0wt;
 
   SparseFeatureMap m_mapN1w;
-  SparseFeatureMap m_mapN1t;
+  DenseFeatureMap m_mapN1t;
   SparseFeatureMap m_mapN1wt;
 
   SparseFeatureMap m_mapN2w;
-  SparseFeatureMap m_mapN2t;
+  DenseFeatureMap m_mapN2t;
   SparseFeatureMap m_mapN2wt;
 
   SparseFeatureMap m_mapSTHw;
@@ -147,24 +147,24 @@ public:
   SparseFeatureMap m_mapSTHi;
 
   SparseFeatureMap m_mapSTLDw;
-  SparseFeatureMap m_mapSTLDt;
-  SparseFeatureMap m_mapSTLDi;
+  DenseFeatureMap m_mapSTLDt;
+  DenseFeatureMap m_mapSTLDi;
 
   SparseFeatureMap m_mapSTRDw;
-  SparseFeatureMap m_mapSTRDt;
-  SparseFeatureMap m_mapSTRDi;
+  DenseFeatureMap m_mapSTRDt;
+  DenseFeatureMap m_mapSTRDi;
 
   SparseFeatureMap m_mapN0LDw;
-  SparseFeatureMap m_mapN0LDt;
-  SparseFeatureMap m_mapN0LDi;
+  DenseFeatureMap m_mapN0LDt;
+  DenseFeatureMap m_mapN0LDi;
 
   SparseFeatureMap m_mapSTL2Dw;
-  SparseFeatureMap m_mapSTL2Dt;
-  SparseFeatureMap m_mapSTL2Di;
+  DenseFeatureMap m_mapSTL2Dt;
+  DenseFeatureMap m_mapSTL2Di;
 
   SparseFeatureMap m_mapSTR2Dw;
-  SparseFeatureMap m_mapSTR2Dt;
-  SparseFeatureMap m_mapSTR2Di;
+  DenseFeatureMap m_mapSTR2Dt;
+  DenseFeatureMap m_mapSTR2Di;
 
   SparseFeatureMap m_mapN0L2Dw;
   SparseFeatureMap m_mapN0L2Dt;
@@ -198,16 +198,16 @@ public:
   SparseFeatureMap m_mapSTwd;
   SparseFeatureMap m_mapSTtd;
   SparseFeatureMap m_mapN0wd;
-  SparseFeatureMap m_mapN0td;
+  DenseFeatureMap m_mapN0td;
   SparseFeatureMap m_mapSTwN0wd;
   SparseFeatureMap m_mapSTtN0td;
 
   SparseFeatureMap m_mapSTwra;
-  SparseFeatureMap m_mapSTtra;
+  DenseFeatureMap m_mapSTtra;
   SparseFeatureMap m_mapSTwla;
-  SparseFeatureMap m_mapSTtla;
+  DenseFeatureMap m_mapSTtla;
   SparseFeatureMap m_mapN0wla;
-  SparseFeatureMap m_mapN0tla;
+  DenseFeatureMap m_mapN0tla;
 
   SparseFeatureMap m_mapSTwrp;
   SparseFeatureMap m_mapSTtrp;
