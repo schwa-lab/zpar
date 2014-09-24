@@ -170,11 +170,11 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
   std::vector<unsigned int> nerrors(nthreads);
   std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> weights(nthreads);
-  SpinBarrier barriers[3] = {SpinBarrier(nthreads), SpinBarrier(nthreads), SpinBarrier(nthreads)};
+  SpinBarrier barrier(nthreads);
 
   // Allocate the initial weights per thread.
   for (unsigned int t = 0; t != nthreads; ++t)
-    weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true);
+    weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, true);
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t) {
@@ -207,62 +207,64 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
       }
 
       // Should we mix weights?
-      if (nthreads > 1 && ((n % 100 == 0) || (n == max_n - 1))) {
+      const bool is_last = n == max_n - 1;
+      if (nthreads > 1 && n != 0 && ((n % (4 * nthreads) == 0) || is_last)) {
+        weights[t]->computeAverageFeatureWeights(parser.getTrainingRound());
+        weights[t]->saveScores();
+        barrier.wait();
+
         // Add the weights in parallel.
         for (unsigned int delta = 1; ; delta *= 2) {
-          if (t == 0)
-            std::cout << " | " << std::flush;
-
           // Tree merge the appropriate weights.
           if (t % (2*delta) == 0 && t + delta < nthreads) {
             weights[t]->combineAdd(*weights[t + delta]);
-            std::cout << "." << std::flush;
+            delete weights[t + delta];
           }
 
-          // Wait for all threads to reach here.
-          barriers[0].wait();
-
           // Have we combined all of the weights?
+          barrier.wait();
           if (delta >= nthreads)
             break;
         }
-        if (t == 0)
-          std::cout << " > " << std::flush;
 
         // Divide through the 0th one and delete all other ones.
         if (t == 0) {
+          // Only divide at the end.
           weights[0]->combineDiv(nthreads);
           weights[0]->saveScores();
+          delete weights[0];
+          std::remove(sModelPath.c_str());
           std::rename(temp_model_path(sModelPath, 0).c_str(), sModelPath.c_str());
-          std::cout << "<" << std::flush;
-        }
-        else {
-          delete weights[t];
-          std::remove(temp_model_path(sModelPath, t).c_str());
         }
 
-        // Wait for all threads to reach here.
-        barriers[1].wait();
+        // Distribute back out to the others
+        barrier.wait();
+        weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, !is_last);
+        parser.setWeights(weights[t]);
+        barrier.wait();
+
         if (t == 0)
-          std::cout << " > " << std::flush;
+          std::cout << "x" << std::flush;
 
-        // FIXME distribute back out to the others
-        if (t != 0) {
-          weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true);
-          parser.setWeights(weights[t]);
-        }
-
-        // Wait for all threads to reach here.
-        barriers[2].wait();
-        if (t == 0)
-          std::cout << " < " << std::flush;
+        //if (n % 1000 == 0) {
+          //parser.setWeights(nullptr);
+          //nerrors[t] = parser.getTotalTrainingErrors();
+          //return;
+        //}
       }
     }
 
     // Tell the parser that this training round has finished.
-    parser.finishtraining();
+    if (nthreads == 1) {
+      parser.finishtraining();
+      std::remove(sModelPath.c_str());
+      std::rename(temp_model_path(sModelPath, 0).c_str(), sModelPath.c_str());
+    }
     parser.setWeights(nullptr);
     nerrors[t] = parser.getTotalTrainingErrors();
+
+    if (t == 0 && nthreads > 1)
+      std::cout << "X" << std::endl;
   };
 
 
@@ -289,7 +291,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     // Combine the partial models together.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Combining partial models." << std::endl;
-    combine_partial_models(sModelPath, nerrors, 1);
+    //combine_partial_models(sModelPath, nerrors, nthreads);
 
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Completed." << std::endl;
   }

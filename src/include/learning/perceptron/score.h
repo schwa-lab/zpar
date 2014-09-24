@@ -84,19 +84,23 @@ public:
 
 
   std::istream &
-  deserialise(std::istream &is) {
+  deserialise(std::istream &is, const bool preserveLastUpdate) {
     const uint32_t nitems = mp::read_array_size(is);
-    assert(nitems == 2); (void)nitems;
+    assert(nitems == 3); (void)nitems;
     mp::read(is, current);
     mp::read(is, total);
+    mp::read(is, lastupdate);
+    if (!preserveLastUpdate)
+      lastupdate = 0;
     return is;
   }
 
   std::ostream &
   serialise(std::ostream &os) const {
-    mp::write_array_size(os, 2);
+    mp::write_array_size(os, 3);
     mp::write(os, current);
     mp::write(os, total);
+    mp::write(os, lastupdate);
     return os;
   }
 };

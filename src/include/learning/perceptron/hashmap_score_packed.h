@@ -94,14 +94,14 @@ operator <<(std::ostream &os, const CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &s
 template <typename T, bool IS_INTEGRAL_OR_FLOAT>
 struct __MessagePackIO {
   static inline std::istream &
-  read(std::istream &is, T &key) {
-    return key.deserialise(is);
+  read(std::istream &is, T &key, bool preserveLastUpdate) {
+    return key.deserialise(is, preserveLastUpdate);
   }
 
   template <typename CEntry>
   static inline std::istream &
-  read(std::istream &is, T &key, CMemoryPool<CEntry> &pool, CEntry **free) {
-    return key.deserialise(is, pool, free);
+  read(std::istream &is, T &key, bool preserveLastUpdate, CMemoryPool<CEntry> &pool, CEntry **free) {
+    return key.deserialise(is, preserveLastUpdate, pool, free);
   }
 
   static inline std::ostream &
@@ -113,7 +113,7 @@ struct __MessagePackIO {
 template <typename T>
 struct __MessagePackIO<T, true> {
   static inline std::istream &
-  read(std::istream &is, T &key) {
+  read(std::istream &is, T &key, bool preserveLastUpdate) {
     mp::read(is, key);
     return is;
   }
@@ -144,7 +144,7 @@ protected:
   inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other, _pool, &_free); }
   inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType added, const int round) { item.updateCurrent(index, added, round, _pool, &_free); }
 
-  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item, _pool, &_free); }
+  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item, const bool preserveLastUpdate) { return _MessagePackIO<CPackedScore>::read(is, item, preserveLastUpdate, _pool, &_free); }
 };
 
 template <typename CPackedScore>
@@ -159,7 +159,7 @@ protected:
   inline void _itemCombineAdd(CPackedScore &item, const CPackedScore &other) { item.combineAdd(other); }
   inline void _itemUpdateCurrent(CPackedScore &item, const unsigned int index, const ScoreType added, const int round) { item.updateCurrent(index, added, round); }
 
-  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item) { return _MessagePackIO<CPackedScore>::read(is, item); }
+  inline std::istream &_itemDeserialise(std::istream &is, CPackedScore &item, const bool preserveLastUpdate) { return _MessagePackIO<CPackedScore>::read(is, item, preserveLastUpdate); }
 };
 
 template <typename CPackedScore>
@@ -312,7 +312,7 @@ public:
 
 
   std::istream &
-  deserialise(std::istream &is) {
+  deserialise(std::istream &is, const bool preserveLastUpdate) {
     if (!is)
       return is ;
 
@@ -325,8 +325,8 @@ public:
     K key;
     const uint32_t npairs = mp::read_map_size(is);
     for (uint32_t i = 0; i != npairs; ++i) {
-      _MessagePackIO<K>::read(is, key);
-      this->_itemDeserialise(is, (*this)[key]);
+      _MessagePackIO<K>::read(is, key, preserveLastUpdate);
+      this->_itemDeserialise(is, (*this)[key], preserveLastUpdate);
     }
 
     return is;

@@ -122,6 +122,8 @@ public:
   using DenseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreArray<SCORE_TYPE, action::MAX>>;
   using SparseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreList<SCORE_TYPE, action::MAX>>;
 
+  const bool m_preserveLastUpdate;
+
   SparseFeatureMap m_mapSTw;
   DenseFeatureMap m_mapSTt;
   SparseFeatureMap m_mapSTwt;
@@ -229,8 +231,8 @@ public:
   SparseFeatureMap m_mapN1f;
 
 public:
-  CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
-  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain);
+  CWeight(const std::string &sInputPath, bool bTrain, bool preserveLastUpdate=false) : CWeight(sInputPath, sInputPath, bTrain, preserveLastUpdate) { }
+  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool preserveLastUpdate=false);
   virtual ~CWeight() { }
 
   virtual void loadScores() override;
@@ -244,8 +246,10 @@ public:
 
 
 template <typename SCORE_TYPE>
-CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain) :
+CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool preserveLastUpdate) :
     CWeightBase(sInputPath, sOutputPath, bTrain),
+    m_preserveLastUpdate(preserveLastUpdate),
+
     m_mapSTw("StackWord", DEP_TABLE_SIZE),
     m_mapSTt("StackTag", DEP_TABLE_SIZE),
     m_mapSTwt("StackWordTag", DEP_TABLE_SIZE),
@@ -374,7 +378,7 @@ CWeight<SCORE_TYPE>::loadScores() {
 #endif
 
   // Read in each of the feature tables.
-  iterate_templates( , .deserialise(in); );
+  iterate_templates( , .deserialise(in, m_preserveLastUpdate); );
 
   // Read in whether or not rules were used.
   setRules(mp::read_bool(in));

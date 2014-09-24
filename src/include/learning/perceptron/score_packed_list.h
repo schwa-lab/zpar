@@ -129,11 +129,11 @@ public:
   }
 
   std::istream &
-  deserialise(std::istream &is, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
+  deserialise(std::istream &is, const bool preserveLastUpdate, CMemoryPool<PoolItemType> &pool, PoolItemType **free) {
     const uint32_t nitems = mp::read_map_size(is);
     for (uint32_t n = 0; n != nitems; ++n) {
       uint32_t key = mp::read_uint(is);
-      scores.get(key, pool, free).deserialise(is);
+      scores.get(key, pool, free).deserialise(is, preserveLastUpdate);
     }
     return is;
   }

@@ -72,11 +72,11 @@ public:
   const CScore<ScoreType> &operator [](const unsigned int index) const { return scores[index]; }
 
   std::istream &
-  deserialise(std::istream &is) {
+  deserialise(std::istream &is, const bool preserveLastUpdate) {
     assert(PACKED_SIZE > 0);
     const uint32_t nitems = mp::read_array_size(is);
     for (unsigned i = 0; i != nitems; ++i)
-      (*this)[i].deserialise(is);
+      (*this)[i].deserialise(is, preserveLastUpdate);
     return is;
   }
 
