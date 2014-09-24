@@ -24,7 +24,7 @@ const unsigned DEP_LABEL_COUNT=CDependencyLabel::MAX_COUNT;
 const unsigned DEP_LABEL_COUNT = 1;
 #endif
 
-typedef int64_t SCORE_TYPE ;
+typedef double SCORE_TYPE ;
 #include "action.h"
 
 // supertag
