@@ -8,6 +8,7 @@
  * Computing Laboratory, Oxford. 2007.8                 *
  *                                          *
  ****************************************************************/
+#include <atomic>
 #include <thread>
 
 #include "definitions.h"
@@ -16,6 +17,35 @@
 #include "writer.h"
 
 using namespace TARGET_LANGUAGE;
+
+class SpinBarrier {
+private:
+  const unsigned int _nthreads;
+  std::atomic<unsigned int> _nwaiting;
+  std::atomic<unsigned int> _nsteps;
+
+public:
+  explicit SpinBarrier(unsigned int nthreads) : _nthreads(nthreads), _nwaiting(0), _nsteps(0) { }
+  SpinBarrier(const SpinBarrier &o) : _nthreads(o._nthreads), _nwaiting(o._nsteps.load()), _nsteps(o._nsteps.load()) { }
+
+  bool
+  wait(void) {
+    // What step number are we currently at.
+    const unsigned int step = _nsteps.load();
+
+    if (_nwaiting.fetch_add(1) == _nthreads - 1) {
+      // The last thread has arrived.
+      _nwaiting.store(0);
+      _nsteps.fetch_add(1);
+      return true;
+    }
+    else {
+      while (_nsteps.load() == step) { /* spin lock */ }
+      return false;
+    }
+  }
+};
+
 
 static void
 read_input_file(const std::string &path, std::vector<CDependencyParse *> &sentences) {
@@ -139,35 +169,99 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   // Arrays of per-thread data.
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
   std::vector<unsigned int> nerrors(nthreads);
+  std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> weights(nthreads);
+  SpinBarrier barriers[3] = {SpinBarrier(nthreads), SpinBarrier(nthreads), SpinBarrier(nthreads)};
+
+  // Allocate the initial weights per thread.
+  for (unsigned int t = 0; t != nthreads; ++t)
+    weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true);
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t) {
     // Construct the parser.
-    CDepParser parser(sModelPath, temp_model_path(sModelPath, t), true, bCoNLL);
+    CDepParser parser(weights[t], bCoNLL);
     parser.setRules(bRules);
 #ifdef SUPPORT_META_FEATURE_DEFINITION
     if (!sMetaPath.empty())
       parser.loadMeta(sMetaPath);
 #endif
+
+    const size_t max_n = sharded_sentences[0].size();
     const std::vector<CDependencyParse *> &sentences = sharded_sentences[t];
 
     // Train on each sentence.
-    for (auto n = 0; n != sentences.size(); ++n) {
-      CDependencyParse &sent = *sentences[n];
-      if (bExtract) {
+    for (size_t n = 0; n != max_n; ++n) {
+      // Train on the next sentence in this shard, if it exists.
+      if (n < sentences.size()) {
+        CDependencyParse &sent = *sentences[n];
+        if (bExtract) {
 #ifdef SUPPORT_FEATURE_EXTRACTION
-        parser.extract_features(sent);
+          parser.extract_features(sent);
 #else
-        ASSERT(false, "Internal error: feature extract not allowed but option set.");
+          ASSERT(false, "Internal error: feature extract not allowed but option set.");
 #endif
+        }
+        else {
+          parser.train(sent, n + 1);
+        }
       }
-      else {
-        parser.train(sent, n + 1);
+
+      // Should we mix weights?
+      if (nthreads > 1 && ((n % 100 == 0) || (n == max_n - 1))) {
+        // Add the weights in parallel.
+        for (unsigned int delta = 1; ; delta *= 2) {
+          if (t == 0)
+            std::cout << " | " << std::flush;
+
+          // Tree merge the appropriate weights.
+          if (t % (2*delta) == 0 && t + delta < nthreads) {
+            weights[t]->combineAdd(*weights[t + delta]);
+            std::cout << "." << std::flush;
+          }
+
+          // Wait for all threads to reach here.
+          barriers[0].wait();
+
+          // Have we combined all of the weights?
+          if (delta >= nthreads)
+            break;
+        }
+        if (t == 0)
+          std::cout << " > " << std::flush;
+
+        // Divide through the 0th one and delete all other ones.
+        if (t == 0) {
+          weights[0]->combineDiv(nthreads);
+          weights[0]->saveScores();
+          std::rename(temp_model_path(sModelPath, 0).c_str(), sModelPath.c_str());
+          std::cout << "<" << std::flush;
+        }
+        else {
+          delete weights[t];
+          std::remove(temp_model_path(sModelPath, t).c_str());
+        }
+
+        // Wait for all threads to reach here.
+        barriers[1].wait();
+        if (t == 0)
+          std::cout << " > " << std::flush;
+
+        // FIXME distribute back out to the others
+        if (t != 0) {
+          weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true);
+          parser.setWeights(weights[t]);
+        }
+
+        // Wait for all threads to reach here.
+        barriers[2].wait();
+        if (t == 0)
+          std::cout << " < " << std::flush;
       }
     }
 
     // Tell the parser that this training round has finished.
     parser.finishtraining();
+    parser.setWeights(nullptr);
     nerrors[t] = parser.getTotalTrainingErrors();
   };
 
@@ -175,8 +269,8 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   // Run each iteration of the perceptron learning.
   for (unsigned int iteration = 1; iteration <= niterations; ++iteration) {
     // Shuffle the sentence order between each iteration.
-    const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::shuffle(all_sentences.begin(), all_sentences.end(), std::default_random_engine(seed));
+    //const auto seed = std::chrono::system_clock::now().time_since_epoch().count();
+    //std::shuffle(all_sentences.begin(), all_sentences.end(), std::default_random_engine(seed));
 
     // Partition the sentences into shards.
     shard_sentences(all_sentences, sharded_sentences, nthreads);
@@ -195,13 +289,15 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     // Combine the partial models together.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Combining partial models." << std::endl;
-    combine_partial_models(sModelPath, nerrors, nthreads);
+    combine_partial_models(sModelPath, nerrors, 1);
 
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Completed." << std::endl;
   }
 
   // Free up memory.
-  for (CDependencyParse *sent : all_sentences)
+  for (auto &weight : weights)
+    delete weight;
+  for (auto &sent : all_sentences)
     delete sent;
 }
 

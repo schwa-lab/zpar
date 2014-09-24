@@ -76,8 +76,8 @@ private:
    int m_nScoreIndex;
 
 public:
-   CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL=false) : CDepParser(sInputPath, sInputPath, bTrain, bCoNLL) { }
-   CDepParser(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool bCoNLL=false);
+   CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL=false);
+   CDepParser(depparser::CWeight<depparser::SCORE_TYPE> *weights, bool bCoNLL=false);
    ~CDepParser();
 
 public:

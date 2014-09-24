@@ -26,13 +26,22 @@ const CTaggedWord<CTag, TAG_SEPARATOR> g_emptyTaggedWord;
  *
  *==============================================================*/
 
-CDepParser::CDepParser(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool bCoNLL) : CDepParserBase(bTrain, bCoNLL) {
+CDepParser::CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL) : CDepParserBase(bTrain, bCoNLL) {
   m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
   m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
-  m_weights = new depparser::CWeight<depparser::SCORE_TYPE>(sInputPath, sOutputPath, bTrain );
+  m_weights = new depparser::CWeight<depparser::SCORE_TYPE>(sInputPath, sInputPath, bTrain);
   m_nTrainingRound = 0;
   m_nTotalErrors = 0;
   m_nScoreIndex = bTrain ? CScore<depparser::SCORE_TYPE>::eNonAverage : CScore<depparser::SCORE_TYPE>::eAverage;
+}
+
+CDepParser::CDepParser(depparser::CWeight<depparser::SCORE_TYPE> *weights, bool bCoNLL) : CDepParserBase(true, bCoNLL) {
+  m_Agenda = new CAgendaBeam<depparser::CStateItem>(AGENDA_SIZE);
+  m_Beam = new CAgendaSimple<depparser::action::CScoredAction>(AGENDA_SIZE);
+  m_weights = weights;
+  m_nTrainingRound = 0;
+  m_nTotalErrors = 0;
+  m_nScoreIndex = m_bTrain ? CScore<depparser::SCORE_TYPE>::eNonAverage : CScore<depparser::SCORE_TYPE>::eAverage;
 }
 
 CDepParser::~CDepParser() {

@@ -57,6 +57,9 @@ public:
       // set supertags before parsing
       m_supertags = supertags;
    }
+   void setWeights(depparser::CWeightBase *weights) {
+     m_weights = weights;
+   }
 
 public:
 
