@@ -11,13 +11,16 @@ HEAD_INDEX = 2
 LABEL_INDEX = 3
 punct = re.compile(r"^[,?!:;]$|^-LRB-$|^-RRB-$|^[.]+$|^[`]+$|^[']+$")
 
-def next_sent(file):
+def next_sent(file, unlabelled=False):
   out = []
   for line in file:
     line = line.strip()
     if line:
       # if line[0].isdigit():
-        out.append(line.split("\t"))
+        if unlabelled:
+            out.append(line.split("\t") + ['_'])
+        else:
+            out.append(line.split("\t"))
     elif out:
       yield out
       out = []
@@ -25,8 +28,8 @@ def next_sent(file):
     yield out
 
 def main(args):
-    test_iter = next_sent(args.test_file)
-    gold_iter = next_sent(args.gold_file)
+    test_iter = next_sent(args.test_file, args.unlabelled)
+    gold_iter = next_sent(args.gold_file, args.unlabelled)
 
     gold_sent = None
     test_words = []
@@ -210,9 +213,11 @@ def main(args):
     evaluated_uarcs = total_uarcs - skipped_uarcs
     evaluated_larcs = total_larcs - skipped_larcs
     print("UAS: {:.2f} ({} / {})".format(correct_uarcs / float(evaluated_uarcs) * 100, correct_uarcs, evaluated_uarcs))
-    print("LAS: {:.2f} ({} / {})".format(correct_larcs / float(evaluated_larcs) * 100, correct_larcs, evaluated_larcs))
+    if not args.unlabelled:
+      print("LAS: {:.2f} ({} / {})".format(correct_larcs / float(evaluated_larcs) * 100, correct_larcs, evaluated_larcs))
     print("Unlabelled sentence accuracy {:.2f} ({} / {})".format(total_ucorrect_sentences / float(total_sentences) * 100, total_ucorrect_sentences, total_sentences))
-    print("Labelled sentence accuracy {:.2f} ({} / {})".format(total_lcorrect_sentences / float(total_sentences) * 100, total_lcorrect_sentences, total_sentences))
+    if not args.unlabelled:
+      print("Labelled sentence accuracy {:.2f} ({} / {})".format(total_lcorrect_sentences / float(total_sentences) * 100, total_lcorrect_sentences, total_sentences))
     if args.oracle:
         print("Average oracle unlabeled parse rank: {:.2f} (Min: {}, Max: {})".format(sum(oracle_uranks) / float(len(oracle_uranks)), min(oracle_uranks), max(oracle_uranks)))
         print("Average oracle labeled parse rank: {:.2f} (Min: {}, Max: {})".format(sum(oracle_lranks) / float(len(oracle_lranks)), min(oracle_lranks), max(oracle_lranks)))
@@ -232,6 +237,7 @@ if __name__ == "__main__":
     ap.add_argument("--oracle", action="store_true", default=False, help="Perform oracle evaluation of nbest output (by default evaluates only the first parse)")
     ap.add_argument("--conll", action="store_true", default=False, help="Use CoNLL format (uses zpar tab-output by default)")
     ap.add_argument("--label-errors", action="store_true", default=False, help="Print an error summary by label")
+    ap.add_argument("-u", "--unlabelled", action="store_true", default=False, help="Evaluate unlabelled dependency output")
 
     args = ap.parse_args()
     if args.conll:

@@ -6,8 +6,7 @@ namespace action {
 // SH RE AL AR PR [AL+LABEL] AR+LABEL
 enum STACK_ACTION { NO_ACTION=0, SHIFT, REDUCE, ARC_LEFT, ARC_RIGHT, POP_ROOT, LABEL_AL_FIRST, LABEL_AR_FIRST=LABEL_AL_FIRST+DEP_LABEL_COUNT-1, MAX=LABEL_AR_FIRST+DEP_LABEL_COUNT-1 };
 
-#ifdef LABELED
-static unsigned encodeAction(const STACK_ACTION &action, const unsigned &label=0) {
+static unsigned encodeAction(const STACK_ACTION &action, const unsigned &label) {
    assert(label<DEP_LABEL_COUNT);
    if (action==ARC_LEFT) {
       if (label==0)
@@ -43,7 +42,9 @@ static unsigned getLabel(const unsigned &action) {
    else
       return action-LABEL_AR_FIRST+1;
 }
-#endif
+static unsigned encodeAction(const STACK_ACTION &action) {
+    return encodeAction(action, 0);
+}
 
 struct CScoredAction {
    unsigned action;
