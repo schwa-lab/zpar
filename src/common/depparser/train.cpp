@@ -84,7 +84,7 @@ temp_model_path(const std::string &sModelPath, const unsigned int thread) {
 
 
 static void
-combine_partial_models(const std::string &sModelPath, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
+combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> &weights, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
   // Compute the total number of errors.
   const unsigned int nerrors_total = std::accumulate(nerrors.begin(), nerrors.end(), 0);
   std::cout << "errors=" << nerrors_total << std::flush;
@@ -97,16 +97,8 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
   if (nthreads > 1) {
     // Function for combining two sets of weights together.
     const auto &fn = [&](const unsigned int t, const unsigned int delta) {
-      // Add weights `b` into weights `a`.
-      const std::string path_a = temp_model_path(sModelPath, t);
-      const std::string path_b = temp_model_path(sModelPath, t + delta);
-      depparser::CWeight<int64_t> a(path_a, true);
-      depparser::CWeight<int64_t> b(path_b, true);
-      a.combineAdd(b);
-      a.saveScores();
-
-      // Remove weights `b`.
-      std::remove(path_b.c_str());
+      weights[t]->combineAdd(*weights[t + delta]);
+      delete weights[t + delta];
       std::cout << "." << std::flush;
     };
 
@@ -129,13 +121,13 @@ combine_partial_models(const std::string &sModelPath, const std::vector<unsigned
     std::cout << " > " << std::flush;
 
     // Divive through the resultant summed weights by the number of processes (the last step in the averaging).
-    depparser::CWeight<int64_t> summed(temp_model_path_0, true);
-    summed.combineDiv(nthreads);
-    summed.saveScores();
+    weights[0]->combineDiv(nthreads);
+    weights[0]->saveScores();
     std::cout << "<" << std::flush;
   }
 
   // Rename the 0th partial weights file to the main model file.
+  delete weights[0];
   std::rename(temp_model_path_0.c_str(), sModelPath.c_str());
   std::cout << std::endl;
 }
@@ -170,11 +162,9 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
   std::vector<unsigned int> nerrors(nthreads);
   std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> weights(nthreads);
+#if 0
   SpinBarrier barrier(nthreads);
-
-  // Allocate the initial weights per thread.
-  for (unsigned int t = 0; t != nthreads; ++t)
-    weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, true);
+#endif
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t) {
@@ -206,6 +196,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
         }
       }
 
+#if 0
       // Should we mix weights?
       const bool is_last = n == max_n - 1;
       if (nthreads > 1 && n != 0 && ((n % (4 * nthreads) == 0) || is_last)) {
@@ -252,8 +243,10 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
           //return;
         //}
       }
+#endif
     }
 
+#if 0
     // Tell the parser that this training round has finished.
     if (nthreads == 1) {
       parser.finishtraining();
@@ -265,6 +258,11 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     if (t == 0 && nthreads > 1)
       std::cout << "X" << std::endl;
+#endif
+
+    parser.finishtraining();
+    parser.setWeights(nullptr);
+    nerrors[t] = parser.getTotalTrainingErrors();
   };
 
 
@@ -276,6 +274,10 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     // Partition the sentences into shards.
     shard_sentences(all_sentences, sharded_sentences, nthreads);
+
+    // Allocate the weights.
+    for (unsigned int t = 0; t != nthreads; ++t)
+      weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, true);
 
     // Run this iteration over the sharded sentences.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();
@@ -291,14 +293,11 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     // Combine the partial models together.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Combining partial models." << std::endl;
-    //combine_partial_models(sModelPath, nerrors, nthreads);
-
+    combine_partial_models(sModelPath, weights, nerrors, nthreads);
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Completed." << std::endl;
   }
 
   // Free up memory.
-  for (auto &weight : weights)
-    delete weight;
   for (auto &sent : all_sentences)
     delete sent;
 }
