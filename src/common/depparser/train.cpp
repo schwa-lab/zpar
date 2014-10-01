@@ -8,7 +8,6 @@
  * Computing Laboratory, Oxford. 2007.8                 *
  *                                          *
  ****************************************************************/
-#include <atomic>
 #include <thread>
 
 #include "definitions.h"
@@ -17,34 +16,6 @@
 #include "writer.h"
 
 using namespace TARGET_LANGUAGE;
-
-class SpinBarrier {
-private:
-  const unsigned int _nthreads;
-  std::atomic<unsigned int> _nwaiting;
-  std::atomic<unsigned int> _nsteps;
-
-public:
-  explicit SpinBarrier(unsigned int nthreads) : _nthreads(nthreads), _nwaiting(0), _nsteps(0) { }
-  SpinBarrier(const SpinBarrier &o) : _nthreads(o._nthreads), _nwaiting(o._nsteps.load()), _nsteps(o._nsteps.load()) { }
-
-  bool
-  wait(void) {
-    // What step number are we currently at.
-    const unsigned int step = _nsteps.load();
-
-    if (_nwaiting.fetch_add(1) == _nthreads - 1) {
-      // The last thread has arrived.
-      _nwaiting.store(0);
-      _nsteps.fetch_add(1);
-      return true;
-    }
-    else {
-      while (_nsteps.load() == step) { /* spin lock */ }
-      return false;
-    }
-  }
-};
 
 
 static void
@@ -94,7 +65,6 @@ combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWe
   std::remove(sModelPath.c_str());
 
   // If we only have one thread, don't do anything complex.
-#if 0
   if (nthreads > 1) {
     // Function for combining two sets of weights together.
     const auto &fn = [&](const unsigned int t, const unsigned int delta) {
@@ -126,7 +96,6 @@ combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWe
     weights[0]->saveScores();
     std::cout << "<" << std::flush;
   }
-#endif
   // Rename the 0th partial weights file to the main model file.
   delete weights[0];
   std::rename(temp_model_path_0.c_str(), sModelPath.c_str());
@@ -163,9 +132,6 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
   std::vector<unsigned int> nerrors(nthreads);
   std::vector<depparser::CWeight *> weights(nthreads);
-#if 0
-  SpinBarrier barrier(nthreads);
-#endif
 
   // The per-thread training function.
   const auto &fn = [&](const unsigned int t) {
@@ -196,70 +162,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
           parser.train(sent, n + 1);
         }
       }
-
-#if 0
-      // Should we mix weights?
-      const bool is_last = n == max_n - 1;
-      if (nthreads > 1 && n != 0 && ((n % (4 * nthreads) == 0) || is_last)) {
-        weights[t]->computeAverageFeatureWeights(parser.getTrainingRound());
-        weights[t]->saveScores();
-        barrier.wait();
-
-        // Add the weights in parallel.
-        for (unsigned int delta = 1; ; delta *= 2) {
-          // Tree merge the appropriate weights.
-          if (t % (2*delta) == 0 && t + delta < nthreads) {
-            weights[t]->combineAdd(*weights[t + delta]);
-            delete weights[t + delta];
-          }
-
-          // Have we combined all of the weights?
-          barrier.wait();
-          if (delta >= nthreads)
-            break;
-        }
-
-        // Divide through the 0th one and delete all other ones.
-        if (t == 0) {
-          // Only divide at the end.
-          weights[0]->combineDiv(nthreads);
-          weights[0]->saveScores();
-          delete weights[0];
-          std::remove(sModelPath.c_str());
-          std::rename(temp_model_path(sModelPath, 0).c_str(), sModelPath.c_str());
-        }
-
-        // Distribute back out to the others
-        barrier.wait();
-        weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, !is_last);
-        parser.setWeights(weights[t]);
-        barrier.wait();
-
-        if (t == 0)
-          std::cout << "x" << std::flush;
-
-        //if (n % 1000 == 0) {
-          //parser.setWeights(nullptr);
-          //nerrors[t] = parser.getTotalTrainingErrors();
-          //return;
-        //}
-      }
-#endif
     }
-
-#if 0
-    // Tell the parser that this training round has finished.
-    if (nthreads == 1) {
-      parser.finishtraining();
-      std::remove(sModelPath.c_str());
-      std::rename(temp_model_path(sModelPath, 0).c_str(), sModelPath.c_str());
-    }
-    parser.setWeights(nullptr);
-    nerrors[t] = parser.getTotalTrainingErrors();
-
-    if (t == 0 && nthreads > 1)
-      std::cout << "X" << std::endl;
-#endif
 
     parser.finishtraining();
     parser.setWeights(nullptr);

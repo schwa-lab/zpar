@@ -136,8 +136,6 @@ CWeight::addWeighted(const double mu, const CWeight &other) {
 
 void
 CWeight::computeAverageFeatureWeights(const unsigned int iteration) {
-  //for (auto &entry : _weights)
-    //entry.updateAverage(iteration);
   _weights.update_average(iteration);
 }
 
@@ -145,6 +143,18 @@ CWeight::computeAverageFeatureWeights(const unsigned int iteration) {
 void
 CWeight::debugUsage(void) const {
   LOG(INFO) << "[CWeight::debugUsage] size=" << _weights.size() << " load_factor=" << _weights.load_factor() << std::endl;
+}
+
+
+void
+CWeight::combineAdd(const CWeight &o) {
+  _weights.combine_add(o._weights);
+}
+
+
+void
+CWeight::combineDiv(const unsigned int n) {
+  _weights.combine_div(n);
 }
 
 }  // namespace depparser

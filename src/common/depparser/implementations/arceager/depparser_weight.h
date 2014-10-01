@@ -9,7 +9,7 @@ namespace depparser {
 
 
 template <size_t INDEX_BITS=24, Label NLABELS=action::MAX>
-class FeatureHashtableDO {
+class FeatureHashtable {
 public:
   static constexpr const Label PADDED_NLABELS = _MAKE_ALIGNED_32<SCORE_TYPE, NLABELS>::VALUE;
 
@@ -28,6 +28,8 @@ public:
 private:
   class Chain {
   private:
+    using aligned_score_type = SCORE_TYPE __attribute__((aligned(32)));
+
     uint64_t _hash;
     SCORE_TYPE *_current;
     SCORE_TYPE *_total;
@@ -46,6 +48,17 @@ private:
       std::memset(_total, 0, PADDED_NLABELS*sizeof(SCORE_TYPE));
       std::memset(_last_updated, 0, NLABELS*sizeof(unsigned int));
     }
+    Chain(const Chain &o, schwa::Pool &current_pool, schwa::Pool &total_pool, schwa::Pool &updated_pool) :
+        _hash(o._hash),
+        _current(current_pool.alloc<SCORE_TYPE *>(PADDED_NLABELS*sizeof(SCORE_TYPE))),
+        _total(total_pool.alloc<SCORE_TYPE *>(PADDED_NLABELS*sizeof(SCORE_TYPE))),
+        _last_updated(updated_pool.alloc<unsigned int *>(NLABELS*sizeof(unsigned int))),
+        _next(nullptr)
+      {
+      std::memcpy(_current, o._current, PADDED_NLABELS*sizeof(SCORE_TYPE));
+      std::memcpy(_total, o._total, PADDED_NLABELS*sizeof(SCORE_TYPE));
+      std::memcpy(_last_updated, o._last_updated, NLABELS*sizeof(unsigned int));
+    }
     ~Chain(void) { }
 
     inline uint64_t hash(void) const { return _hash; }
@@ -55,8 +68,7 @@ private:
     inline void set_next(Chain *next) { _next = next; }
 
     inline void
-    for_each_label_current(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
-      using aligned_score_type = SCORE_TYPE __attribute__((aligned(32)));
+    get_score_current(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
       const aligned_score_type *const __restrict__ src = _current;
       aligned_score_type *const __restrict__ dst = &out[0];
       for (Label l = 0; l != PADDED_NLABELS; ++l)
@@ -64,8 +76,7 @@ private:
     }
 
     inline void
-    for_each_label_total(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
-      using aligned_score_type = SCORE_TYPE __attribute__((aligned(32)));
+    get_score_total(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
       const aligned_score_type *const __restrict__ src = _total;
       aligned_score_type *const __restrict__ dst = &out[0];
       for (Label l = 0; l != PADDED_NLABELS; ++l)
@@ -87,6 +98,28 @@ private:
       }
       _current[label] += added;
       _total[label] += added;
+    }
+
+    void
+    combine_add(const Chain &o) {
+      const aligned_score_type *const __restrict__ current_src = o._current;
+      const aligned_score_type *const __restrict__ total_src = o._total;
+      aligned_score_type *const __restrict__ current_dst = _current;
+      aligned_score_type *const __restrict__ total_dst = _total;
+      for (Label l = 0; l != PADDED_NLABELS; ++l) {
+        current_dst[l] += current_src[l];
+        total_dst[l] += total_src[l];
+      }
+    }
+
+    void
+    combine_div(const unsigned int n) {
+      aligned_score_type *const __restrict__ current = _current;
+      aligned_score_type *const __restrict__ total = _total;
+      for (Label l = 0; l != PADDED_NLABELS; ++l) {
+        current[l] /= n;
+        total[l] /= n;
+      }
     }
 
     void
@@ -181,13 +214,13 @@ private:
 
   template <typename CP, typename HASHER>
   inline void
-  _for_each_label_current(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+  _get_score_current(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
     const uint64_t hash = _hash(type, cp, hasher);
     const size_t index = hash & TABLE_INDEX_MASK;
 
     for (const Chain *chain = _table[index]; chain != nullptr; chain = chain->next()) {
       if (chain->hash() == hash) {
-        chain->for_each_label_current(out);
+        chain->get_score_current(out);
         return;
       }
     }
@@ -195,14 +228,48 @@ private:
 
   template <typename CP, typename HASHER>
   inline void
-  _for_each_label_total(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+  _get_score_total(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
     const uint64_t hash = _hash(type, cp, hasher);
     const size_t index = hash & TABLE_INDEX_MASK;
 
     for (const Chain *chain = _table[index]; chain != nullptr; chain = chain->next()) {
       if (chain->hash() == hash) {
-        chain->for_each_label_total(out);
+        chain->get_score_total(out);
         return;
+      }
+    }
+  }
+
+  void
+  _combine_add(const FeatureHashtable &o) {
+    // For each bucket...
+    for (size_t index = 0; index != TABLE_SIZE; ++index) {
+      // For each chain in the others bucket...
+      for (const Chain *c = o._table[index]; c != nullptr; c = c->next()) {
+        const uint64_t hash = c->hash();
+
+        // Find the chain in this's bucket.
+        bool found = false;
+        Chain *prev = nullptr, *chain;
+        for (chain = _table[index]; chain != nullptr; chain = chain->next()) {
+          if (chain->hash() == hash) {
+            chain->combine_add(*c);
+            found = true;
+            break;
+          }
+          prev = chain;
+        }
+
+        // Insert the chain if not found.
+        if (!found) {
+          ++_size;
+          chain = _chain_pool.alloc<Chain *>(sizeof(Chain));
+          new (chain) Chain(*c, _current_pool, _total_pool, _updated_pool);
+          if (prev == nullptr)
+            _table[index] = chain;
+          else
+            prev->set_next(chain);
+        }
       }
     }
   }
@@ -216,7 +283,7 @@ private:
   size_t _size;
 
 public:
-  explicit FeatureHashtableDO(size_t chain_pool_block_size=DEFAULT_CHAIN_POOL_BLOCK_SIZE, size_t data_pool_block_size=DEFAULT_DATA_POOL_BLOCK_SIZE) :
+  explicit FeatureHashtable(size_t chain_pool_block_size=DEFAULT_CHAIN_POOL_BLOCK_SIZE, size_t data_pool_block_size=DEFAULT_DATA_POOL_BLOCK_SIZE) :
       _chain_pool(chain_pool_block_size),
       _current_pool(data_pool_block_size),
       _total_pool(data_pool_block_size),
@@ -226,7 +293,7 @@ public:
     {
     std::memset(_table, 0, TABLE_SIZE*sizeof(Chain *));
   }
-  ~FeatureHashtableDO(void) {
+  ~FeatureHashtable(void) {
     delete [] _table;
   }
 
@@ -254,16 +321,28 @@ public:
 
   template <typename CP, typename HASHER=Hasher<CP>>
   void
-  for_each_label_current(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
+  get_score_current(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
     static_assert(sizeof(typename HASHER::result_type) == 8, "64-bit hash function required");
-    _for_each_label_current(type, contextual_predicate, hasher, out);
+    _get_score_current(type, contextual_predicate, hasher, out);
   }
 
   template <typename CP, typename HASHER=Hasher<CP>>
   void
-  for_each_label_total(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
+  get_score_total(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
     static_assert(sizeof(typename HASHER::result_type) == 8, "64-bit hash function required");
-    _for_each_label_total(type, contextual_predicate, hasher, out);
+    _get_score_total(type, contextual_predicate, hasher, out);
+  }
+
+  void
+  combine_add(const FeatureHashtable &o) {
+    _combine_add(o);
+  }
+
+  void
+  combine_div(const unsigned int n) {
+    for (size_t index = 0; index != TABLE_SIZE; ++index)
+      for (Chain *chain = _table[index]; chain != nullptr; chain = chain->next())
+        chain->combine_div(n);
   }
 
 
@@ -333,7 +412,7 @@ public:
   }
 
 private:
-  SCHWA_DISALLOW_COPY_AND_ASSIGN(FeatureHashtableDO);
+  SCHWA_DISALLOW_COPY_AND_ASSIGN(FeatureHashtable);
 };
 
 
@@ -426,7 +505,7 @@ public:
   static const FeatureType N1f;
 
 protected:
-  FeatureHashtableDO<> _weights;
+  FeatureHashtable<> _weights;
 
 public:
   CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
@@ -440,6 +519,9 @@ public:
   void computeAverageFeatureWeights(unsigned int iteration);
   void debugUsage(void) const;
 
+  void combineAdd(const CWeight &o);
+  void combineDiv(unsigned int n);
+
   template <typename CP>
   void getScore(const FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, ScoreAverage sa);
 
@@ -452,9 +534,9 @@ template <typename CP>
 inline void
 CWeight::getScore(const FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const ScoreAverage sa) {
   if (sa == SCORE_NON_AVERAGE)
-    _weights.for_each_label_current(type, cp, out);
+    _weights.get_score_current(type, cp, out);
   else
-    _weights.for_each_label_total(type, cp, out);
+    _weights.get_score_total(type, cp, out);
 }
 
 
