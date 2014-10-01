@@ -36,6 +36,7 @@
 #include <set>
 #include <sstream>
 #include <stack>
+#include <stdexcept>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -43,6 +44,7 @@
 #include <utility>
 #include <vector>
 
+#include <schwa/io/logging.h>
 #include <schwa/msgpack.h>
 
 namespace mp = ::schwa::msgpack;
@@ -88,6 +90,45 @@ operator >>(std::istream &is, std::tuple<T1, T2, T3> &tuple) {
   return is;
 }
 
+
+using Label = uint16_t;
+
+
+class FeatureType {
+private:
+  uint8_t _id;
+
+public:
+  explicit FeatureType(uint8_t id) : _id(id) { }
+  FeatureType(const FeatureType &o) : _id(o._id) { }
+  FeatureType(const FeatureType &&o) : _id(o._id) { }
+
+  inline uint8_t id(void) const { return _id; }
+
+  inline FeatureType &
+  operator =(const FeatureType &o) {
+    _id = o._id;
+    return *this;
+  }
+};
+
+
+
+enum ScoreAverage { SCORE_NON_AVERAGE=0, SCORE_AVERAGE=1 };
+
+
+template <bool, typename SCORE_TYPE, Label N>
+struct __MAKE_ALIGNED_32 {
+  static constexpr const Label VALUE = N;
+};
+
+template <typename SCORE_TYPE, Label N>
+struct __MAKE_ALIGNED_32<false, SCORE_TYPE, N> {
+  static constexpr const Label VALUE = N + (32 - ((N*sizeof(SCORE_TYPE)) % 32))/sizeof(SCORE_TYPE);
+};
+
+template <typename SCORE_TYPE, Label N>
+struct _MAKE_ALIGNED_32 : public __MAKE_ALIGNED_32<(N*sizeof(SCORE_TYPE)) % 32 == 0, SCORE_TYPE, N> { };
 
 /*===============================================================
  *

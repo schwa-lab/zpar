@@ -1,517 +1,468 @@
-// Copyright (C) University of Oxford 2010
-/***************************************************************
- *
- * weight.h - the dependency parser weights
- *
- * Yue Zhang, 2007.8 - 2008.1
- *
- ***************************************************************/
 #ifndef _DEPPARSER_WEIGHTS_H
 #define _DEPPARSER_WEIGHTS_H
 
 #include "depparser_weight_base.h"
 
-#define iterate_templates(left, right) \
-  left(m_mapSTw)right\
-  left(m_mapSTt)right\
-  left(m_mapSTwt)right\
-  left(m_mapN0w)right\
-  left(m_mapN0t)right\
-  left(m_mapN0wt)right\
-  left(m_mapN1w)right\
-  left(m_mapN1t)right\
-  left(m_mapN1wt)right\
-  left(m_mapN2w)right\
-  left(m_mapN2t)right\
-  left(m_mapN2wt)right\
-  left(m_mapSTHw)right\
-  left(m_mapSTHt)right\
-  left(m_mapSTi)right\
-  left(m_mapSTHHw)right\
-  left(m_mapSTHHt)right\
-  left(m_mapSTHi)right\
-  left(m_mapSTLDw)right\
-  left(m_mapSTLDt)right\
-  left(m_mapSTLDi)right\
-  left(m_mapSTRDw)right\
-  left(m_mapSTRDt)right\
-  left(m_mapSTRDi)right\
-  left(m_mapN0LDw)right\
-  left(m_mapN0LDt)right\
-  left(m_mapN0LDi)right\
-  left(m_mapSTL2Dw)right\
-  left(m_mapSTL2Dt)right\
-  left(m_mapSTL2Di)right\
-  left(m_mapSTR2Dw)right\
-  left(m_mapSTR2Dt)right\
-  left(m_mapSTR2Di)right\
-  left(m_mapN0L2Dw)right\
-  left(m_mapN0L2Dt)right\
-  left(m_mapN0L2Di)right\
-  left(m_mapHTw)right\
-  left(m_mapHTt)right\
-  left(m_mapHTwt)right\
-\
-  left(m_mapSTwtN0wt)right\
-  left(m_mapSTwtN0w)right\
-  left(m_mapSTwN0wt)right\
-  left(m_mapSTtN0wt)right\
-  left(m_mapSTwtN0t)right\
-  left(m_mapSTwN0w)right\
-  left(m_mapSTtN0t)right\
-\
-  left(m_mapN0tN1t)right\
-  left(m_mapN0tN1tN2t)right\
-  left(m_mapSTtN0tN1t)right\
-  left(m_mapSTtN0tN0LDt)right\
-  left(m_mapN0tN0LDtN0L2Dt)right\
-  left(m_mapSTHtSTtN0t)right\
-  left(m_mapHTtHT2tN0t)right\
-  left(m_mapSTHHtSTHtSTt)right\
-  left(m_mapSTtSTLDtN0t)right\
-  left(m_mapSTtSTLDtSTL2Dt)right\
-  left(m_mapSTtSTRDtN0t)right\
-  left(m_mapSTtSTRDtSTR2Dt)right\
-\
-  left(m_mapSTwd)right\
-  left(m_mapSTtd)right\
-  left(m_mapN0wd)right\
-  left(m_mapN0td)right\
-  left(m_mapSTwN0wd)right\
-  left(m_mapSTtN0td)right\
-\
-  left(m_mapSTwra)right\
-  left(m_mapSTtra)right\
-  left(m_mapSTwla)right\
-  left(m_mapSTtla)right\
-  left(m_mapN0wla)right\
-  left(m_mapN0tla)right\
-\
-  left(m_mapSTwrp)right\
-  left(m_mapSTtrp)right\
-  left(m_mapSTwlp)right\
-  left(m_mapSTtlp)right\
-  left(m_mapN0wlp)right\
-  left(m_mapN0tlp)right\
-\
-  left(m_mapSTl)right\
-  left(m_mapSTc)right\
-  left(m_mapSTf)right\
-\
-  left(m_mapN0l)right\
-  left(m_mapN0c)right\
-  left(m_mapN0f)right\
-\
-  left(m_mapN1l)right\
-  left(m_mapN1c)right\
-  left(m_mapN1f)right
 
 namespace TARGET_LANGUAGE {
 namespace depparser {
 
-/*===============================================================
- *
- * CWeight - the definition of weights, in feature
- *
- *==============================================================*/
-template <typename SCORE_TYPE>
-class CWeight : public CWeightBase {
+
+template <size_t INDEX_BITS=24, Label NLABELS=action::MAX>
+class FeatureHashtableDO {
 public:
-  static constexpr const unsigned DEP_TABLE_SIZE = 15139;  // This should be a prime number.
+  static constexpr const Label PADDED_NLABELS = _MAKE_ALIGNED_32<SCORE_TYPE, NLABELS>::VALUE;
 
-  using DenseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreArray<SCORE_TYPE, action::MAX>>;
-  using SparseFeatureMap = CPackedScoreMap<unsigned long, CPackedScoreList<SCORE_TYPE, action::MAX>>;
+  static_assert((PADDED_NLABELS * sizeof(SCORE_TYPE)) % 32 == 0, "PADDED_NLABELS must be divisible by 32");
+  static_assert(INDEX_BITS > 0, "INDEX_BITS must be non-zero");
+  static_assert(INDEX_BITS <= 64, "INDEX_BITS cannot exceed 64 since the hash function is 64-bit.");
 
-  const bool m_preserveLastUpdate;
+  static constexpr const size_t TABLE_INDEX_BITS = INDEX_BITS;  //!< Number of bits from the hash to use as the index into the table.
+  static constexpr const uint64_t TABLE_INDEX_MASK = (static_cast<uint64_t>(1) << TABLE_INDEX_BITS) - static_cast<uint64_t>(1);
+  static constexpr const size_t TABLE_SIZE = static_cast<size_t>(1) << TABLE_INDEX_BITS;
 
-  SparseFeatureMap m_mapSTw;
-  DenseFeatureMap m_mapSTt;
-  SparseFeatureMap m_mapSTwt;
+  static constexpr const size_t DEFAULT_CHAIN_POOL_BLOCK_SIZE = 8192 * 4080;  // ~32MB
+  static constexpr const size_t DEFAULT_DATA_POOL_BLOCK_SIZE = 16384 * 2120;  // ~32MB
+  static constexpr const uint64_t TYPE_ID_HASH_MIXER = 982451653ULL;
 
-  SparseFeatureMap m_mapN0w;
-  DenseFeatureMap m_mapN0t;
-  SparseFeatureMap m_mapN0wt;
+private:
+  class Chain {
+  private:
+    uint64_t _hash;
+    SCORE_TYPE *_current;
+    SCORE_TYPE *_total;
+    unsigned int *_last_updated;
+    Chain *_next;
 
-  SparseFeatureMap m_mapN1w;
-  DenseFeatureMap m_mapN1t;
-  SparseFeatureMap m_mapN1wt;
+  public:
+    Chain(const uint64_t hash, schwa::Pool &current_pool, schwa::Pool &total_pool, schwa::Pool &updated_pool) :
+        _hash(hash),
+        _current(current_pool.alloc<SCORE_TYPE *>(PADDED_NLABELS*sizeof(SCORE_TYPE))),
+        _total(total_pool.alloc<SCORE_TYPE *>(PADDED_NLABELS*sizeof(SCORE_TYPE))),
+        _last_updated(updated_pool.alloc<unsigned int *>(NLABELS*sizeof(unsigned int))),
+        _next(nullptr)
+      {
+      std::memset(_current, 0, PADDED_NLABELS*sizeof(SCORE_TYPE));
+      std::memset(_total, 0, PADDED_NLABELS*sizeof(SCORE_TYPE));
+      std::memset(_last_updated, 0, NLABELS*sizeof(unsigned int));
+    }
+    ~Chain(void) { }
 
-  SparseFeatureMap m_mapN2w;
-  DenseFeatureMap m_mapN2t;
-  SparseFeatureMap m_mapN2wt;
+    inline uint64_t hash(void) const { return _hash; }
+    inline Chain *next(void) const { return _next; }
+    inline size_t size(size_t count=0) const { return _next == nullptr ? count + 1 : _next->size(count + 1); }
 
-  SparseFeatureMap m_mapSTHw;
-  SparseFeatureMap m_mapSTHt;
-  SparseFeatureMap m_mapSTi;
+    inline void set_next(Chain *next) { _next = next; }
 
-  SparseFeatureMap m_mapSTHHw;
-  SparseFeatureMap m_mapSTHHt;
-  SparseFeatureMap m_mapSTHi;
+    inline void
+    for_each_label_current(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+      using aligned_score_type = SCORE_TYPE __attribute__((aligned(32)));
+      const aligned_score_type *const __restrict__ src = _current;
+      aligned_score_type *const __restrict__ dst = &out[0];
+      for (Label l = 0; l != PADDED_NLABELS; ++l)
+        dst[l] += src[l];
+    }
 
-  SparseFeatureMap m_mapSTLDw;
-  DenseFeatureMap m_mapSTLDt;
-  DenseFeatureMap m_mapSTLDi;
+    inline void
+    for_each_label_total(CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+      using aligned_score_type = SCORE_TYPE __attribute__((aligned(32)));
+      const aligned_score_type *const __restrict__ src = _total;
+      aligned_score_type *const __restrict__ dst = &out[0];
+      for (Label l = 0; l != PADDED_NLABELS; ++l)
+        dst[l] += src[l];
+    }
 
-  SparseFeatureMap m_mapSTRDw;
-  DenseFeatureMap m_mapSTRDt;
-  DenseFeatureMap m_mapSTRDi;
+    void
+    update_average(const unsigned int iteration) {
+      for (Label l = 0; l != NLABELS; ++l)
+        if (iteration > _last_updated[l])
+          _total[l] += _current[l]*(iteration - _last_updated[l]);
+    }
 
-  SparseFeatureMap m_mapN0LDw;
-  DenseFeatureMap m_mapN0LDt;
-  DenseFeatureMap m_mapN0LDi;
+    void
+    update_current(const Label label, const SCORE_TYPE added, const unsigned int iteration) {
+      if (iteration > _last_updated[label]) {
+        _total[label] += _current[label]*(iteration - _last_updated[label]);
+        _last_updated[label] = iteration;
+      }
+      _current[label] += added;
+      _total[label] += added;
+    }
 
-  SparseFeatureMap m_mapSTL2Dw;
-  DenseFeatureMap m_mapSTL2Dt;
-  DenseFeatureMap m_mapSTL2Di;
+    void
+    deserialise(std::istream &in) {
+      uint32_t nitems = mp::read_array_size(in);
+      assert(nitems == 4); (void)nitems;
+      _hash = mp::read_uint(in);
 
-  SparseFeatureMap m_mapSTR2Dw;
-  DenseFeatureMap m_mapSTR2Dt;
-  DenseFeatureMap m_mapSTR2Di;
+      nitems = mp::read_map_size(in);
+      for (uint32_t i = 0; i != nitems; ++i) {
+        const Label l = mp::read_uint(in);
+        _current[l] = mp::read_double(in);
+      }
 
-  SparseFeatureMap m_mapN0L2Dw;
-  SparseFeatureMap m_mapN0L2Dt;
-  SparseFeatureMap m_mapN0L2Di;
+      nitems = mp::read_map_size(in);
+      for (uint32_t i = 0; i != nitems; ++i) {
+        const Label l = mp::read_uint(in);
+        _total[l] = mp::read_double(in);
+      }
+    }
 
-  SparseFeatureMap m_mapHTw;
-  SparseFeatureMap m_mapHTt;
-  SparseFeatureMap m_mapHTwt;
+    void
+    serialise(std::ostream &out) const {
+      uint32_t non_zero;
+      mp::write_array_size(out, 4);
+      mp::write_uint(out, _hash);
 
-  SparseFeatureMap m_mapSTwtN0wt;
-  SparseFeatureMap m_mapSTwtN0w;
-  SparseFeatureMap m_mapSTwN0wt;
-  SparseFeatureMap m_mapSTtN0wt;
-  SparseFeatureMap m_mapSTwtN0t;
-  SparseFeatureMap m_mapSTwN0w;
-  SparseFeatureMap m_mapSTtN0t;
+      non_zero = 0;
+      for (Label l = 0; l != NLABELS; ++l)
+        if (_current[l] != 0)
+          ++non_zero;
+      mp::write_map_size(out, non_zero);
+      for (Label l = 0; l != NLABELS; ++l) {
+        if (_current[l] != 0) {
+          mp::write_uint(out, l);
+          mp::write_double(out, _current[l]);
+        }
+      }
 
-  SparseFeatureMap m_mapN0tN1t;
-  SparseFeatureMap m_mapN0tN1tN2t;
-  SparseFeatureMap m_mapSTtN0tN1t;
-  SparseFeatureMap m_mapSTtN0tN0LDt;
-  SparseFeatureMap m_mapN0tN0LDtN0L2Dt;
-  SparseFeatureMap m_mapSTHtSTtN0t;
-  SparseFeatureMap m_mapHTtHT2tN0t;
-  SparseFeatureMap m_mapSTHHtSTHtSTt;
-  SparseFeatureMap m_mapSTtSTLDtN0t;
-  SparseFeatureMap m_mapSTtSTLDtSTL2Dt;
-  SparseFeatureMap m_mapSTtSTRDtN0t;
-  SparseFeatureMap m_mapSTtSTRDtSTR2Dt;
+      non_zero = 0;
+      for (Label l = 0; l != NLABELS; ++l)
+        if (_total[l] != 0)
+          ++non_zero;
+      mp::write_map_size(out, non_zero);
+      for (Label l = 0; l != NLABELS; ++l) {
+        if (_total[l] != 0) {
+          mp::write_uint(out, l);
+          mp::write_double(out, _total[l]);
+        }
+      }
+    }
 
-  SparseFeatureMap m_mapSTwd;
-  SparseFeatureMap m_mapSTtd;
-  SparseFeatureMap m_mapN0wd;
-  DenseFeatureMap m_mapN0td;
-  SparseFeatureMap m_mapSTwN0wd;
-  SparseFeatureMap m_mapSTtN0td;
+  private:
+    SCHWA_DISALLOW_COPY_AND_ASSIGN(Chain);
+  };
 
-  SparseFeatureMap m_mapSTwra;
-  DenseFeatureMap m_mapSTtra;
-  SparseFeatureMap m_mapSTwla;
-  DenseFeatureMap m_mapSTtla;
-  SparseFeatureMap m_mapN0wla;
-  DenseFeatureMap m_mapN0tla;
 
-  SparseFeatureMap m_mapSTwrp;
-  SparseFeatureMap m_mapSTtrp;
-  SparseFeatureMap m_mapSTwlp;
-  SparseFeatureMap m_mapSTtlp;
-  SparseFeatureMap m_mapN0wlp;
-  SparseFeatureMap m_mapN0tlp;
+private:
+  template <typename CP, typename HASHER>
+  inline uint64_t
+  _hash(const FeatureType &type, const CP &cp, const HASHER &hasher) const {
+    uint64_t h = TYPE_ID_HASH_MIXER * static_cast<uint64_t>(type.id());
+    return (h << 16) + (h << 6) + hash(cp);
+  }
 
-  SparseFeatureMap m_mapSTl;
-  SparseFeatureMap m_mapSTc;
-  SparseFeatureMap m_mapSTf;
+  template <typename CP, typename HASHER>
+  inline void
+  _update_current(const FeatureType &type, const CP &cp, const HASHER &hasher, const Label label, const SCORE_TYPE amount, const unsigned int iteration) {
+    const uint64_t hash = _hash(type, cp, hasher);
+    const size_t index = hash & TABLE_INDEX_MASK;
 
-  SparseFeatureMap m_mapN0l;
-  SparseFeatureMap m_mapN0c;
-  SparseFeatureMap m_mapN0f;
+    Chain *prev = nullptr, *chain;
+    for (chain = _table[index]; chain != nullptr; chain = chain->next()) {
+      if (chain->hash() == hash) {
+        chain->update_current(label, amount, iteration);
+        return;
+      }
+      prev = chain;
+    }
 
-  SparseFeatureMap m_mapN1l;
-  SparseFeatureMap m_mapN1c;
-  SparseFeatureMap m_mapN1f;
+    // Create the new chain item and insert it appropriately.
+    ++_size;
+    chain = _chain_pool.alloc<Chain *>(sizeof(Chain));
+    new (chain) Chain(hash, _current_pool, _total_pool, _updated_pool);
+    if (prev == nullptr)
+      _table[index] = chain;
+    else
+      prev->set_next(chain);
+
+    chain->update_current(label, amount, iteration);
+  }
+
+  template <typename CP, typename HASHER>
+  inline void
+  _for_each_label_current(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+    const uint64_t hash = _hash(type, cp, hasher);
+    const size_t index = hash & TABLE_INDEX_MASK;
+
+    for (const Chain *chain = _table[index]; chain != nullptr; chain = chain->next()) {
+      if (chain->hash() == hash) {
+        chain->for_each_label_current(out);
+        return;
+      }
+    }
+  }
+
+  template <typename CP, typename HASHER>
+  inline void
+  _for_each_label_total(const FeatureType &type, const CP &cp, const HASHER &hasher, CPackedScoreType<SCORE_TYPE, action::MAX> &out) const {
+    const uint64_t hash = _hash(type, cp, hasher);
+    const size_t index = hash & TABLE_INDEX_MASK;
+
+    for (const Chain *chain = _table[index]; chain != nullptr; chain = chain->next()) {
+      if (chain->hash() == hash) {
+        chain->for_each_label_total(out);
+        return;
+      }
+    }
+  }
+
+private:
+  schwa::Pool _chain_pool;
+  schwa::Pool _current_pool;
+  schwa::Pool _total_pool;
+  schwa::Pool _updated_pool;
+  Chain **const _table;
+  size_t _size;
 
 public:
-  CWeight(const std::string &sInputPath, bool bTrain, bool preserveLastUpdate=false) : CWeight(sInputPath, sInputPath, bTrain, preserveLastUpdate) { }
-  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool preserveLastUpdate=false);
-  virtual ~CWeight() { }
+  explicit FeatureHashtableDO(size_t chain_pool_block_size=DEFAULT_CHAIN_POOL_BLOCK_SIZE, size_t data_pool_block_size=DEFAULT_DATA_POOL_BLOCK_SIZE) :
+      _chain_pool(chain_pool_block_size),
+      _current_pool(data_pool_block_size),
+      _total_pool(data_pool_block_size),
+      _updated_pool(data_pool_block_size),
+      _table(new Chain *[TABLE_SIZE]),
+      _size(0)
+    {
+    std::memset(_table, 0, TABLE_SIZE*sizeof(Chain *));
+  }
+  ~FeatureHashtableDO(void) {
+    delete [] _table;
+  }
 
-  virtual void loadScores() override;
-  virtual void saveScores() override;
+  // Capacity
+  bool empty(void) const { return _size == 0; }
+  size_t size(void) const { return _size; }
 
-  void combineAdd(const CWeight &other);
-  void combineDiv(unsigned int n);
-  void computeAverageFeatureWeights(int round);
-  void debugUsage(void) const;
+  // Hash policy
+  float load_factor(void) const noexcept { return _size / static_cast<float>(TABLE_SIZE); }
+  uint16_t nlabels(void) const { return NLABELS; }
+
+  void
+  update_average(const unsigned int iteration) {
+    for (size_t index = 0; index != TABLE_SIZE; ++index)
+      for (Chain *chain = _table[index]; chain != nullptr; chain = chain->next())
+        chain->update_average(iteration);
+  }
+
+  template <typename CP, typename HASHER=Hasher<CP>>
+  void
+  update_current(const FeatureType &type, const CP &contextual_predicate, const Label label, const SCORE_TYPE amount, const unsigned int iteration, const HASHER &hasher=HASHER()) {
+    static_assert(sizeof(typename HASHER::result_type) == 8, "64-bit hash function required");
+    _update_current(type, contextual_predicate, hasher, label, amount, iteration);
+  }
+
+  template <typename CP, typename HASHER=Hasher<CP>>
+  void
+  for_each_label_current(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
+    static_assert(sizeof(typename HASHER::result_type) == 8, "64-bit hash function required");
+    _for_each_label_current(type, contextual_predicate, hasher, out);
+  }
+
+  template <typename CP, typename HASHER=Hasher<CP>>
+  void
+  for_each_label_total(const FeatureType &type, const CP &contextual_predicate, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const HASHER &hasher=HASHER()) const {
+    static_assert(sizeof(typename HASHER::result_type) == 8, "64-bit hash function required");
+    _for_each_label_total(type, contextual_predicate, hasher, out);
+  }
+
+
+  void
+  deserialise(std::istream &in) {
+    if (!empty())
+      throw std::logic_error("Cannot deserialise a non-empty table");
+
+    const uint16_t nlabels = mp::read_uint16(in);
+    if (nlabels != NLABELS)
+      throw std::runtime_error("nlabels on the table != nlabels on the model");
+
+    const uint32_t nkeys = mp::read_map_size(in);
+    for (size_t n = 0; n != nkeys; ++n) {
+      const size_t index = mp::read_uint(in);
+      const uint32_t nitems = mp::read_array_size(in);
+      Chain *prev = nullptr;
+      for (uint32_t i = 0; i != nitems; ++i) {
+        ++_size;
+        Chain *chain = _chain_pool.alloc<Chain *>(sizeof(Chain));
+        new (chain) Chain(0, _current_pool, _total_pool, _updated_pool);
+        chain->deserialise(in);
+        if (prev == nullptr)
+          _table[index] = chain;
+        else
+          prev->set_next(chain);
+        prev = chain;
+      }
+    }
+  }
+
+  void
+  serialise(std::ostream &out) const {
+    mp::write_uint16(out, NLABELS);
+
+    uint32_t nkeys = 0;
+    for (size_t index = 0; index != TABLE_SIZE; ++index)
+      if (_table[index] != nullptr)
+        ++nkeys;
+    mp::write_map_size(out, nkeys);
+
+    for (size_t index = 0; index != TABLE_SIZE; ++index) {
+      const Chain *chain = _table[index];
+      if (chain == nullptr)
+        continue;
+      mp::write_uint(out, index);
+      const uint32_t nitems = chain->size();
+      mp::write_array_size(out, nitems);
+      for (uint32_t i = 0; i != nitems; ++i) {
+        chain->serialise(out);
+        chain = chain->next();
+      }
+    }
+  }
+
+  std::ostream &
+  stats(std::ostream &out) const {
+    std::map<uint32_t, uint32_t> chain_lengths;
+    for (size_t index = 0; index != TABLE_SIZE; ++index) {
+      const Chain *chain = _table[index];
+      if (chain != nullptr)
+        chain_lengths[chain->size()] += 1;
+    }
+    for (const auto &pair : chain_lengths)
+      out << pair.first << " => " << pair.second << std::endl;
+    return out;
+  }
+
+private:
+  SCHWA_DISALLOW_COPY_AND_ASSIGN(FeatureHashtableDO);
 };
 
 
-template <typename SCORE_TYPE>
-CWeight<SCORE_TYPE>::CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain, bool preserveLastUpdate) :
-    CWeightBase(sInputPath, sOutputPath, bTrain),
-    m_preserveLastUpdate(preserveLastUpdate),
+class CWeight : public CWeightBase {
+public:
+  static const FeatureType STw;
+  static const FeatureType STt;
+  static const FeatureType STwt;
+  static const FeatureType N0w;
+  static const FeatureType N0t;
+  static const FeatureType N0wt;
+  static const FeatureType N1w;
+  static const FeatureType N1t;
+  static const FeatureType N1wt;
+  static const FeatureType N2w;
+  static const FeatureType N2t;
+  static const FeatureType N2wt;
+  static const FeatureType STHw;
+  static const FeatureType STHt;
+  static const FeatureType STi;
+  static const FeatureType STHHw;
+  static const FeatureType STHHt;
+  static const FeatureType STHi;
+  static const FeatureType STLDw;
+  static const FeatureType STLDt;
+  static const FeatureType STLDi;
+  static const FeatureType STRDw;
+  static const FeatureType STRDt;
+  static const FeatureType STRDi;
+  static const FeatureType N0LDw;
+  static const FeatureType N0LDt;
+  static const FeatureType N0LDi;
+  static const FeatureType STL2Dw;
+  static const FeatureType STL2Dt;
+  static const FeatureType STL2Di;
+  static const FeatureType STR2Dw;
+  static const FeatureType STR2Dt;
+  static const FeatureType STR2Di;
+  static const FeatureType N0L2Dw;
+  static const FeatureType N0L2Dt;
+  static const FeatureType N0L2Di;
+  static const FeatureType HTw;
+  static const FeatureType HTt;
+  static const FeatureType HTwt;
+  static const FeatureType STwtN0wt;
+  static const FeatureType STwtN0w;
+  static const FeatureType STwN0wt;
+  static const FeatureType STtN0wt;
+  static const FeatureType STwtN0t;
+  static const FeatureType STwN0w;
+  static const FeatureType STtN0t;
+  static const FeatureType N0tN1t;
+  static const FeatureType N0tN1tN2t;
+  static const FeatureType STtN0tN1t;
+  static const FeatureType STtN0tN0LDt;
+  static const FeatureType N0tN0LDtN0L2Dt;
+  static const FeatureType STHtSTtN0t;
+  static const FeatureType HTtHT2tN0t;
+  static const FeatureType STHHtSTHtSTt;
+  static const FeatureType STtSTLDtN0t;
+  static const FeatureType STtSTLDtSTL2Dt;
+  static const FeatureType STtSTRDtN0t;
+  static const FeatureType STtSTRDtSTR2Dt;
+  static const FeatureType STwd;
+  static const FeatureType STtd;
+  static const FeatureType N0wd;
+  static const FeatureType N0td;
+  static const FeatureType STwN0wd;
+  static const FeatureType STtN0td;
+  static const FeatureType STwra;
+  static const FeatureType STtra;
+  static const FeatureType STwla;
+  static const FeatureType STtla;
+  static const FeatureType N0wla;
+  static const FeatureType N0tla;
+  static const FeatureType STwrp;
+  static const FeatureType STtrp;
+  static const FeatureType STwlp;
+  static const FeatureType STtlp;
+  static const FeatureType N0wlp;
+  static const FeatureType N0tlp;
+  static const FeatureType STl;
+  static const FeatureType STc;
+  static const FeatureType STf;
+  static const FeatureType N0l;
+  static const FeatureType N0c;
+  static const FeatureType N0f;
+  static const FeatureType N1l;
+  static const FeatureType N1c;
+  static const FeatureType N1f;
 
-    m_mapSTw("StackWord", DEP_TABLE_SIZE),
-    m_mapSTt("StackTag", DEP_TABLE_SIZE),
-    m_mapSTwt("StackWordTag", DEP_TABLE_SIZE),
+protected:
+  FeatureHashtableDO<> _weights;
 
-    m_mapN0w("NextWord", DEP_TABLE_SIZE),
-    m_mapN0t("NextTag", DEP_TABLE_SIZE),
-    m_mapN0wt("NextWordTag", DEP_TABLE_SIZE),
+public:
+  CWeight(const std::string &sInputPath, bool bTrain) : CWeight(sInputPath, sInputPath, bTrain) { }
+  CWeight(const std::string &sInputPath, const std::string &sOutputPath, bool bTrain);
+  virtual ~CWeight(void);
 
-    m_mapN1w("Next+1Word", DEP_TABLE_SIZE),
-    m_mapN1t("Next+1Tag", DEP_TABLE_SIZE),
-    m_mapN1wt("Next+1WordTag", DEP_TABLE_SIZE),
+  void loadScores(void) override;
+  void saveScores(void) override;
 
-    m_mapN2w("Next+2Word", DEP_TABLE_SIZE),
-    m_mapN2t("Next+2Tag", DEP_TABLE_SIZE),
-    m_mapN2wt("Next+2WordTag", DEP_TABLE_SIZE),
+  void addWeighted(double mu, const CWeight &other);
+  void computeAverageFeatureWeights(unsigned int iteration);
+  void debugUsage(void) const;
 
-    m_mapSTHw("StackHeadWord", DEP_TABLE_SIZE),
-    m_mapSTHt("StackHeadTag", DEP_TABLE_SIZE),
-    m_mapSTi("StackLabel", DEP_TABLE_SIZE),
+  template <typename CP>
+  void getScore(const FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, ScoreAverage sa);
 
-    m_mapSTHHw("StackHeadHeadWord", DEP_TABLE_SIZE),
-    m_mapSTHHt("StackHeadHeadTag", DEP_TABLE_SIZE),
-    m_mapSTHi("StackLabel", DEP_TABLE_SIZE),
+  template <typename CP>
+  void updateScore(const FeatureType &type, const CP &cp, unsigned action, SCORE_TYPE amount, unsigned int iteration);
+};
 
-    m_mapSTLDw("StackLDWord", DEP_TABLE_SIZE),
-    m_mapSTLDt("StackLDTag", DEP_TABLE_SIZE),
-    m_mapSTLDi("StackLDLabel", DEP_TABLE_SIZE),
 
-    m_mapSTRDw("StackRDWord", DEP_TABLE_SIZE),
-    m_mapSTRDt("StackRDTag", DEP_TABLE_SIZE),
-    m_mapSTRDi("StackRDLabel", DEP_TABLE_SIZE),
-
-    m_mapN0LDw("NextLDWord", DEP_TABLE_SIZE),
-    m_mapN0LDt("NextLDTag", DEP_TABLE_SIZE),
-    m_mapN0LDi("NextLDLabel", DEP_TABLE_SIZE),
-
-    m_mapSTL2Dw("StackL2DWord", DEP_TABLE_SIZE),
-    m_mapSTL2Dt("StackL2DTag", DEP_TABLE_SIZE),
-    m_mapSTL2Di("StackL2DLabel", DEP_TABLE_SIZE),
-
-    m_mapSTR2Dw("StackR2DWord", DEP_TABLE_SIZE),
-    m_mapSTR2Dt("StackR2DTag", DEP_TABLE_SIZE),
-    m_mapSTR2Di("StackR2DLabel", DEP_TABLE_SIZE),
-
-    m_mapN0L2Dw("NextL2DWord", DEP_TABLE_SIZE),
-    m_mapN0L2Dt("NextL2DTag", DEP_TABLE_SIZE),
-    m_mapN0L2Di("NextL2DLabel", DEP_TABLE_SIZE),
-
-    m_mapHTw("HeadStackWord", DEP_TABLE_SIZE),
-    m_mapHTt("HeadStackTag", DEP_TABLE_SIZE),
-    m_mapHTwt("HeadStackWordTag", DEP_TABLE_SIZE),
-
-    m_mapSTwtN0wt("StackWordTagNextWordTag", DEP_TABLE_SIZE),
-    m_mapSTwtN0w("StackWordTagNextWord", DEP_TABLE_SIZE),
-    m_mapSTwN0wt("StackWordNextWordTag", DEP_TABLE_SIZE),
-    m_mapSTtN0wt("StackTagNextWordTag", DEP_TABLE_SIZE),
-    m_mapSTwtN0t("StackWordTagNextTag", DEP_TABLE_SIZE),
-    m_mapSTwN0w("StackWordNextWord", DEP_TABLE_SIZE),
-    m_mapSTtN0t("StackTagNextTag", DEP_TABLE_SIZE),
-
-    m_mapN0tN1t("NextTagNext+1Tag", DEP_TABLE_SIZE),
-    m_mapN0tN1tN2t("NextTagTrigram", DEP_TABLE_SIZE),
-    m_mapSTtN0tN1t("StackTagNextTagNext+1Tag", DEP_TABLE_SIZE),
-    m_mapSTtN0tN0LDt("StackTagNextTagNextLDTag", DEP_TABLE_SIZE),
-    m_mapN0tN0LDtN0L2Dt("StackTagNextTagNextLDTagNextTagNextL2DTag", DEP_TABLE_SIZE),
-    m_mapSTHtSTtN0t("StackHeadTagStackTagNextTag", DEP_TABLE_SIZE),
-    m_mapHTtHT2tN0t("HeadStackTagHeadStack2TagNextTag", DEP_TABLE_SIZE),
-    m_mapSTHHtSTHtSTt("StackHeadHeadTagStackHeadTagStackTag", DEP_TABLE_SIZE),
-    m_mapSTtSTLDtN0t("StackTagStackLDTagNextTag", DEP_TABLE_SIZE),
-    m_mapSTtSTLDtSTL2Dt("StackTagStackLDTagStackL2DTag", DEP_TABLE_SIZE),
-    m_mapSTtSTRDtN0t("StackTagStackRDTagNextTag", DEP_TABLE_SIZE),
-    m_mapSTtSTRDtSTR2Dt("StackTagStackRDTagStackR2DTag", DEP_TABLE_SIZE),
-
-    m_mapSTwd("StackWordDist", DEP_TABLE_SIZE),
-    m_mapSTtd("StackTagDist", DEP_TABLE_SIZE),
-    m_mapN0wd("NextWordDist", DEP_TABLE_SIZE),
-    m_mapN0td("NextTagDist", DEP_TABLE_SIZE),
-    m_mapSTwN0wd("StackWordNextWordDist", DEP_TABLE_SIZE),
-    m_mapSTtN0td("StackTagNextTagDist", DEP_TABLE_SIZE),
-
-    m_mapSTwra("StackWordRightArity", DEP_TABLE_SIZE),
-    m_mapSTtra("StackTagRightArity", DEP_TABLE_SIZE),
-    m_mapSTwla("StackWordLeftArity", DEP_TABLE_SIZE),
-    m_mapSTtla("StackTagLeftArity", DEP_TABLE_SIZE),
-    m_mapN0wla("NextWordRightArity", DEP_TABLE_SIZE),
-    m_mapN0tla("NextTagRightArity", DEP_TABLE_SIZE),
-
-    m_mapSTwrp("StackWordRightSetoftags", DEP_TABLE_SIZE),
-    m_mapSTtrp("StackTagRightSetoftags", DEP_TABLE_SIZE),
-    m_mapSTwlp("StackWordLeftSetoftags", DEP_TABLE_SIZE),
-    m_mapSTtlp("StackTagLeftSetoftags", DEP_TABLE_SIZE),
-    m_mapN0wlp("Next0WordLeftSetoftags", DEP_TABLE_SIZE),
-    m_mapN0tlp("Next0TagLeftSetoftags", DEP_TABLE_SIZE),
-
-    m_mapSTl("StackLemma", DEP_TABLE_SIZE),
-    m_mapSTc("StackCPOS", DEP_TABLE_SIZE),
-    m_mapSTf("StackFeats", DEP_TABLE_SIZE),
-
-    m_mapN0l("NextLemma", DEP_TABLE_SIZE),
-    m_mapN0c("NextCPOS", DEP_TABLE_SIZE),
-    m_mapN0f("NextFeats", DEP_TABLE_SIZE),
-
-    m_mapN1l("Next+1Lemma", DEP_TABLE_SIZE),
-    m_mapN1c("Next+1CPOS", DEP_TABLE_SIZE),
-    m_mapN1f("Next+1Feats", DEP_TABLE_SIZE)
-  {
-  loadScores();
+template <typename CP>
+inline void
+CWeight::getScore(const FeatureType &type, const CP &cp, CPackedScoreType<SCORE_TYPE, action::MAX> &out, const ScoreAverage sa) {
+  if (sa == SCORE_NON_AVERAGE)
+    _weights.for_each_label_current(type, cp, out);
+  else
+    _weights.for_each_label_total(type, cp, out);
 }
 
 
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::loadScores() {
-  std::ifstream in(m_sInputPath, std::ios_base::binary);
-  if (!in.is_open()) {
-    //std::cout << "No scores loaded." << std::endl;
-    return;
-  }
-
-#ifdef LABELED
-  // Read in each of the dependency labels.
-  CDependencyLabel label;
-  const uint32_t nlabels = mp::read_array_size(in);
-  for (uint32_t i = 0; i != nlabels; ++i)
-    in >> label;
-#endif
-
-  // Read in each of the feature tables.
-  iterate_templates( , .deserialise(in, m_preserveLastUpdate); );
-
-  // Read in whether or not rules were used.
-  setRules(mp::read_bool(in));
-
-  in.close() ;
-}
-
-
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::saveScores() {
-  std::ofstream out(m_sOutputPath, std::ios_base::binary);
-
-#ifdef LABELED
-  // Write each of the dependency labels.
-  mp::write_array_size(out, CDependencyLabel::COUNT - CDependencyLabel::FIRST);
-  for (unsigned label = CDependencyLabel::FIRST; label != CDependencyLabel::COUNT; ++label)
-    out << CDependencyLabel(label);
-#endif
-
-  // Write out each of the feature tables.
-  iterate_templates( , .serialise(out); )
-
-  // Write out whether or not rules were used.
-  mp::write_bool(out, m_bRules);
-
-  out.close();
-}
-
-
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::combineAdd(const CWeight<SCORE_TYPE> &other) {
-  m_mapSTw.combineAdd(other.m_mapSTw);
-  m_mapSTt.combineAdd(other.m_mapSTt);
-  m_mapSTwt.combineAdd(other.m_mapSTwt);
-  m_mapN0w.combineAdd(other.m_mapN0w);
-  m_mapN0t.combineAdd(other.m_mapN0t);
-  m_mapN0wt.combineAdd(other.m_mapN0wt);
-  m_mapN1w.combineAdd(other.m_mapN1w);
-  m_mapN1t.combineAdd(other.m_mapN1t);
-  m_mapN1wt.combineAdd(other.m_mapN1wt);
-  m_mapN2w.combineAdd(other.m_mapN2w);
-  m_mapN2t.combineAdd(other.m_mapN2t);
-  m_mapN2wt.combineAdd(other.m_mapN2wt);
-  m_mapSTHw.combineAdd(other.m_mapSTHw);
-  m_mapSTHt.combineAdd(other.m_mapSTHt);
-  m_mapSTi.combineAdd(other.m_mapSTi);
-  m_mapSTHHw.combineAdd(other.m_mapSTHHw);
-  m_mapSTHHt.combineAdd(other.m_mapSTHHt);
-  m_mapSTHi.combineAdd(other.m_mapSTHi);
-  m_mapSTLDw.combineAdd(other.m_mapSTLDw);
-  m_mapSTLDt.combineAdd(other.m_mapSTLDt);
-  m_mapSTLDi.combineAdd(other.m_mapSTLDi);
-  m_mapSTRDw.combineAdd(other.m_mapSTRDw);
-  m_mapSTRDt.combineAdd(other.m_mapSTRDt);
-  m_mapSTRDi.combineAdd(other.m_mapSTRDi);
-  m_mapN0LDw.combineAdd(other.m_mapN0LDw);
-  m_mapN0LDt.combineAdd(other.m_mapN0LDt);
-  m_mapN0LDi.combineAdd(other.m_mapN0LDi);
-  m_mapSTL2Dw.combineAdd(other.m_mapSTL2Dw);
-  m_mapSTL2Dt.combineAdd(other.m_mapSTL2Dt);
-  m_mapSTL2Di.combineAdd(other.m_mapSTL2Di);
-  m_mapSTR2Dw.combineAdd(other.m_mapSTR2Dw);
-  m_mapSTR2Dt.combineAdd(other.m_mapSTR2Dt);
-  m_mapSTR2Di.combineAdd(other.m_mapSTR2Di);
-  m_mapN0L2Dw.combineAdd(other.m_mapN0L2Dw);
-  m_mapN0L2Dt.combineAdd(other.m_mapN0L2Dt);
-  m_mapN0L2Di.combineAdd(other.m_mapN0L2Di);
-  m_mapHTw.combineAdd(other.m_mapHTw);
-  m_mapHTt.combineAdd(other.m_mapHTt);
-  m_mapHTwt.combineAdd(other.m_mapHTwt);
-  m_mapSTwtN0wt.combineAdd(other.m_mapSTwtN0wt);
-  m_mapSTwtN0w.combineAdd(other.m_mapSTwtN0w);
-  m_mapSTwN0wt.combineAdd(other.m_mapSTwN0wt);
-  m_mapSTtN0wt.combineAdd(other.m_mapSTtN0wt);
-  m_mapSTwtN0t.combineAdd(other.m_mapSTwtN0t);
-  m_mapSTwN0w.combineAdd(other.m_mapSTwN0w);
-  m_mapSTtN0t.combineAdd(other.m_mapSTtN0t);
-  m_mapN0tN1t.combineAdd(other.m_mapN0tN1t);
-  m_mapN0tN1tN2t.combineAdd(other.m_mapN0tN1tN2t);
-  m_mapSTtN0tN1t.combineAdd(other.m_mapSTtN0tN1t);
-  m_mapSTtN0tN0LDt.combineAdd(other.m_mapSTtN0tN0LDt);
-  m_mapN0tN0LDtN0L2Dt.combineAdd(other.m_mapN0tN0LDtN0L2Dt);
-  m_mapSTHtSTtN0t.combineAdd(other.m_mapSTHtSTtN0t);
-  m_mapHTtHT2tN0t.combineAdd(other.m_mapHTtHT2tN0t);
-  m_mapSTHHtSTHtSTt.combineAdd(other.m_mapSTHHtSTHtSTt);
-  m_mapSTtSTLDtN0t.combineAdd(other.m_mapSTtSTLDtN0t);
-  m_mapSTtSTLDtSTL2Dt.combineAdd(other.m_mapSTtSTLDtSTL2Dt);
-  m_mapSTtSTRDtN0t.combineAdd(other.m_mapSTtSTRDtN0t);
-  m_mapSTtSTRDtSTR2Dt.combineAdd(other.m_mapSTtSTRDtSTR2Dt);
-  m_mapSTwd.combineAdd(other.m_mapSTwd);
-  m_mapSTtd.combineAdd(other.m_mapSTtd);
-  m_mapN0wd.combineAdd(other.m_mapN0wd);
-  m_mapN0td.combineAdd(other.m_mapN0td);
-  m_mapSTwN0wd.combineAdd(other.m_mapSTwN0wd);
-  m_mapSTtN0td.combineAdd(other.m_mapSTtN0td);
-  m_mapSTwra.combineAdd(other.m_mapSTwra);
-  m_mapSTtra.combineAdd(other.m_mapSTtra);
-  m_mapSTwla.combineAdd(other.m_mapSTwla);
-  m_mapSTtla.combineAdd(other.m_mapSTtla);
-  m_mapN0wla.combineAdd(other.m_mapN0wla);
-  m_mapN0tla.combineAdd(other.m_mapN0tla);
-  m_mapSTwrp.combineAdd(other.m_mapSTwrp);
-  m_mapSTtrp.combineAdd(other.m_mapSTtrp);
-  m_mapSTwlp.combineAdd(other.m_mapSTwlp);
-  m_mapSTtlp.combineAdd(other.m_mapSTtlp);
-  m_mapN0wlp.combineAdd(other.m_mapN0wlp);
-  m_mapN0tlp.combineAdd(other.m_mapN0tlp);
-  m_mapSTl.combineAdd(other.m_mapSTl);
-  m_mapSTc.combineAdd(other.m_mapSTc);
-  m_mapSTf.combineAdd(other.m_mapSTf);
-  m_mapN0l.combineAdd(other.m_mapN0l);
-  m_mapN0c.combineAdd(other.m_mapN0c);
-  m_mapN0f.combineAdd(other.m_mapN0f);
-  m_mapN1l.combineAdd(other.m_mapN1l);
-  m_mapN1c.combineAdd(other.m_mapN1c);
-  m_mapN1f.combineAdd(other.m_mapN1f);
-}
-
-
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::combineDiv(const unsigned int n) {
-   iterate_templates(,.combineDiv(n);) ;
-}
-
-
-template <typename SCORE_TYPE>
-void
-CWeight<SCORE_TYPE>::computeAverageFeatureWeights(int round) {
-   //std::cout<<"Computing averaged (total) feature vector..." << std::endl;
-   iterate_templates(,.computeAverage(round);) ;
+template <typename CP>
+inline void
+CWeight::updateScore(const FeatureType &type, const CP &cp, const unsigned action, const SCORE_TYPE amount, const unsigned int iteration) {
+  const Label label = action;
+  _weights.update_current(type, cp, label, amount, iteration);
 }
 
 }  // namespace depparser

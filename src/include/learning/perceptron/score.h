@@ -17,8 +17,6 @@
  * CScore - score definition
  *
  *==============================================================*/
-enum ScoreAverage { SCORE_NON_AVERAGE=0, SCORE_AVERAGE=1 };
-
 
 template <typename SCORE_TYPE>
 class CScore {

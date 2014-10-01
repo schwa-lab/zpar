@@ -22,29 +22,32 @@
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 class CPackedScoreType {
 private:
-  SCORE_TYPE scores[PACKED_SIZE];
+  static constexpr const size_t PADDED_PACKED_SIZE = _MAKE_ALIGNED_32<SCORE_TYPE, PACKED_SIZE>::VALUE;
+
+  SCORE_TYPE _scores[PADDED_PACKED_SIZE] __attribute__((aligned(32)));
+  static_assert(sizeof(_scores) % 32 == 0, "Must be divisible by 32");
 
 public:
   bool
   empty() const {
     for (size_t index = 0; index != PACKED_SIZE; ++index)
-      if (scores[index] != 0)
+      if (_scores[index] != 0)
         return false;
     return true;
   }
 
   inline void
   reset() {
-    std::memset(scores, 0, sizeof(SCORE_TYPE)*PACKED_SIZE);
+    std::memset(_scores, 0, sizeof(SCORE_TYPE)*PADDED_PACKED_SIZE);
   }
 
-  inline SCORE_TYPE &operator [](const unsigned int index) { return scores[index]; }
-  inline const SCORE_TYPE &operator [](const unsigned int index) const { return scores[index]; }
+  inline SCORE_TYPE &operator [](const unsigned int index) { return _scores[index]; }
+  inline const SCORE_TYPE &operator [](const unsigned int index) const { return _scores[index]; }
 
   inline CPackedScoreType &
   operator +=(const CPackedScoreType &i) {
     for (size_t index = 0; index != PACKED_SIZE; ++index)
-      scores[index] += i.scores[index];
+      _scores[index] += i._scores[index];
     return *this;
   }
 };

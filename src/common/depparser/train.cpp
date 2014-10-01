@@ -84,7 +84,7 @@ temp_model_path(const std::string &sModelPath, const unsigned int thread) {
 
 
 static void
-combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> &weights, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
+combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWeight *> &weights, const std::vector<unsigned int> &nerrors, const unsigned int nthreads) {
   // Compute the total number of errors.
   const unsigned int nerrors_total = std::accumulate(nerrors.begin(), nerrors.end(), 0);
   std::cout << "errors=" << nerrors_total << std::flush;
@@ -94,6 +94,7 @@ combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWe
   std::remove(sModelPath.c_str());
 
   // If we only have one thread, don't do anything complex.
+#if 0
   if (nthreads > 1) {
     // Function for combining two sets of weights together.
     const auto &fn = [&](const unsigned int t, const unsigned int delta) {
@@ -125,7 +126,7 @@ combine_partial_models(const std::string &sModelPath, std::vector<depparser::CWe
     weights[0]->saveScores();
     std::cout << "<" << std::flush;
   }
-
+#endif
   // Rename the 0th partial weights file to the main model file.
   delete weights[0];
   std::rename(temp_model_path_0.c_str(), sModelPath.c_str());
@@ -161,7 +162,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
   // Arrays of per-thread data.
   std::vector<std::vector<CDependencyParse *>> sharded_sentences(nthreads);
   std::vector<unsigned int> nerrors(nthreads);
-  std::vector<depparser::CWeight<depparser::SCORE_TYPE> *> weights(nthreads);
+  std::vector<depparser::CWeight *> weights(nthreads);
 #if 0
   SpinBarrier barrier(nthreads);
 #endif
@@ -277,7 +278,7 @@ auto_train(const std::string &sInputPath, const std::string &sModelPath, CConfig
 
     // Allocate the weights.
     for (unsigned int t = 0; t != nthreads; ++t)
-      weights[t] = new depparser::CWeight<depparser::SCORE_TYPE>(sModelPath, temp_model_path(sModelPath, t), true, true);
+      weights[t] = new depparser::CWeight(sModelPath, temp_model_path(sModelPath, t), true);
 
     // Run this iteration over the sharded sentences.
     std::cout << "[" << std::time(nullptr) << "][Iteration " << iteration << "] Started." << std::endl ; std::cout.flush();

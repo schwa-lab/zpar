@@ -77,7 +77,7 @@ private:
 
 public:
    CDepParser(const std::string &sInputPath, bool bTrain, bool bCoNLL=false);
-   CDepParser(depparser::CWeight<depparser::SCORE_TYPE> *weights, bool bCoNLL=false);
+   CDepParser(depparser::CWeight *weights, bool bCoNLL=false);
    ~CDepParser();
 
 public:
@@ -104,7 +104,8 @@ private:
 
    void work( const bool bTrain, const CTwoStringVector &sentence , CDependencyParse *retval, const CDependencyParse &correct, int nBest, depparser::SCORE_TYPE *scores ) ;
 
-   void getOrUpdateStackScore( const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval, const unsigned &action, depparser::SCORE_TYPE amount, int round);
+   void getStackScore(const depparser::CStateItem *item, CPackedScoreType<depparser::SCORE_TYPE, depparser::action::MAX> &retval);
+   void updateStackScore(const depparser::CStateItem *item, const unsigned &action, depparser::SCORE_TYPE amount, int round);
 
    // update the built-in weight std::vector for this feature object specifically
    void updateScoresForStates( const depparser::CStateItem *outout , const depparser::CStateItem *correct , depparser::SCORE_TYPE amount_add , depparser::SCORE_TYPE amount_subtract ) ;
