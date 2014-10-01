@@ -29,17 +29,14 @@ private:
 
 public:
   bool
-  empty() const {
+  empty(void) const {
     for (size_t index = 0; index != PACKED_SIZE; ++index)
       if (_scores[index] != 0)
         return false;
     return true;
   }
 
-  inline void
-  reset() {
-    std::memset(_scores, 0, sizeof(SCORE_TYPE)*PADDED_PACKED_SIZE);
-  }
+  inline void reset(void) { std::memset(_scores, 0, sizeof(SCORE_TYPE)*PADDED_PACKED_SIZE); }
 
   inline SCORE_TYPE &operator [](const unsigned int index) { return _scores[index]; }
   inline const SCORE_TYPE &operator [](const unsigned int index) const { return _scores[index]; }
@@ -52,7 +49,7 @@ public:
   }
 };
 
-
+#if 0
 template <typename SCORE_TYPE, unsigned PACKED_SIZE>
 inline std::istream &
 operator >>(std::istream &is, CPackedScoreType<SCORE_TYPE, PACKED_SIZE> &score) {
@@ -367,5 +364,6 @@ public:
     return os ;
   }
 };
+#endif
 
 #endif
