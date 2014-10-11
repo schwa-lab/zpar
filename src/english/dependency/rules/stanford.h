@@ -1493,6 +1493,28 @@ inline bool canAssignLabel(const std::vector< CTaggedWord<CTag,TAG_SEPARATOR> > 
          )
          return true;
       return false;
+   case STANFORD_DEP_MWE:
+     /**
+      $ ./label-usage.py mwe < wsj_02-21.ontonotes.mxpost.sd
+      head  dep  freq
+      IN    JJ    285
+      IN    IN    224
+      IN    JJR   201
+      RB    IN    168
+      IN    RBR     9
+      IN    NN      4
+      IN    JJS     2
+      IN    RB      1
+      **/
+     return
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_IN) ||
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_ADJECTIVE) ||
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_ADJECTIVE_COMPARATIVE) ||
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_NOUN) ||
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_ADVERB) ||
+       (head_tag == PENN_TAG_IN && dep_tag == PENN_TAG_ADVERB_COMPARATIVE) ||
+       (head_tag == PENN_TAG_ADVERB && dep_tag == PENN_TAG_IN)
+       ;
    default:
       THROW("Invalid label code in assign label: " << lab.code());
    }

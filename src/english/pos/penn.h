@@ -115,11 +115,27 @@ public:
    unsigned long hash() const { return m_code; }
    void copy(const CTag &t) { m_code = t.m_code; }
    std::string str() const { assert(m_code<PENN_TAG_COUNT) ; return PENN_TAG_STRINGS[m_code]; }
-   void load(const std::string &s) {
-      m_code = PENN_TAG_NONE ;
-      for (unsigned long i=1; i<PENN_TAG_COUNT; ++i)
-         if (PENN_TAG_STRINGS[i] == s)
+   void load(std::string s) {
+      if (s == "AFX")
+         s = "JJ";
+      else if (s == "HYPH")
+         s = ":";
+      else if (s == "NFP")
+         s = "LS";
+      else if (s == "XX")
+         s = "POS";
+      else if (s == "(" || s == "[" || s == "{")
+         s = "-LRB-";
+      else if (s == ")" || s == "]" || s == "}")
+         s = "-RRB-";
+      for (unsigned long i=1; i<PENN_TAG_COUNT; ++i) {
+         if (PENN_TAG_STRINGS[i] == s) {
             m_code = i;
+            return;
+         }
+      }
+      m_code = PENN_TAG_NONE ;
+      std::cout << "Error: Encountered unknown POS tag '" << s << "'" << std::endl;
    }
    void load(const unsigned long i) {
       m_code = i;

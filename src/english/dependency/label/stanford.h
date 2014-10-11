@@ -75,7 +75,8 @@ const std::string STANFORD_DEP_STRINGS[] = {
    "iobj", 
    "expl", 
    "predet", 
-   "preconj"
+   "preconj",
+   "mwe",
 };
 
 enum STANFORD_DEP_LABELS {
@@ -130,6 +131,7 @@ enum STANFORD_DEP_LABELS {
    STANFORD_DEP_EXPL, 
    STANFORD_DEP_PREDET, 
    STANFORD_DEP_PRECONJ,
+   STANFORD_DEP_MWE,
    STANFORD_DEP_COUNT 
 };
 
@@ -172,14 +174,17 @@ public:
    inline bool operator >= (const CDependencyLabel &l) const { return m_code >= l.m_code; }
 
    inline void load(const unsigned long &u) { m_code = u; }
-   void load(const std::string &str) { 
-      m_code = STANFORD_DEP_NONE;
+   void load(std::string s) {
+      if (s == "_rootrel")
+         s = "root";
       for (int i=FIRST; i<COUNT; ++i) {
-         if (STANFORD_DEP_STRINGS[i] == str) {
+         if (STANFORD_DEP_STRINGS[i] == s) {
             m_code = i;
             return;
          }
       }
+      m_code = STANFORD_DEP_NONE;
+      std::cout << "Error: Encountered unknown Staford Dependency label '" << s << "'" << std::endl;
    }
 };
 
